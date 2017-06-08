@@ -1,15 +1,17 @@
 <template>
   <div class="lesson-container">
     <div class="paid" v-if="true">
-      <div class="player"></div>
+      <div class="player">
+        <audio-player v-if="songs.length !== 0" :sources="songs" :loop="false"></audio-player>
+      </div>
       <div class="main">
         <div class="course-title">01 | 收入增加的5个秘密收入增加的5个秘密</div>
         <div class="infos">
           <div class="time">2017-05-08发布</div>
           <div class="other">
-            <span><img src="/static/logo.png">12:23</span>
-            <span><img src="/static/logo.png">6.43MB</span>
-            <span><img src="/static/logo.png">113</span>
+            <span><div class="icon time"></div>12:23</span>
+            <span><div class="icon download"></div>6.43MB</span>
+            <span><div class="icon read"></div>113</span>
           </div>
         </div>
         <div class="content">
@@ -35,7 +37,7 @@
           <div class="course">
             <div class="back">
               <div class="box">
-                <img src="/static/logo.png">
+                <img src="/static/header.png">
                 <div class="title">酒店邦成长营</div>
                 <div class="desc">发现更多酒店人的必修课</div>
                 <div class="arrow"></div>
@@ -78,7 +80,7 @@
             <div class="comments">
               <div class="item">
                 <div class="avater">
-                  <img src="/static/logo.png">
+                  <img src="/static/header.png">
                 </div>
                 <div class="name">
                   胡万祺  酒店邦<span class="tag">主讲人</span>
@@ -93,7 +95,7 @@
                   <div class="time">07-18</div>
                   <div class="box">
                     <div class="like">
-                      <img src="/static/logo.png">
+                      <div class="icon"></div>
                       111
                     </div>
                     <div class="comments">
@@ -104,7 +106,7 @@
               </div>
               <div class="item">
                 <div class="avater">
-                  <img src="/static/logo.png">
+                  <img src="/static/header.png">
                 </div>
                 <div class="name">
                   胡万祺  酒店邦<span class="tag">主讲人</span>
@@ -119,7 +121,7 @@
                   <div class="time">07-18</div>
                   <div class="box">
                     <div class="like">
-                      <img src="/static/logo.png">
+                      <div class="icon"></div>
                       111
                     </div>
                     <div class="comments">
@@ -130,7 +132,7 @@
               </div>
               <div class="item">
                 <div class="avater">
-                  <img src="/static/logo.png">
+                  <img src="/static/header.png">
                 </div>
                 <div class="name">
                   胡万祺  酒店邦<span class="tag">主讲人</span>
@@ -145,7 +147,7 @@
                   <div class="time">07-18</div>
                   <div class="box">
                     <div class="like">
-                      <img src="/static/logo.png">
+                      <div class="icon"></div>
                       111
                     </div>
                     <div class="comments">
@@ -166,7 +168,7 @@
             <div class="comments" v-if="comments.length !== 0">
               <div class="item">
                 <div class="avater">
-                  <img src="/static/logo.png">
+                  <img src="/static/header.png">
                 </div>
                 <div class="name">
                   胡万祺  酒店邦<span class="tag">主讲人</span>
@@ -181,7 +183,7 @@
                   <div class="time">07-18</div>
                   <div class="box">
                     <div class="like">
-                      <img src="/static/logo.png">
+                      <div class="icon"></div>
                       111
                     </div>
                     <div class="comments">
@@ -192,7 +194,7 @@
               </div>
               <div class="item">
                 <div class="avater">
-                  <img src="/static/logo.png">
+                  <img src="/static/header.png">
                 </div>
                 <div class="name">
                   胡万祺  酒店邦<span class="tag">主讲人</span>
@@ -207,7 +209,7 @@
                   <div class="time">07-18</div>
                   <div class="box">
                     <div class="like">
-                      <img src="/static/logo.png">
+                      <div class="icon"></div>
                       111
                     </div>
                     <div class="comments">
@@ -218,7 +220,7 @@
               </div>
               <div class="item">
                 <div class="avater">
-                  <img src="/static/logo.png">
+                  <img src="/static/header.png">
                 </div>
                 <div class="name">
                   胡万祺  酒店邦<span class="tag">主讲人</span>
@@ -233,7 +235,7 @@
                   <div class="time">07-18</div>
                   <div class="box">
                     <div class="like">
-                      <img src="/static/logo.png">
+                      <div class="icon liked"></div>
                       111
                     </div>
                     <div class="comments">
@@ -245,10 +247,20 @@
             </div>
           </div>
       </div>
-      <div class="comment-box" v-if="commentId">
-        <img src="/static/logo.png">
+      <div class="comment-box" v-if="false">
+        <div class="pen"></div>
         <input type="text" name="comment" placeholder="输入你的评论">
         <div class="btn">发送</div>
+      </div>
+      <div class="reply-box" v-if="false">
+        <div class="cover"></div>
+        <div class="box">
+          <div class="btns">
+            <div class="cancel">取消</div>
+            <div class="confirm">发布</div>
+          </div>
+          <textarea placeholder="一起来参与讨论吧！"></textarea>
+        </div>
       </div>
     </div>
     <div class="not-paid" v-if="false">
@@ -273,14 +285,14 @@
 </template>
 
 <script>
-
+import AudioPlayer from './AudioPlayer.vue'
 export default {
   name: 'lesson',
   props: [],
   data () {
     return {
       selectedTab: 0,
-      source: null,
+      songs: [],
       value: 1,
       swiperWidth: 0,
       commentId: 1,
@@ -289,7 +301,7 @@ export default {
   },
   created() {},
   mounted() {
-    this.source = '/static/test.mp3';
+    this.songs = ['/static/test.mp3'];
     const lessonsNum = 4;
     this.swiperWidth = (lessonsNum * 300 + (lessonsNum - 1) * 20) / 75;
   },
@@ -306,6 +318,7 @@ export default {
   destroyed() {},
   watch: {},
   components: {
+    AudioPlayer
   }
 }
 </script>
@@ -324,7 +337,9 @@ export default {
         top: 0;
         left: 0;
         z-index: 100;
-        background: red;
+        margin: 0;
+        background: white;
+        box-shadow: 0px 1px 10px #cccccc;
       }
       .main {
         background: white;
@@ -346,6 +361,25 @@ export default {
           .other {
             span {
               margin-left: 0.4rem;
+              .icon {
+                width: 0.32rem;
+                height: 0.32rem;
+                background-repeat: no-repeat;
+                background-size: cover;
+                display: inline-block;
+                margin-right: 0.13333rem;
+                position: relative;
+                top: 0.03333rem;
+              }
+              .icon.time {
+                background-image: url('/static/time.svg');
+              }
+              .icon.download {
+                background-image: url('/static/download.svg')
+              }
+              .icon.read {
+                background-image: url('/static/read.svg')
+              }
               img {
                 width: 0.32rem;
                 height: 0.32rem;
@@ -536,6 +570,18 @@ export default {
               display: flex;
               .like {
                 margin-right: 0.4rem;
+                .icon {
+                  width: 0.4rem;
+                  height: 0.4rem;
+                  background-image: url('/static/like.svg');
+                  background-size: 0.4rem auto;
+                  background-repeat: no-repeat;
+                  display: inline-block;
+                  vertical-align: top;
+                }
+                .icon.liked {
+                  background-image: url('/static/liked.svg');
+                }
                 img {
                   width: 0.4rem;
                   vertical-align: middle;
@@ -575,6 +621,16 @@ export default {
           width: 0.53333rem;
           height: 0.53333rem;
         }
+        .pen {
+          position: absolute;
+          left: 0.6666rem;
+          top: 0.4rem;
+          width: 0.53333rem;
+          height: 0.53333rem;
+          background-image: url('/static/pen.svg');
+          background-size: 0.53333rem 0.53333rem;
+          background-repeat: no-repeat;
+        }
         input {
           display: inline-block;
           height: 0.93333rem;
@@ -594,6 +650,64 @@ export default {
           line-height: 0.93333rem;
           border-radius: 4px;
         }
+      }
+      .reply-box {
+        height: 100%;
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        z-index: 101;
+        .cover {
+          position: absolute;
+          height: 100%;
+          width: 100%;
+          background: black;
+          opacity: 0.8;
+        }
+        .box {
+          height: 4.53333rem;
+          width: 100%;
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          background: #f0f0f0;
+          padding: 0 0.4rem;
+          .btns {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.426666rem;
+            height: 1.2rem;
+            align-items: center;
+            .cancel {
+              color: #666666
+            }
+            .confirm {
+              color: @red;
+            }
+          }
+          textarea {
+            width: 100%;
+            height: 2.8rem;
+            border: #cccccc solid thin;
+            color: #666666;
+            font-size: 0.426666rem;
+            padding: 0.4rem;
+            border-radius: 4px;
+          }
+        }
+        ::-webkit-input-placeholder { /* WebKit browsers */ 
+          color: #cccccc; 
+        } 
+        :-moz-placeholder { /* Mozilla Firefox 4 to 18 */ 
+          color: #cccccc; 
+        } 
+        ::-moz-placeholder { /* Mozilla Firefox 19+ */ 
+          color: #cccccc; 
+        } 
+        :-ms-input-placeholder { /* Internet Explorer 10+ */ 
+          color: #cccccc; 
+        } 
       }
     }
     .not-paid {

@@ -100,7 +100,7 @@
       </div>
       <div class="block back">
         <div class="box">
-          <img src="/static/logo.png">
+          <img src="/static/jiudianbang.png">
           <div class="title">酒店邦成长营</div>
           <div class="desc">发现更多酒店人的必修课</div>
           <div class="arrow"></div>
@@ -322,6 +322,7 @@ export default {
         padding: 0.4rem;
         .box {
           width: 100%;
+          background: #f5f5f5;
           height: 2.13333rem;
           border-radius: 4px;
           border: #cccccc solid thin;
@@ -352,7 +353,7 @@ export default {
             right: 0.4rem;
             width: 0.64rem;
             height: 100%;
-            background-image: url('/static/arrow-right.svg');
+            background-image: url('/static/circle-arrow.svg');
             background-size: 0.64rem auto;
             background-position: center;
             background-repeat: no-repeat;
