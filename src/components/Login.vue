@@ -9,7 +9,7 @@
         <img src="/static/jiudianbang.png">
       </div>
       <div class="phone">
-        <input type="number" name="phone" placeholder="请输入11位手机号">
+        <input type="number" name="phone" placeholder="请输入11位手机号" v-model="phone">
       </div>
       <div class="verify">
         <input type="number" name="verify" placeholder="请输入验证码">
@@ -43,6 +43,9 @@
 </template>
 
 <script>
+import util from '../util/index'
+import isMobilePhone from 'validator/lib/isMobilePhone'
+
 export default {
   name: 'login',
   props: [],
@@ -52,6 +55,8 @@ export default {
       error: null,
       btnText: '获取验证码',
       disabled: false,
+
+      phone: ''
     }
   },
   created() {},
@@ -67,17 +72,24 @@ export default {
         return false;
       }
       // TODO
-      this.disabled = true;
-      let time = 60;
-      this.btnText = time + '秒后获取';
-      let inter = setInterval(() => {
-        time--;
-        this.btnText = time === 0 ? '重新获取' : time + '秒后获取';
-        if (time === 0) {
-          clearInterval(inter);
-          this.disabled = false;
-        }
-      }, 1000);
+      if (!isMobilePhone(this.phone, 'zh-CN')) {
+        alert('请填写手机号码！');
+        return false;
+      }
+      util.sendCaptcha(this.phone, function (json) {
+        console.log(json);
+        this.disabled = true;
+        let time = 60;
+        this.btnText = time + '秒后获取';
+        let inter = setInterval(() => {
+          time--;
+          this.btnText = time === 0 ? '重新获取' : time + '秒后获取';
+          if (time === 0) {
+            clearInterval(inter);
+            this.disabled = false;
+          }
+        }, 1000);
+      })
     }
   },
   destroyed() {},
@@ -128,7 +140,6 @@ export default {
     .first {
       background: white;
       padding-top: 1rem;
-      color: #cccccc;
       .logo {
         text-align: center;
         img {
@@ -148,7 +159,7 @@ export default {
           display: block;
           width: 7.86666rem;
           margin: auto;
-          color: #cccccc;
+          color: #999999;
         }
         .btn {
           color: @red;

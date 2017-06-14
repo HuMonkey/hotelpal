@@ -1,8 +1,24 @@
+import 'whatwg-fetch'
+
+const api = {
+  getCourse: '/hotelpal/course/getCourse',
+  getCourseList: '/hotelpal/course/getCourseList',
+  
+  sendCaptcha: '/hotelpal/user/sendCaptcha',
+  getPaidCourseList: '/hotelpal/user/getPaidCourseList',
+  getUserInfo: '/hotelpal/user/getUserInfo',
+  getUserStatistics: '/hotelpal/user/getUserStatistics',
+
+  getLessonProp: '/hotelpal/lesson/getLessonProp',
+  getLessonContent: '/hotelpal/lesson/getLessonContent',
+};
+
 const util = {};
 
 /**
  * 判断userAgent的一些方法
  */
+const userAgent = navigator.userAgent.toLowerCase();
 util.ua = {
   wechat: userAgent.indexOf('micromessenger') > -1, // 判断是否在微信里
   xinhuashe: userAgent.indexOf('xyapp') > -1, // 判断是否在新华社app里
@@ -14,7 +30,7 @@ util.ua = {
    * 判断是否在PC里
    */
   isPc: function() {  
-    var ua = navigator.userAgent,  
+    const ua = navigator.userAgent,  
       isWindowsPhone = /(?:Windows Phone)/.test(ua),  
       isSymbian = /(?:SymbianOS)/.test(ua) || isWindowsPhone,   
       isAndroid = /(?:Android)/.test(ua),   
@@ -27,7 +43,9 @@ util.ua = {
 /**
  * 环境参数配置
  */
+// http://116.62.247.1:8080/hotelpal/course/getcourse?courseId=2
 util.config = {
+  host: 'http://116.62.247.1:8080',
   wechat: {
     appid: 'wx8ecfbf8357e25e45', // live.xinhuaapp.com
   },
@@ -38,9 +56,105 @@ util.config = {
 }
 
 /**
+ * 获取课程列表
+ */
+util.getCourseList = function (callback) {
+  fetch(util.config.host + api.getCourseList)
+    .then(function(res) {
+      return res.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取课程
+ */
+util.getCourse = function (id, callback) {
+  fetch(util.config.host + api.getCourse + '?courseId=' + id)
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取验证码
+ */
+util.sendCaptcha = function (phone, callback) {
+  fetch(util.config.host + api.sendCaptcha + '?phone=' + phone)
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取已购课程
+ */
+util.getPaidCourseList = function (callback) {
+  fetch(util.config.host + api.getPaidCourseList)
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取用户信息
+ */
+util.getUserInfo = function (callback) {
+  fetch(util.config.host + api.getUserInfo)
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取用户统计信息
+ */
+util.getUserStatistics = function (callback) {
+  fetch(util.config.host + api.getUserStatistics)
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取课时属性
+ */
+util.getLessonProp = function (lessonId, callback) {
+  fetch(util.config.host + api.getLessonProp + '?lessonId=' + lessonId)
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取课时信息
+ */
+util.getLessonContent = function (lessonId, callback) {
+  fetch(util.config.host + api.getLessonContent + '?lessonId=' + lessonId)
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
  * 获取url的hash值
  */
-util.getHash = function(name) {
+util.getHash = function() {
   var url = window.location.href;
   var arr = url.split('#');
   if (arr[1]) {
@@ -58,6 +172,58 @@ util.getParam = function(name) {
   var r = window.location.search.substr(1).match(reg);
   if (r != null) return (r[2]);
   return null;
+}
+
+/**
+ * 修改URL
+ */
+util.changeURL = function(options, replaceMode, hash) {
+  var url = location.href;
+  var arr1 = url.split('#')
+  var arr2 = arr1[0].split('?')
+  var prefix = arr2[0];
+
+  var params = {}
+  if (arr2[1]) {
+    var temp = arr2[1].split('&')
+    temp.forEach((item) => {
+      var kv = item.split('=');
+      if (kv[0]) {
+        params[kv[0]] = kv[1] ? decodeURIComponent(kv[1]) : ''
+      }
+    })
+  }
+  options = options || {};
+
+  Object.keys(options).forEach((i) => {
+    params[i] = options[i]
+  })
+
+  var paramsArr = [];
+  Object.keys(params).forEach((j) => {
+    if (params[j] != null) {
+      paramsArr.push(j + '=' + encodeURIComponent(params[j]))
+    }
+  })
+  var paramsString = paramsArr.join('&')
+
+  var result = prefix;
+  if (paramsString) {
+    result += '?' + paramsString;
+  }
+
+  var fragment = arr1.slice(1).join('#')
+  if (hash) {
+    result += '#' + hash;
+  } else {
+    if (fragment) {
+      result += '#' + fragment;
+    }
+  }
+
+  var method = replaceMode ? 'replaceState' : 'pushState'
+  window.history[method]({}, '', result)
+  return result;
 }
 
 /**

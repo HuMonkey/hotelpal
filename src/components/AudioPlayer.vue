@@ -235,7 +235,9 @@
           width: 100%;
           height: 100%;
           background-image: url('/static/15.svg');
-          background-size: 0.8rem 0.8rem;
+          background-size: 0.75rem 0.75rem;
+          background-position: center;
+          background-repeat: no-repeat;
         }
       }
       .previous-15 {
@@ -254,7 +256,9 @@
         width: 0.53333rem;
         height: 0.53333rem;
         background-image: url('/static/previous.svg');
-        background-size: 0.53333rem 0.53333rem;
+        background-size: 0.52333rem 0.52333rem;
+        background-position: center;
+        background-repeat: no-repeat;
       }
       .next {
         background-image: url('/static/next.svg');
@@ -263,7 +267,9 @@
         width: 1.28rem;
         height: 1.28rem;
         background-image: url('/static/play.svg');
-        background-size: 1.28rem 1.28rem;
+        background-size: 1.26rem 1.26rem;
+        background-position: center;
+        background-repeat: no-repeat;
       }
       .switch.playing {
         background-image: url('/static/stop.svg');

@@ -247,7 +247,7 @@
             </div>
           </div>
       </div>
-      <div class="comment-box" v-if="false">
+      <div class="comment-box">
         <div class="pen"></div>
         <input type="text" name="comment" placeholder="输入你的评论">
         <div class="btn">发送</div>

@@ -51,7 +51,7 @@
         <!-- <div class="all">查看全部</div> -->
       </div>
       <div class="list">
-        <div class="item">
+        <div class="item" @click="gotoCourse(1)">
           <div class="avater">
             <div class="state coming">预告</div>
             <img src="/static/logo.png">
@@ -66,9 +66,54 @@
             </div>
           </div>
         </div>
-        <div class="item">
+        <div class="item" @click="gotoCourse(1)">
           <div class="avater">
-            <div class="state new">上新</div>
+            <div class="state coming">预告</div>
+            <img src="/static/logo.png">
+          </div>
+          <div class="desc">
+            <div class="name">酒店经营法则</div>
+            <div class="who">胡万祺 · 布丁生活CEO&住友酒店VP</div>
+            <div class="content">酒店如果不先打动自己，怎么打动顾客</div>
+            <div class="row">
+              <div class="tag">创业宝典</div>
+              <div class="price">¥ 199 / 10课时</div>
+            </div>
+          </div>
+        </div>
+        <div class="item" @click="gotoCourse(1)">
+          <div class="avater">
+            <div class="state coming">预告</div>
+            <img src="/static/logo.png">
+          </div>
+          <div class="desc">
+            <div class="name">酒店经营法则</div>
+            <div class="who">胡万祺 · 布丁生活CEO&住友酒店VP</div>
+            <div class="content">酒店如果不先打动自己，怎么打动顾客</div>
+            <div class="row">
+              <div class="tag">创业宝典</div>
+              <div class="price">¥ 199 / 10课时</div>
+            </div>
+          </div>
+        </div>
+        <div class="item" @click="gotoCourse(1)">
+          <div class="avater">
+            <div class="state coming">预告</div>
+            <img src="/static/logo.png">
+          </div>
+          <div class="desc">
+            <div class="name">酒店经营法则</div>
+            <div class="who">胡万祺 · 布丁生活CEO&住友酒店VP</div>
+            <div class="content">酒店如果不先打动自己，怎么打动顾客</div>
+            <div class="row">
+              <div class="tag">创业宝典</div>
+              <div class="price">¥ 199 / 10课时</div>
+            </div>
+          </div>
+        </div>
+        <div class="item" @click="gotoCourse(1)">
+          <div class="avater">
+            <div class="state coming">预告</div>
             <img src="/static/logo.png">
           </div>
           <div class="desc">
@@ -101,6 +146,7 @@
 </template>
 
 <script>
+import util from '../util/index'
 import { swiper, swiperSlide } from 'vue-awesome-swiper'
 
 export default {
@@ -125,8 +171,19 @@ export default {
     }
   },
   created() {},
-  mounted() {},
-  methods: {},
+  mounted() {
+    util.getCourseList(function (json) {
+      console.log(json);
+    })
+    util.getUserInfo(function (json) {
+      console.log(json)
+    })
+  },
+  methods: {
+    gotoCourse: function (courseId) {
+      location.href = '/?cid=' + courseId + '#/course';
+    }
+  },
   destroyed() {},
   watch: {},
   components: {
@@ -193,7 +250,7 @@ export default {
         .arrow-right {
           position: relative;
           top: 0.04rem;
-          left: 0.13333rem;
+          margin-left: 0.13333rem;
           width: 0.16rem;
           height: 0.346666rem;
           display: inline-block;

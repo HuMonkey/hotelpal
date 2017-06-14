@@ -53,7 +53,7 @@
       <div class="block lessons">
         <div class="label">课时</div>
         <div class="list">
-          <div class="item" :class="{future: false}">
+          <div class="item" :class="{future: false}" @click="gotoLesson(1)">
             <div class="up">
               <span>01</span> | 收入增加的5个秘密
               <span class="tag" v-if="true">免费试听</span>
@@ -74,7 +74,7 @@
 
             </div>
           </div>
-          <div class="item" :class="{future: true}">
+          <div class="item" :class="{future: true}" @click="gotoLesson(1)">
             <div class="up">
               <span>02</span> | 收入增加的5个秘密
               <span class="tag" v-if="false">免费试听</span>
@@ -115,6 +115,8 @@
 </template>
 
 <script>
+import util from '../util/index'
+
 export default {
   name: 'course',
   props: [],
@@ -126,7 +128,9 @@ export default {
   },
   created() {},
   mounted() {
-    
+    util.getCourse(3, function (json) {
+      console.log(json)
+    })
   },
   methods: {
     switchOverflow: function() {
@@ -135,6 +139,12 @@ export default {
     closeErrorTips: function() {
       this.error = null;
     },
+    gotoLesson: function (lessonId) {
+      const cid = util.getParam('cid');
+      console.log(util);
+      console.log(cid);
+      location.href = '/?cid=' + cid + '&lid=' + lessonId + '#/lesson';
+    }
   },
   destroyed() {},
   watch: {},
