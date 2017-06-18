@@ -5,9 +5,11 @@ const api = {
   getCourseList: '/hotelpal/course/getCourseList',
   
   sendCaptcha: '/hotelpal/user/sendCaptcha',
+  verifyPhone: '/hotelpal/user/verifyPhone',
   getPaidCourseList: '/hotelpal/user/getPaidCourseList',
   getUserInfo: '/hotelpal/user/getUserInfo',
   getUserStatistics: '/hotelpal/user/getUserStatistics',
+  getPaidCourseList: '/hotelpal/user/getPaidCourseList',
 
   getLessonProp: '/hotelpal/lesson/getLessonProp',
   getLessonContent: '/hotelpal/lesson/getLessonContent',
@@ -45,7 +47,7 @@ util.ua = {
  */
 // http://116.62.247.1:8080/hotelpal/course/getcourse?courseId=2
 util.config = {
-  host: 'http://116.62.247.1:8080',
+  host: 'http://192.168.0.14:8082',
   wechat: {
     appid: 'wx8ecfbf8357e25e45', // live.xinhuaapp.com
   },
@@ -84,6 +86,18 @@ util.getCourse = function (id, callback) {
  */
 util.sendCaptcha = function (phone, callback) {
   fetch(util.config.host + api.sendCaptcha + '?phone=' + phone)
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 验证手机
+ */
+util.verifyPhone = function (phone, code, callback) {
+  fetch(util.config.host + api.verifyPhone + '?phone=' + phone + '&code=' + code)
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -144,6 +158,18 @@ util.getLessonProp = function (lessonId, callback) {
  */
 util.getLessonContent = function (lessonId, callback) {
   fetch(util.config.host + api.getLessonContent + '?lessonId=' + lessonId)
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取已购课程
+ */
+util.getPaidCourseList = function (callback) {
+  fetch(util.config.host + api.getPaidCourseList)
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -291,7 +317,7 @@ util.updateWechatShare = function(wxShareDict) {
  * 计算一段文字的长度
  */
 util.textLength = function(para, fontSize) {
-  if (!para) {
+  if (!para || !fontSize) {
     return 0;
   }
   var length = 0;

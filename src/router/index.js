@@ -6,6 +6,7 @@ import Lesson from '@/components/Lesson'
 import Course from '@/components/Course'
 import Bought from '@/components/Bought'
 import Profile from '@/components/Profile'
+import Jdbs from '@/components/Jdbs'
 
 Vue.use(Router)
 
@@ -40,6 +41,11 @@ export default new Router({
       path: '/profile',
       name: 'Profile',
       component: Profile
+    },
+    {
+      path: '/jdbs',
+      name: 'Jdbs',
+      component: Jdbs
     }
   ]
 })

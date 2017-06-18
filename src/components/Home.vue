@@ -6,10 +6,11 @@
       </swiper-slide>
       <div class="swiper-pagination" slot="pagination"></div>
     </swiper>
+    <!-- <div class="free" v-if="jdbsList.length > 0"> -->
     <div class="free">
       <div class="title">
         <div class="name">酒店邦说 | 免费</div>
-        <div class="all">查看全部
+        <div class="all" @click="gotoJdbs">查看全部
           <div class="arrow-right"></div>
         </div>
       </div>
@@ -51,102 +52,32 @@
         <!-- <div class="all">查看全部</div> -->
       </div>
       <div class="list">
-        <div class="item" @click="gotoCourse(1)">
+        <div class="item" @click="gotoCourse(c.id)" v-for="c in courseList">
           <div class="avater">
-            <div class="state coming">预告</div>
-            <img src="/static/logo.png">
+            <div class="state" :class="{ coming: c.isPublish === 0, isnew: c.isPublish === 1 }">{{ c.isPublish ? '上新' : '预告' }}</div>
+            <img :src="c.headImg">
           </div>
           <div class="desc">
-            <div class="name">酒店经营法则</div>
-            <div class="who">胡万祺 · 布丁生活CEO&住友酒店VP</div>
-            <div class="content">酒店如果不先打动自己，怎么打动顾客</div>
+            <div class="name">{{ c.courseTitle }}</div>
+            <div class="who">{{ c.userName }} · {{ c.userTitle }}</div>
+            <div class="content">{{ c.subtitle || '暂无介绍' }}</div>
             <div class="row">
-              <div class="tag">创业宝典</div>
-              <div class="price">¥ 199 / 10课时</div>
-            </div>
-          </div>
-        </div>
-        <div class="item" @click="gotoCourse(1)">
-          <div class="avater">
-            <div class="state coming">预告</div>
-            <img src="/static/logo.png">
-          </div>
-          <div class="desc">
-            <div class="name">酒店经营法则</div>
-            <div class="who">胡万祺 · 布丁生活CEO&住友酒店VP</div>
-            <div class="content">酒店如果不先打动自己，怎么打动顾客</div>
-            <div class="row">
-              <div class="tag">创业宝典</div>
-              <div class="price">¥ 199 / 10课时</div>
-            </div>
-          </div>
-        </div>
-        <div class="item" @click="gotoCourse(1)">
-          <div class="avater">
-            <div class="state coming">预告</div>
-            <img src="/static/logo.png">
-          </div>
-          <div class="desc">
-            <div class="name">酒店经营法则</div>
-            <div class="who">胡万祺 · 布丁生活CEO&住友酒店VP</div>
-            <div class="content">酒店如果不先打动自己，怎么打动顾客</div>
-            <div class="row">
-              <div class="tag">创业宝典</div>
-              <div class="price">¥ 199 / 10课时</div>
-            </div>
-          </div>
-        </div>
-        <div class="item" @click="gotoCourse(1)">
-          <div class="avater">
-            <div class="state coming">预告</div>
-            <img src="/static/logo.png">
-          </div>
-          <div class="desc">
-            <div class="name">酒店经营法则</div>
-            <div class="who">胡万祺 · 布丁生活CEO&住友酒店VP</div>
-            <div class="content">酒店如果不先打动自己，怎么打动顾客</div>
-            <div class="row">
-              <div class="tag">创业宝典</div>
-              <div class="price">¥ 199 / 10课时</div>
-            </div>
-          </div>
-        </div>
-        <div class="item" @click="gotoCourse(1)">
-          <div class="avater">
-            <div class="state coming">预告</div>
-            <img src="/static/logo.png">
-          </div>
-          <div class="desc">
-            <div class="name">酒店经营法则</div>
-            <div class="who">胡万祺 · 布丁生活CEO&住友酒店VP</div>
-            <div class="content">酒店如果不先打动自己，怎么打动顾客</div>
-            <div class="row">
-              <div class="tag">创业宝典</div>
-              <div class="price">¥ 199 / 10课时</div>
+              <div class="tags">
+                <div class="tag" :title="tag" v-for="tag in c.tag">{{ tag }}</div>
+              </div>
+              <div class="price">¥ {{ c.charge }} / {{ c.lessonCount }}课时</div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="footer">
-      <div class="item selected">
-        <div class="img"></div>
-        发现
-      </div>
-      <div class="item">
-        <div class="img"></div>
-        已购课程
-      </div>
-      <div class="item">
-        <div class="img"></div>
-        我的
-      </div>
-    </div>
+    <Bottomer :tag="1"></Bottomer>
   </div>
 </template>
 
 <script>
 import util from '../util/index'
+import Bottomer from './Bottomer.vue'
 import { swiper, swiperSlide } from 'vue-awesome-swiper'
 
 export default {
@@ -167,13 +98,24 @@ export default {
         '/static/banner_2.jpg',
         '/static/banner_3.jpg',
       ],
-      selectedTab: 0
+      selectedTab: 0,
+      courseList: [],
+      jdbsList: [],
     }
   },
   created() {},
   mounted() {
-    util.getCourseList(function (json) {
-      console.log(json);
+    util.getCourseList((json) => {
+      if (json.code === 0) {
+        this.courseList = json.data.courseList.map((c) => {
+          return {
+            ...c,
+            tag: ['标签标签111', '标签2']
+          }
+        });
+      } else {
+        console.warn('get course list fail');
+      }
     })
     util.getUserInfo(function (json) {
       console.log(json)
@@ -182,13 +124,17 @@ export default {
   methods: {
     gotoCourse: function (courseId) {
       location.href = '/?cid=' + courseId + '#/course';
+    },
+    gotoJdbs: function () {
+      location.href = '/#/jdbs';
     }
   },
   destroyed() {},
   watch: {},
   components: {
     swiper,
-    swiperSlide
+    swiperSlide,
+    Bottomer
   }
 }
 </script>
@@ -325,7 +271,7 @@ export default {
               left: 0;
               font-size: 0.26666rem;
             }
-            .state.new {
+            .state.isnew {
               background: #f04a4c;
             }
             .state.coming {
@@ -360,80 +306,34 @@ export default {
               margin-top: 0.153333rem;
               display: flex;
               justify-content: space-between;
-              .tag {
-                padding: 0 0.186666rem;
-                border: #cccccc solid thin;
-                font-size: 0.32rem;
-                height: 0.48rem;
-                line-height: 0.453333rem;
-                border-radius: 4px;
-                color: #aaaaaa;
+              .tags {
+                flex: 2;
+                display: relative;
+                .tag {
+                  padding: 0 0.186666rem;
+                  border: #cccccc solid thin;
+                  font-size: 0.32rem;
+                  height: 0.48rem;
+                  line-height: 0.453333rem;
+                  border-radius: 4px;
+                  color: #aaaaaa;
+                  float: left;
+                  white-space: nowrap; 
+                  max-width: 1.9rem;
+                  margin-right: 0.26666rem;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
               }
               .price {
+                flex: 1;
                 color: @red;
                 font-size: 0.32rem;
+                text-align: right;
               }
             }
           }
         }
-      }
-    }
-    .footer {
-      width: 100%;
-      height: 1.6rem;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      display: flex;
-      font-size: 0.32rem;
-      justify-content: space-between;
-      border-top: #cccccc solid thin;
-      background: white;
-      padding: 0.16rem 1.253333rem;
-      .item {
-        height: 1.28rem;
-        text-align: center;
-        .img {
-          width: 0.783333rem;
-          height: 0.783333rem;
-          margin: auto;
-          margin-bottom: 0.1rem;
-          background-size: 0.783333rem 0.783333rem;
-          background-position: center;
-        }
-      }
-      .item:first-child {
-        .img {
-          background-image: url('/static/footer-1.svg');
-        }
-      }
-      .item.selected:first-child {
-        .img {
-          background-image: url('/static/footer-1-selected.svg');
-        }
-      }
-      .item:nth-child(2) {
-        .img {
-          background-image: url('/static/footer-2.svg');
-        }
-      }
-      .item.selected:nth-child(2) {
-        .img {
-          background-image: url('/static/footer-2-selected.svg');
-        }
-      }
-      .item:nth-child(3) {
-        .img {
-          background-image: url('/static/footer-3.svg');
-        }
-      }
-      .item.selected:nth-child(3) {
-        .img {
-          background-image: url('/static/footer-3-selected.svg');
-        }
-      }
-      .item.selected {
-        color: @red;
       }
     }
   }

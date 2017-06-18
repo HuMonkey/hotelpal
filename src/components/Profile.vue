@@ -8,7 +8,7 @@
         <div class="avater">
           <img src="/static/header.png">
         </div>
-        <div class="name">
+        <div class="name" @click="setMode(4)">
           胡万祺 <div class="arrow-right"></div>
         </div>
         <div class="record">
@@ -101,18 +101,42 @@
         </div>
       </div>
     </div>
+    <div class="page name-page" v-if="mode === 4">
+      <!-- <div class="welcome">欢迎加入酒店营成长邦！</div> -->
+      <div class="avater">
+        <img src="/static/header.png" @click="changeHeader">
+      </div>
+      <input class="avater-upload" type="file" @change="uploadAvater"></input>
+      <div class="wechat-name">李坚</div>
+      <div class="row name">
+        <div class="label">姓名</div>
+        <input type="text" name="name" placeholder="请输入您的姓名">
+      </div>
+      <div class="row company">
+        <div class="label">公司</div>
+        <input type="text" name="company" placeholder="请输入您的公司（选填）">
+      </div>
+      <div class="row position">
+        <div class="label">职位</div>
+        <input type="text" name="position" placeholder="请输入您的职位（选填）">
+      </div>
+      <div class="confirm" @click="submitChange">确认修改</div>
+      <!-- <div class="skip">跳过</div> -->
+    </div>
+    <Bottomer :tag="3"></Bottomer>
   </div>
 </template>
 
 <script>
 import util from '../util/index'
+import Bottomer from './Bottomer.vue'
 
 export default {
   name: 'profile',
   props: [],
   data () {
     return {
-      mode: 1, // 1主页，2aboutus，3购买记录
+      mode: 1, // 1主页，2aboutus，3购买记录, 4修改资料
     }
   },
   created () {
@@ -143,11 +167,22 @@ export default {
       this.mode = mode;
       util.changeURL({ mode: mode })
       this.popstate();
+    },
+    changeHeader: function () {
+      document.querySelector('.avater-upload').click();
+    },
+    uploadAvater: function (ev) {
+      console.log(ev)
+    },
+    submitChange: function() {
+      this.setMode(1)
     }
   },
   destroyed() {},
   watch: {},
-  components: {}
+  components: {
+    Bottomer
+  }
 }
 </script>
 
@@ -411,6 +446,92 @@ export default {
             font-size: 0.32rem;
           }
         }
+      }
+    }
+    .page.name-page {
+      background: white;
+      padding-top: 0.53333rem;
+      color: #cccccc;
+      width: 100%;
+      height: 100%;
+      .avater-upload {
+        display: none;
+      }
+      .welcome {
+        height: 0.48rem;
+        font-size: 0.48rem;
+        width: 100%;
+        color: #666666;
+        text-align: center;
+      }
+      .avater {
+        height: 1.92rem;
+        width: 100%;
+        text-align: center;
+        margin-top: 0.6666rem;
+        img {
+          height: 100%;
+        }
+      }
+      .wechat-name {
+        height: 0.4rem;
+        width: 100%;
+        text-align: center;
+        font-size: 0.4rem;
+        color: #333333;
+        margin-top: 0.26666rem;
+        margin-bottom: 0.48rem;
+      }
+      .row {
+        width: 7.86666rem;
+        height: 1.173333rem;
+        margin: auto;
+        margin-bottom: 0.26666rem;
+        font-size: 0.4rem;
+        position: relative;
+        .label {
+          height: 100%;
+          line-height: 1.2rem;
+          position: absolute;
+          z-index: 1;
+          top: 0;
+          left: 0.4rem;
+          color: #666666;
+        }
+        input {
+          height: 1.173333rem;
+          border-radius: 4px;
+          border: #cccccc solid thin;
+          padding: 0 0.4rem 0 1.73333rem;
+          display: block;
+          width: 100%;
+          margin: auto;
+          color: #cccccc;
+          -webkit-appearance: none;
+        }
+      }
+      .confirm {
+        margin: auto;
+        margin-top: 0.53333rem;
+        font-size: 0.426666rem;
+        width: 7.86666rem;
+        background: @red;
+        color: white;
+        text-align: center;
+        line-height: 1.173333rem;
+        height: 1.173333rem;
+        border-radius: 4px;
+      }
+      .skip {
+        margin: auto;
+        margin-top: 0.26666rem;
+        font-size: 0.426666rem;
+        width: 7.86666rem;
+        color: #999999;
+        text-align: center;
+        line-height: 1.173333rem;
+        height: 1.173333rem;
+        border-radius: 4px;
       }
     }
   }

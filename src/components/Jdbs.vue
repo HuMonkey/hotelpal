@@ -1,5 +1,5 @@
 <template>
-  <div class="course-container">
+  <div class="jdbs-container">
     <div class="error-tips" v-if="error">
       {{ error }}
       <img src="/static/cross.png" @click="closeErrorTips">
@@ -7,10 +7,11 @@
     <div class="header">
       <img src="/static/banner_1.jpg">
       <div class="desc">
-        <div class="title">{{ course.title }}</div>
-        <div class="sub-title">{{ course.subtitle }}</div>
+        <div class="title">一个酒店怎么收入过亿呢</div>
+        <div class="sub-title">客户最重要，没有客户怎么过亿</div>
         <div class="tags">
-          <div class="item" v-for="t in course.tag">{{ t }}</div>
+          <div class="item">吹牛逼</div>
+          <div class="item">创业</div>
         </div>
       </div>
     </div>
@@ -18,33 +19,34 @@
       <div class="block teacher">
         <div class="label">主讲人</div>
         <div class="name">
-          <span>{{ course.userName }}</span>
-          {{ course.userName }}
+          <span>胡万祺</span>
+          酒店邦创始人
         </div>
-        <div class="intro" v-if="course.speakerDescribe">
-          <p>{{ course.speakerDescribe }}</p>
+        <div class="intro">
+          <p>一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆</p>
         </div>
         <div class="hr"></div>
       </div>
       <div class="block course-intro">
         <div class="label">课程介绍</div>
-        <div class="intro" :class="{overflow: isIntroOverflow && introOverflow}">
-          {{ course.introduce || '暂无' }}
+        <div class="intro" :class="{overflow: introOverflow}">
+          <p>一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆</p>
+          <p>一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆</p>
         </div>
-        <div class="open" v-if="isIntroOverflow" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
+        <div class="open" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
         <div class="hr"></div>
       </div>
       <div class="block who">
         <div class="label">适宜人群</div>
         <div class="intro">
-          {{ course.crowd || '暂无' }}
+          <p>一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆</p>
         </div>
         <div class="hr"></div>
       </div>
       <div class="block getting">
         <div class="label">你将收获</div>
         <div class="intro">
-          {{ course.gain || '暂无' }}
+          <p>一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆</p>
         </div>
         <div class="hr"></div>
       </div>
@@ -97,7 +99,7 @@
         <div class="hr"></div>
       </div>
       <div class="block back">
-        <div class="box" @click="gotoHome">
+        <div class="box">
           <img src="/static/jiudianbang.png">
           <div class="title">酒店邦成长营</div>
           <div class="desc">发现更多酒店人的必修课</div>
@@ -105,7 +107,7 @@
         </div>
       </div>
     </div>
-    <div class="btns" v-if="!course.purchased">
+    <div class="btns">
       <div class="item free">免费试读</div>
       <div class="item buy">订阅：¥ 199 / 10课时</div>
     </div>
@@ -116,38 +118,19 @@
 import util from '../util/index'
 
 export default {
-  name: 'course',
+  name: 'jdbs',
   props: [],
   data () {
     return {
-      isIntroOverflow: false,
       introOverflow: true,
       error: 'wrong wrong',
-      course: {}
     }
   },
   created() {},
   mounted() {
-    const courseId = util.getParam('cid');
-    util.getCourse(courseId, (json) => {
+    document.title = '酒店邦说';
+    util.getCourse(3, function (json) {
       console.log(json)
-      if (json.code === 0) {
-        const course = json.data;
-        document.title = course.title;
-        this.course = {
-          ...course,
-          tag: ['标签标签111', '标签2']
-        };
-        let rem = document.body.clientWidth / 10;
-        rem = rem > 75 ? 75 : rem;
-        let fontSize = rem * 0.4;
-        const length = util.textLength(this.course.introduce, fontSize);
-        if (length > 9.2 * rem * 2) {
-          this.isIntroOverflow = true;
-        }
-      } else {
-        console.warn('获取课程信息失败！')
-      }
     })
   },
   methods: {
@@ -159,10 +142,9 @@ export default {
     },
     gotoLesson: function (lessonId) {
       const cid = util.getParam('cid');
+      console.log(util);
+      console.log(cid);
       location.href = '/?cid=' + cid + '&lid=' + lessonId + '#/lesson';
-    },
-    gotoHome: function () {
-      location.href = '/#/';
     }
   },
   destroyed() {},
@@ -174,7 +156,7 @@ export default {
 <style lang="less">
   @import '../variable.less';
 
-  .course-container {
+  .jdbs-container {
     width: 100%;
     padding: 0 0 1.26666rem 0;
     background: white;
@@ -307,7 +289,7 @@ export default {
                 display: inline-block;
                 border: @red solid thin;
                 color: @red;
-                font-size: 0.26666rem;
+                font-size: 0.2rem;
                 height: 0.6rem;
                 line-height: 0.6rem;
                 border-radius: 4px;

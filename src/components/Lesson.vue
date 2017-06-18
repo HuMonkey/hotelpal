@@ -98,7 +98,7 @@
                       <div class="icon"></div>
                       111
                     </div>
-                    <div class="comments">
+                    <div class="comments" @click="gotoReply(1)">
                       回复
                     </div>
                   </div>
@@ -247,16 +247,16 @@
             </div>
           </div>
       </div>
-      <div class="comment-box">
+      <div class="comment-box" v-if="!commenting">
         <div class="pen"></div>
-        <input type="text" name="comment" placeholder="输入你的评论">
-        <div class="btn">发送</div>
+        <input type="text" name="comment" placeholder="输入你的评论" @click="gotoComment">
+        <!-- <div class="btn">发送</div> -->
       </div>
-      <div class="reply-box" v-if="false">
+      <div class="reply-box" v-if="replyId !== null || commenting">
         <div class="cover"></div>
         <div class="box">
           <div class="btns">
-            <div class="cancel">取消</div>
+            <div class="cancel" @click="cancelReply">取消</div>
             <div class="confirm">发布</div>
           </div>
           <textarea placeholder="一起来参与讨论吧！"></textarea>
@@ -297,6 +297,8 @@ export default {
       swiperWidth: 0,
       commentId: 1,
       comments: [1],
+      commenting: false,
+      replyId: null
     }
   },
   created() {},
@@ -304,6 +306,11 @@ export default {
     this.songs = ['/static/test.mp3'];
     const lessonsNum = 4;
     this.swiperWidth = (lessonsNum * 300 + (lessonsNum - 1) * 20) / 75;
+
+    // const courseId = util.getParam('cid');
+    // const lessonId = util.getParam('lid');
+    // util.getCourseList()
+
   },
   methods: {
     addCurrentTime() {
@@ -313,6 +320,16 @@ export default {
     minusCurrentTime() {
       const currentTime = this.audio.currentTime;
       this.audio.currentTime = currentTime - 15;
+    },
+    gotoComment() {
+      this.commenting = true;
+    },
+    gotoReply(id) {
+      this.replyId = id;
+    },
+    cancelReply() {
+      this.replyId = null;
+      this.commenting = false;
     }
   },
   destroyed() {},
@@ -602,6 +619,7 @@ export default {
         display: flex;
         justify-content: space-between;
         padding: 0.2rem 0.4rem;
+        z-index: 101;
         ::-webkit-input-placeholder { /* WebKit browsers */ 
           color: #cccccc; 
         } 
@@ -636,19 +654,10 @@ export default {
           height: 0.93333rem;
           border-radius: 4px;
           border: #cccccc solid thin;
-          width: 7.6rem;
+          width: 9.2rem;
           padding: 0 0.26666rem 0 0.93333rem;
           font-size: 0.4rem;
-        }
-        .btn {
-          width: 1.3333rem;
-          height: 0.93333rem;
-          font-size: 0.4rem;
-          background: @red;
-          color: white;
-          text-align: center;
-          line-height: 0.93333rem;
-          border-radius: 4px;
+          -webkit-appearance: none;
         }
       }
       .reply-box {

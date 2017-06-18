@@ -12,17 +12,18 @@
         <input type="number" name="phone" placeholder="请输入11位手机号" v-model="phone">
       </div>
       <div class="verify">
-        <input type="number" name="verify" placeholder="请输入验证码">
+        <input type="number" name="verify" placeholder="请输入验证码" v-model="code">
         <div class="btn" :class="{disabled: disabled}" @click="getVerifyCode">{{ btnText }}</div>
       </div>
-      <div class="login">登录</div>
+      <div class="login" @click="verifyPhone">登录</div>
       <div class="tips">点击 [登录] 代表您已阅读并同意《酒店邦成长营会员条款》</div>
     </div>
     <div class="step second" v-if="step === 2">
       <div class="welcome">欢迎加入酒店营成长邦！</div>
       <div class="avater">
-        <img src="/static/header.png">
+        <img src="/static/header.png" @click="changeHeader">
       </div>
+      <input class="avater-upload" type="file" @change="uploadAvater"></input>
       <div class="wechat-name">李坚</div>
       <div class="row name">
         <div class="label">姓名</div>
@@ -56,40 +57,74 @@ export default {
       btnText: '获取验证码',
       disabled: false,
 
-      phone: ''
+      phone: '',
+      code: '',
     }
   },
   created() {},
   mounted() {
-    
+    document.title = '登录';
   },
   methods: {
-    closeErrorTips: function() {
+    closeErrorTips: function () {
       this.error = null;
     },
-    getVerifyCode: function() {
+    getVerifyCode: function () {
       if (this.disabled) {
         return false;
       }
-      // TODO
       if (!isMobilePhone(this.phone, 'zh-CN')) {
-        alert('请填写手机号码！');
-        return false;
+        this.setError('请填写手机号码！');
       }
-      util.sendCaptcha(this.phone, function (json) {
-        console.log(json);
-        this.disabled = true;
-        let time = 60;
-        this.btnText = time + '秒后获取';
-        let inter = setInterval(() => {
-          time--;
-          this.btnText = time === 0 ? '重新获取' : time + '秒后获取';
-          if (time === 0) {
-            clearInterval(inter);
-            this.disabled = false;
-          }
-        }, 1000);
+      this.disabled = true;
+      let time = 60;
+      this.btnText = time + '秒后获取';
+      let inter = setInterval(() => {
+        time--;
+        this.btnText = time === 0 ? '重新获取' : time + '秒后获取';
+        if (time === 0) {
+          clearInterval(inter);
+          this.disabled = false;
+        }
+      }, 1000);
+      util.sendCaptcha(this.phone, (json) => {
+        if (json.code === 0) {
+          // TODO
+          // util.setCookie('isLogin', '1', '12d');
+        } else {
+          this.setError('获取失败，请重试');
+        }
       })
+    },
+    verifyPhone: function () {
+      if (!isMobilePhone(this.phone, 'zh-CN')) {
+        this.setError('请填写手机号码！');
+      }
+      if (!this.code) {
+        this.setError('请填写验证码！');
+      }
+      util.verifyPhone(this.phone, this.code, (json) => {
+        console.log(json);
+        if (json.code === 0) {
+          util.setCookie('isLogin', '1', '12d');
+          location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
+        } else {
+          this.setError('验证失败，请重试');
+        }
+      })
+    },
+    changeHeader: function () {
+      document.querySelector('.avater-upload').click();
+    },
+    uploadAvater: function (ev) {
+      console.log(ev)
+    },
+    setError: function (text) {
+      this.error = text;
+      setTimeout(() => {
+        this.error = null;
+      }, 4000);
+      return false;
     }
   },
   destroyed() {},
@@ -160,6 +195,7 @@ export default {
           width: 7.86666rem;
           margin: auto;
           color: #999999;
+          -webkit-appearance: none;
         }
         .btn {
           color: @red;
@@ -200,6 +236,9 @@ export default {
       background: white;
       padding-top: 0.53333rem;
       color: #cccccc;
+      .avater-upload {
+        display: none;
+      }
       .welcome {
         height: 0.48rem;
         font-size: 0.48rem;
@@ -250,6 +289,7 @@ export default {
           width: 100%;
           margin: auto;
           color: #cccccc;
+          -webkit-appearance: none;
         }
       }
       .confirm {

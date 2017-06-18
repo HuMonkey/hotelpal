@@ -3,7 +3,7 @@
     <div class="nothing" v-if="courses.length === 0">
       <div class="shopping-car"></div>
       <p>你还没有购买课程</p>
-      <div class="buy">
+      <div class="buy" @click="gotoHome">
         <div class="magnifier"></div>
         发现课程
       </div>
@@ -25,79 +25,40 @@
           <div class="time">05-20更新 | 已发布 11/12</div>
         </div>
       </div>
-      <div class="item">
-        <div class="img"><img src="/static/banner_1.jpg"></div>
-        <div class="main">
-          <div class="title">标题标题标题标题标题标题标题标题</div>
-          <div class="tips">已听完</div>
-          <div class="time">05-20更新 | 已发布 11/12</div>
-        </div>
-      </div>
-      <div class="item">
-        <div class="img"><img src="/static/banner_1.jpg"></div>
-        <div class="main">
-          <div class="title">标题标题标题标题标题标题标题标题</div>
-          <div class="tips">已听完</div>
-          <div class="time">05-20更新 | 已发布 11/12</div>
-        </div>
-      </div>
-      <div class="item">
-        <div class="img"><img src="/static/banner_1.jpg"></div>
-        <div class="main">
-          <div class="title">标题标题标题标题标题标题标题标题</div>
-          <div class="tips">已听完</div>
-          <div class="time">05-20更新 | 已发布 11/12</div>
-        </div>
-      </div>
-      <div class="item">
-        <div class="img"><img src="/static/banner_1.jpg"></div>
-        <div class="main">
-          <div class="title">标题标题标题标题标题标题标题标题</div>
-          <div class="tips">已听完</div>
-          <div class="time">05-20更新 | 已发布 11/12</div>
-        </div>
-      </div>
-      <div class="item">
-        <div class="img"><img src="/static/banner_1.jpg"></div>
-        <div class="main">
-          <div class="title">标题标题标题标题标题标题标题标题</div>
-          <div class="tips">已听完</div>
-          <div class="time">05-20更新 | 已发布 11/12</div>
-        </div>
-      </div>
-      <div class="item">
-        <div class="img"><img src="/static/banner_1.jpg"></div>
-        <div class="main">
-          <div class="title">标题标题标题标题标题标题标题标题</div>
-          <div class="tips">已听完</div>
-          <div class="time">05-20更新 | 已发布 11/12</div>
-        </div>
-      </div>
     </div>
+    <Bottomer :tag="2"></Bottomer>
   </div>
 </template>
 
 <script>
 import util from '../util/index'
+import Bottomer from './Bottomer.vue'
 
 export default {
   name: 'bought',
   props: [],
   data () {
     return {
-      courses: [1]
+      courses: []
     }
   },
   created() {},
   mounted() {
-    document.title = '已购课程'
+    document.title = '已购课程';
+    util.getPaidCourseList((json) => {
+      console.log(json)
+    })
   },
   methods: {
-    
+    gotoHome: function () {
+      location.href = '/#/';
+    }
   },
   destroyed() {},
   watch: {},
-  components: {}
+  components: {
+    Bottomer
+  }
 }
 </script>
 
@@ -153,6 +114,7 @@ export default {
       background: #f5f5f5;
       width: 100%;
       padding: 0.53333rem 0.4rem;
+      margin-bottom: 1.6rem;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
