@@ -4,15 +4,17 @@ const api = {
   getCourse: '/hotelpal/course/getCourse',
   getCourseList: '/hotelpal/course/getCourseList',
   
+  getSign: '/hotelpal/user/getSign',
   sendCaptcha: '/hotelpal/user/sendCaptcha',
   verifyPhone: '/hotelpal/user/verifyPhone',
   getPaidCourseList: '/hotelpal/user/getPaidCourseList',
   getUserInfo: '/hotelpal/user/getUserInfo',
   getUserStatistics: '/hotelpal/user/getUserStatistics',
   getPaidCourseList: '/hotelpal/user/getPaidCourseList',
+  createPayOrder: '/hotelpal/user/createPayOrder',
 
-  getLessonProp: '/hotelpal/lesson/getLessonProp',
-  getLessonContent: '/hotelpal/lesson/getLessonContent',
+  getLesson: '/hotelpal/lesson/getLesson',
+
 };
 
 const util = {};
@@ -47,14 +49,15 @@ util.ua = {
  */
 // http://116.62.247.1:8080/hotelpal/course/getcourse?courseId=2
 util.config = {
-  host: 'http://192.168.0.14:8082',
-  wechat: {
-    appid: 'wx8ecfbf8357e25e45', // live.xinhuaapp.com
-  },
-  weibo: {
-    appid: '847545354', // live.xinhuaapp.com
-    redirect: 'http://live.xinhuaapp.com',
-  }
+  host: 'http://116.62.247.1:8080', // 测试
+  // host: 'http://hotelpal.cn', // 线上
+  // wechat: {
+  //   appid: 'wx8ecfbf8357e25e45', // live.xinhuaapp.com
+  // },
+  // weibo: {
+  //   appid: '847545354', // live.xinhuaapp.com
+  //   redirect: 'http://live.xinhuaapp.com',
+  // }
 }
 
 /**
@@ -74,6 +77,18 @@ util.getCourseList = function (callback) {
  */
 util.getCourse = function (id, callback) {
   fetch(util.config.host + api.getCourse + '?courseId=' + id)
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取微信签名
+ */
+util.getSign = function (url, callback) {
+  fetch(util.config.host + api.getSign + '?url=' + url)
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -142,22 +157,10 @@ util.getUserStatistics = function (callback) {
 }
 
 /**
- * 获取课时属性
- */
-util.getLessonProp = function (lessonId, callback) {
-  fetch(util.config.host + api.getLessonProp + '?lessonId=' + lessonId)
-    .then(function(response) {
-      return response.json()
-    }).then(callback).catch(function(ex) {
-      console.log('parsing failed', ex)
-    })
-}
-
-/**
  * 获取课时信息
  */
-util.getLessonContent = function (lessonId, callback) {
-  fetch(util.config.host + api.getLessonContent + '?lessonId=' + lessonId)
+util.getLesson = function (lessonId, callback) {
+  fetch(util.config.host + api.getLesson + '?lessonId=' + lessonId)
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -170,6 +173,18 @@ util.getLessonContent = function (lessonId, callback) {
  */
 util.getPaidCourseList = function (callback) {
   fetch(util.config.host + api.getPaidCourseList)
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 创建微信支付订单
+ */
+util.createPayOrder = function (cid, callback) {
+  fetch(util.config.host + api.createPayOrder + '?courseId=' + cid)
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -337,6 +352,38 @@ util.textLength = function(para, fontSize) {
     }
   }
   return length;
+}
+
+/**
+ * 为了使用微信分享功能，需要在微信中使用 `wx.config` 来进行签名
+ * 如果 URL 发生变动，则需要重新签名
+ */
+util.configWechat = function(appId, timestamp, nonceStr, signature, callback) {
+  try {
+    if (!util.ua.wechat) {
+      return;
+    }
+    wx.config({
+      appId, timestamp, nonceStr, signature,
+      jsApiList: [
+        'onMenuShareTimeline',
+        'onMenuShareAppMessage',
+        'chooseImage',
+        'previewImage'
+      ]
+    });
+    wx.ready(callback)
+  } catch (e) {
+    alert(e);
+  }
+  
+}
+
+/**
+ * 数字前面补0
+ */
+util.formatNum = function (num) {
+  return num > 9 ? num : '0' + num;
 }
 
 export default util;

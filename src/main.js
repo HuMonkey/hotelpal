@@ -8,8 +8,18 @@ import util from './util'
 
 Vue.config.productionTip = false
 
+Vue.directive('focus', {
+  inserted: function(el) {
+    el.focus()
+  }
+})
+
 if (util.ua.wechat) {
-	alert('wechat sdk planted!')
+	try {
+    // document.domain = 'hotelpal.cn';
+  } catch (err) {
+  	alert(err)
+  }
   var el = document.createElement('script');
   el.setAttribute('src', 'https://res.wx.qq.com/open/js/jweixin-1.0.0.js');
   document.body.appendChild(el);

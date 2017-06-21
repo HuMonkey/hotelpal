@@ -7,6 +7,7 @@ import Course from '@/components/Course'
 import Bought from '@/components/Bought'
 import Profile from '@/components/Profile'
 import Jdbs from '@/components/Jdbs'
+import Hongbao from '@/components/Hongbao'
 
 Vue.use(Router)
 
@@ -46,6 +47,11 @@ export default new Router({
       path: '/jdbs',
       name: 'Jdbs',
       component: Jdbs
+    },
+    {
+      path: '/hongbao',
+      name: 'Hongbao',
+      component: Hongbao
     }
   ]
 })

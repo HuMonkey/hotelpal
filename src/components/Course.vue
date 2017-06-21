@@ -19,10 +19,10 @@
         <div class="label">主讲人</div>
         <div class="name">
           <span>{{ course.userName }}</span>
-          {{ course.userName }}
+          {{ course.userTitle }}
         </div>
         <div class="intro" v-if="course.speakerDescribe">
-          <p>{{ course.speakerDescribe }}</p>
+          <p>{{ course.speakerDescribe || '暂无介绍' }}</p>
         </div>
         <div class="hr"></div>
       </div>
@@ -51,47 +51,24 @@
       <div class="block lessons">
         <div class="label">课时</div>
         <div class="list">
-          <div class="item" :class="{future: false}" @click="gotoLesson(1)">
+          <div class="item" :class="{future: false}" @click="gotoLesson(l.id)" v-for="(l, index) in course.lessonList">
             <div class="up">
-              <span>01</span> | 收入增加的5个秘密
-              <span class="tag" v-if="true">免费试听</span>
-            </div> 
-            <div class="down">
-              <p v-if="true">
-                <span>04-07</span>
-                <span>5.2MB</span>
-                <span>12:23</span>
-                <span class="over" v-if="false">已播完</span>
-                <span class="ing" v-if="true">已播80%</span>
-              </p>
-              <p v-if="false">
-                尚未发布
-              </p>
-            </div>
-            <div class="arrow">
-
-            </div>
-          </div>
-          <div class="item" :class="{future: true}" @click="gotoLesson(1)">
-            <div class="up">
-              <span>02</span> | 收入增加的5个秘密
+              <span>{{ l.lessonNo }}</span> | {{ l.title }}
               <span class="tag" v-if="false">免费试听</span>
             </div> 
             <div class="down">
-              <p v-if="false">
-                <span>04-07</span>
-                <span>5.2MB</span>
-                <span>12:23</span>
-                <span class="over" v-if="false">已播完</span>
-                <span class="ing" v-if="true">已播80%</span>
-              </p>
               <p v-if="true">
+                <span>{{ l.publishTime }}</span>
+                <span>{{ l.resourceSize || '10.23MB' }}</span>
+                <span>{{ l.lenStr }}</span>
+                <span class="over" v-if="false">已播完</span>
+                <span class="ing" v-if="false">已播80%</span>
+              </p>
+              <p v-if="false">
                 尚未发布
               </p>
             </div>
-            <div class="arrow" v-if="false">
-
-            </div>
+            <div class="arrow"></div>
           </div>
         </div>
         <div class="hr"></div>
@@ -107,13 +84,16 @@
     </div>
     <div class="btns" v-if="!course.purchased">
       <div class="item free">免费试读</div>
-      <div class="item buy">订阅：¥ 199 / 10课时</div>
+      <div class="item buy" @click="gotoPay">订阅：¥ 199 / 10课时</div>
     </div>
   </div>
 </template>
 
 <script>
-import util from '../util/index'
+import util from '../util/index';
+import moment from 'moment';
+
+console.log(moment)
 
 export default {
   name: 'course',
@@ -130,13 +110,24 @@ export default {
   mounted() {
     const courseId = util.getParam('cid');
     util.getCourse(courseId, (json) => {
-      console.log(json)
       if (json.code === 0) {
         const course = json.data;
         document.title = course.title;
         this.course = {
           ...course,
-          tag: ['标签标签111', '标签2']
+          tag: ['标签标签111', '标签2'],
+          lessonList: course.lessonList.map((d, i) => {
+            let publishTime = '';
+            let lenStr = '';
+            if (d.isPublish === 1) {
+              publishTime = moment(d.publishTime).format('MM-DD');
+              lenStr = moment(d.audioLen * 1000).format('mm:ss');
+            }
+            return {
+              ...d,
+              publishTime, lenStr
+            }
+          })
         };
         let rem = document.body.clientWidth / 10;
         rem = rem > 75 ? 75 : rem;
@@ -163,6 +154,28 @@ export default {
     },
     gotoHome: function () {
       location.href = '/#/';
+    },
+    gotoPay: function () {
+      const cid = util.getParam('cid');
+      util.createPayOrder(cid, (json) => {
+        if (json.code === 0) {
+          const { appId, nonceStr, paySign, timeStamp } = json.data;
+          wx.chooseWXPay({
+            timestamp: timeStamp,
+            appId: appId,
+            nonceStr: nonceStr, // 支付签名随机串，不长于 32 位
+            package: json.data.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
+            signType: 'MD5', // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
+            paySign: paySign, // 支付签名
+            success: function (res) {
+              // 支付成功后的回调函数
+            }
+          });
+        } else {
+          console.warn('支付出现了点问题')
+        }
+        
+      })
     }
   },
   destroyed() {},

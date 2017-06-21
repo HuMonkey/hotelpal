@@ -1,17 +1,17 @@
-<template>
+l.id<template>
   <div class="lesson-container">
     <div class="paid" v-if="true">
       <div class="player">
         <audio-player v-if="songs.length !== 0" :sources="songs" :loop="false"></audio-player>
       </div>
       <div class="main">
-        <div class="course-title">01 | 收入增加的5个秘密收入增加的5个秘密</div>
+        <div class="course-title">{{ lesson.lessonNo }} | {{ lesson.title }}</div>
         <div class="infos">
-          <div class="time">2017-05-08发布</div>
+          <div class="time">{{ lesson.publishTimeStr }}发布</div>
           <div class="other">
-            <span><div class="icon time"></div>12:23</span>
-            <span><div class="icon download"></div>6.43MB</span>
-            <span><div class="icon read"></div>113</span>
+            <span><div class="icon time"></div>{{ lesson.lenStr }}</span>
+            <span><div class="icon download"></div>{{ lesson.resourceSize }}</span>
+            <span><div class="icon read"></div>{{ lesson.commentCount }}</span>
           </div>
         </div>
         <div class="content">
@@ -26,44 +26,26 @@
               <li>知识点3</li>
             </ul>
           </div>
-          <div class="article">
-            <p>一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆</p>
-            <img src="/static/banner_1.jpg">
-            <p>一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆</p>
-            <p>一大堆一大堆一大堆一大大堆一大堆一大堆一大堆一大堆一大堆一堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆</p>
+          <div class="article" :class="{overflow: isIntroOverflow && introOverflow}">
+            {{ lesson.content }}
           </div>
-          <div class="open">查看完整介绍</div>
+          <div class="open" v-if="isIntroOverflow" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
           <div class="hr"></div>
           <div class="course">
             <div class="back">
-              <div class="box">
-                <img src="/static/header.png">
-                <div class="title">酒店邦成长营</div>
-                <div class="desc">发现更多酒店人的必修课</div>
+              <div class="box" @click="gotoCourse">
+                <img :src="course.headImg">
+                <div class="title">{{ course.title }}</div>
+                <div class="desc">{{course.userName}} · {{ course.userTitle }}</div>
                 <div class="arrow"></div>
               </div>
             </div>
             <div class="hr"></div>
             <div class="lessons">
               <div class="swiper" :style="{width: swiperWidth + 'rem'}">
-                <div class="item">
+                <div class="item" :class="{current: l.id === lesson.id}" v-for="l in course.lessonList" @click="gotoLesson(l.id)">
                   <div class="inner">
-                    01 | 收入增加的5个秘密收入增加的5个秘密收入增加的5个秘密收入增加的5个秘密
-                  </div>
-                </div>
-                <div class="item">
-                  <div class="inner">
-                    01 | 收入增加的5个秘密收入增加的5个秘密收入增加的5个秘密收入增加的5个秘密
-                  </div>
-                </div>
-                <div class="item">
-                  <div class="inner">
-                    01 | 收入增加的5个秘密收入增加的5个秘密收入增加的5个秘密收入增加的5个秘密
-                  </div>
-                </div>
-                <div class="item">
-                  <div class="inner">
-                    01 | 收入增加的5个秘密收入增加的5个秘密收入增加的5个秘密收入增加的5个秘密
+                    {{ l.lessonNo }} | {{ l.title }}
                   </div>
                 </div>
               </div>
@@ -259,7 +241,7 @@
             <div class="cancel" @click="cancelReply">取消</div>
             <div class="confirm">发布</div>
           </div>
-          <textarea placeholder="一起来参与讨论吧！"></textarea>
+          <textarea v-focus="focusStatus" placeholder="一起来参与讨论吧！"></textarea>
         </div>
       </div>
     </div>
@@ -285,7 +267,11 @@
 </template>
 
 <script>
+import moment from 'moment';
+
+import util from '../util/index'
 import AudioPlayer from './AudioPlayer.vue'
+
 export default {
   name: 'lesson',
   props: [],
@@ -298,42 +284,107 @@ export default {
       commentId: 1,
       comments: [1],
       commenting: false,
-      replyId: null
+      replyId: null,
+
+      lesson: {},
+      course: {},
+
+      focusStatus: false,
+      interval: null,
+
+      isIntroOverflow: false,
+      introOverflow: true,
     }
   },
   created() {},
   mounted() {
     this.songs = ['/static/test.mp3'];
-    const lessonsNum = 4;
-    this.swiperWidth = (lessonsNum * 300 + (lessonsNum - 1) * 20) / 75;
 
-    // const courseId = util.getParam('cid');
-    // const lessonId = util.getParam('lid');
-    // util.getCourseList()
-
+    const lid = util.getParam('lid');
+    const cid = util.getParam('cid');
+    util.getLesson(lid, (json) => {
+      if (json.code === 0) {
+        document.title = json.data.title;
+        const publishTimeStr = json.data.publishTime && json.data.publishTime.split(' ')[0];
+        this.lesson = {
+          ...json.data,
+          publishTimeStr,
+          lenStr: moment(json.data.audioLen * 1000).format('mm:ss')
+        };
+        let rem = document.body.clientWidth / 10;
+        rem = rem > 75 ? 75 : rem;
+        let fontSize = rem * 0.4;
+        this.lesson.content = '什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么'
+        const length = util.textLength(this.lesson.content, fontSize);
+        if (length > 9.2 * rem * 2) {
+          this.isIntroOverflow = true;
+        }
+      } else {
+        console.warn('获取课时失败！')
+      }
+    });
+    util.getCourse(cid, (json) => {
+      if (json.code === 0) {
+        this.course = json.data;
+        const lessonList = this.course.lessonList;
+        const lessonsNum = lessonList.length;
+        this.swiperWidth = (lessonsNum * 300 + (lessonsNum - 1) * 20) / 75;
+        const former = lessonList.indexOf(lessonList.find((d) => d.id == lid));
+        const offsetLeft = (former * 320) / 75 * (document.body.clientWidth / 10);
+        setTimeout(function () {
+          document.querySelector('.lessons').scrollLeft = offsetLeft;
+        }, 500)
+      } else {
+        console.warn('获取课程信息失败！')
+      }
+    })
   },
   methods: {
-    addCurrentTime() {
+    switchOverflow: function() {
+      this.introOverflow = !this.introOverflow;
+    },
+    addCurrentTime () {
       const currentTime = this.audio.currentTime;
       this.audio.currentTime = currentTime + 15;
     },
-    minusCurrentTime() {
+    minusCurrentTime () {
       const currentTime = this.audio.currentTime;
       this.audio.currentTime = currentTime - 15;
     },
-    gotoComment() {
+    gotoComment () {
       this.commenting = true;
+      this.focusStatus = true;
     },
-    gotoReply(id) {
+    gotoReply (id) {
       this.replyId = id;
+      this.focusStatus = true;
     },
-    cancelReply() {
+    cancelReply () {
       this.replyId = null;
       this.commenting = false;
+      this.focusStatus = false;
+    },
+    gotoLesson (lid) {
+      const cid = util.getParam('cid');
+      location.href = '/?cid=' + cid + '&lid=' + lid + '#/lesson';
+    },
+    gotoCourse () {
+      const cid = util.getParam('cid');
+      location.href = '/?cid=' + cid + '#/course';
     }
   },
   destroyed() {},
-  watch: {},
+  watch: {
+    focusStatus() {
+      if (this.focusStatus) {
+        this.interval = setInterval(function() {
+          document.body.scrollTop = document.body.scrollHeight
+        }, 100) 
+      } else {
+        clearInterval(this.interval);
+      }
+    }
+  },
   components: {
     AudioPlayer
   }
@@ -432,6 +483,14 @@ export default {
               margin-top: 1rem;
             }
           }
+          .article.overflow {
+            overflow: hidden;
+            height: 1.44rem;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+          }
           .open {
             margin-bottom: 0.4rem;
             margin-top: 0.4rem;
@@ -459,12 +518,12 @@ export default {
                   float: left;
                 }
                 .title {
-                  margin-left: 1.43333rem;
+                  margin-left: 1.63333rem;
                   font-size: 0.4rem;
                   color: #666666;
                 }
                 .desc {
-                  margin-left: 1.43333rem;
+                  margin-left: 1.63333rem;
                   font-size: 0.32rem;
                   color: #999999;
                 }
@@ -507,6 +566,9 @@ export default {
                     -webkit-line-clamp: 2;
                     -webkit-box-orient: vertical;
                   }
+                }
+                .item.current {
+                  background: #f0944a;
                 }
               }
             }

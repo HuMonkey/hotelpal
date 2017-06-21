@@ -57,7 +57,7 @@
       }
     },
     mounted() {
-      console.log(this)
+
     },
     methods: {
       setGoOn() {

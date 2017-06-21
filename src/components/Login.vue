@@ -104,7 +104,6 @@ export default {
         this.setError('请填写验证码！');
       }
       util.verifyPhone(this.phone, this.code, (json) => {
-        console.log(json);
         if (json.code === 0) {
           util.setCookie('isLogin', '1', '12d');
           location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
