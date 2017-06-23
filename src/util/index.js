@@ -375,8 +375,19 @@ util.configWechat = function(appId, timestamp, nonceStr, signature, callback) {
     wx.ready(callback)
   } catch (e) {
     alert(e);
+  } 
+}
+
+/**
+ * 检查是否登录
+ */
+util.checkLogin = function () {
+  const isLogin = util.getCookie('isLogin');
+  if (isLogin == '1') {
+    return false;
   }
-  
+  const redirect = encodeURIComponent('/' + location.search + location.hash);
+  location.href = '/?redirect=' + redirect + '#/login';
 }
 
 /**

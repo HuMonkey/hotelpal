@@ -164,6 +164,7 @@
         width: 7.5rem;
         display: flex;
         justify-content: space-between; 
+        align-items: center;
         .current, .left {
           height: 0.4rem;
           line-height: 0.4rem;
@@ -203,9 +204,7 @@
         background-image: url('/static/goon-grey.svg');
         background-size: 1.4rem 0.63rem;
         text-align: center;
-        line-height: 0.50rem;
         transform: scale(0.8);
-        margin-top: 0.1rem;
       }
       .go-on.clicked {
         color: @red;

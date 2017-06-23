@@ -22,7 +22,6 @@ export default {
       setTimeout(function () {
         util.getSign(document.URL.split('#')[0], function (json) {
           if (json.code === 0) {
-            console.log(1);
             const { appid, noncestr, sign, timeStamp } = json.data;
             util.configWechat(appid, timeStamp, noncestr, sign, function () {
               console.log('wechat ready!')

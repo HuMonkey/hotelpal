@@ -19,28 +19,7 @@
         <div class="item">
           <div class="name">
             <div class="arrow"></div>
-            怎么在工作中快速学习、获得晋升？
-          </div>
-          <div class="time">昨天</div>
-        </div>
-        <div class="item">
-          <div class="name">
-            <div class="arrow"></div>
-            怎么在工作中快速学习、获得晋升？
-          </div>
-          <div class="time">昨天</div>
-        </div>
-        <div class="item">
-          <div class="name">
-            <div class="arrow"></div>
-            怎么在工作中快速学习、获得晋升？
-          </div>
-          <div class="time">昨天</div>
-        </div>
-        <div class="item">
-          <div class="name">
-            <div class="arrow"></div>
-            怎么在工作中快速学习、获得晋升？
+            <span>怎么在工作中快速学习、获得晋升？</span>
           </div>
           <div class="time">昨天</div>
         </div>
@@ -226,10 +205,13 @@ export default {
           .name {
             .arrow {
               display: inline-block;
-              border: 0.16rem solid #ffffff;
+              border: 0.12rem solid #ffffff;
               border-left-color: #666666;
               width: 0;
               height: 0;
+            }
+            span {
+              margin-left: -0.1rem;
             }
           }
           .time {
@@ -259,16 +241,19 @@ export default {
             width: 2rem;
             height: 2.6666rem;
             position: relative;
+            border-radius: 10px;
+            overflow: hidden;
             .state {
-              width: 0.72rem;
+              width: 0.82rem;
               height: 0.426666rem;
               border-radius: 4px;
+              padding-left: 0.1rem;
               text-align: center;
               line-height: 0.426666rem;
               color: white;
               position: absolute;
               top: 10px;
-              left: 0;
+              left: -0.1rem;
               font-size: 0.26666rem;
             }
             .state.isnew {
@@ -286,12 +271,12 @@ export default {
             width: 6.8rem;
             height: 2.6666rem;
             padding: 0.13333rem 0;
+            line-height: 1;
             .name {
               width: 100%;
               font-size: 0.4rem;
               height: 0.4rem;
               color: #333333;
-              font-weight: 600;
             }
             .who {
               margin-top: 0.186666rem;
@@ -299,7 +284,7 @@ export default {
               color: #666666;
             }
             .content {
-              margin-top: 0.26rem;
+              margin-top: 0.48rem;
               font-size: 0.293333rem;
             }
             .row {
@@ -319,7 +304,7 @@ export default {
                   color: #aaaaaa;
                   float: left;
                   white-space: nowrap; 
-                  max-width: 1.9rem;
+                  max-width: 2rem;
                   margin-right: 0.26666rem;
                   overflow: hidden;
                   text-overflow: ellipsis;
@@ -330,6 +315,7 @@ export default {
                 color: @red;
                 font-size: 0.32rem;
                 text-align: right;
+                line-height: 0.48rem;
               }
             }
           }

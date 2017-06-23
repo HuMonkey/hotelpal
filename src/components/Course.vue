@@ -156,6 +156,7 @@ export default {
       location.href = '/#/';
     },
     gotoPay: function () {
+      util.checkLogin();
       const cid = util.getParam('cid');
       util.createPayOrder(cid, (json) => {
         if (json.code === 0) {
@@ -418,12 +419,12 @@ export default {
         color: #333333;
         font-size: 0.4rem;
         background: white;
-        border: #cccccc solid thin;
+        border-top: #cccccc solid thin;
       }
       .buy {
         color: white;
         background: @red;
-        border: @red solid thin;
+        border-top: @red solid thin;
       }
     }
   }

@@ -65,16 +65,16 @@ export default {
       justify-content: space-between;
       border-top: #cccccc solid thin;
       background: white;
-      padding: 0.16rem 1.253333rem;
+      padding: 0.263333rem 1.253333rem;
       .item {
         height: 1.28rem;
         text-align: center;
         .img {
-          width: 0.783333rem;
-          height: 0.783333rem;
+          width: 0.6rem;
+          height: 0.6rem;
           margin: auto;
           margin-bottom: 0.1rem;
-          background-size: 0.783333rem 0.783333rem;
+          background-size: 0.6rem 0.6rem;
           background-position: center;
         }
       }

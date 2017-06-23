@@ -15,7 +15,7 @@ l.id<template>
           </div>
         </div>
         <div class="content">
-          <div class="summary">
+          <!-- <div class="summary">
             一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆
           </div>
           <div class="points">
@@ -25,7 +25,7 @@ l.id<template>
               <li>知识点2</li>
               <li>知识点3</li>
             </ul>
-          </div>
+          </div> -->
           <div class="article" :class="{overflow: isIntroOverflow && introOverflow}">
             {{ lesson.content }}
           </div>
@@ -76,63 +76,11 @@ l.id<template>
                 <div class="bottom">
                   <div class="time">07-18</div>
                   <div class="box">
-                    <div class="like">
+                    <div class="like" @click="doLike(1)">
                       <div class="icon"></div>
                       111
                     </div>
-                    <div class="comments" @click="gotoReply(1)">
-                      回复
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="item">
-                <div class="avater">
-                  <img src="/static/header.png">
-                </div>
-                <div class="name">
-                  胡万祺  酒店邦<span class="tag">主讲人</span>
-                </div> 
-                <div class="content">
-                  这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论
-                </div>
-                <div class="quote">
-                  这是引用这是引用这是引用这是引用这是引用这是引用这是引用这是引用这是引用
-                </div>
-                <div class="bottom">
-                  <div class="time">07-18</div>
-                  <div class="box">
-                    <div class="like">
-                      <div class="icon"></div>
-                      111
-                    </div>
-                    <div class="comments">
-                      回复
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="item">
-                <div class="avater">
-                  <img src="/static/header.png">
-                </div>
-                <div class="name">
-                  胡万祺  酒店邦<span class="tag">主讲人</span>
-                </div> 
-                <div class="content">
-                  这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论
-                </div>
-                <div class="quote">
-                  这是引用这是引用这是引用这是引用这是引用这是引用这是引用这是引用这是引用
-                </div>
-                <div class="bottom">
-                  <div class="time">07-18</div>
-                  <div class="box">
-                    <div class="like">
-                      <div class="icon"></div>
-                      111
-                    </div>
-                    <div class="comments">
+                    <div class="comments" @click="gotoReply(1, '胡万祺')">
                       回复
                     </div>
                   </div>
@@ -174,58 +122,6 @@ l.id<template>
                   </div>
                 </div>
               </div>
-              <div class="item">
-                <div class="avater">
-                  <img src="/static/header.png">
-                </div>
-                <div class="name">
-                  胡万祺  酒店邦<span class="tag">主讲人</span>
-                </div> 
-                <div class="content">
-                  这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论
-                </div>
-                <div class="quote">
-                  这是引用这是引用这是引用这是引用这是引用这是引用这是引用这是引用这是引用
-                </div>
-                <div class="bottom">
-                  <div class="time">07-18</div>
-                  <div class="box">
-                    <div class="like">
-                      <div class="icon"></div>
-                      111
-                    </div>
-                    <div class="comments">
-                      回复
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="item">
-                <div class="avater">
-                  <img src="/static/header.png">
-                </div>
-                <div class="name">
-                  胡万祺  酒店邦<span class="tag">主讲人</span>
-                </div> 
-                <div class="content">
-                  这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论
-                </div>
-                <div class="quote">
-                  这是引用这是引用这是引用这是引用这是引用这是引用这是引用这是引用这是引用
-                </div>
-                <div class="bottom">
-                  <div class="time">07-18</div>
-                  <div class="box">
-                    <div class="like">
-                      <div class="icon liked"></div>
-                      111
-                    </div>
-                    <div class="comments">
-                      回复
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
       </div>
@@ -235,13 +131,13 @@ l.id<template>
         <!-- <div class="btn">发送</div> -->
       </div>
       <div class="reply-box" v-if="replyId !== null || commenting">
-        <div class="cover"></div>
+        <div class="cover" @click="cancelReply"></div>
         <div class="box">
           <div class="btns">
             <div class="cancel" @click="cancelReply">取消</div>
             <div class="confirm">发布</div>
           </div>
-          <textarea v-focus="focusStatus" placeholder="一起来参与讨论吧！"></textarea>
+          <textarea v-focus="focusStatus" :placeholder="replyId ? `回复${replyName}` : '一起来参与讨论吧！'"></textarea>
         </div>
       </div>
     </div>
@@ -285,6 +181,7 @@ export default {
       comments: [1],
       commenting: false,
       replyId: null,
+      replyName: null,
 
       lesson: {},
       course: {},
@@ -314,7 +211,6 @@ export default {
         let rem = document.body.clientWidth / 10;
         rem = rem > 75 ? 75 : rem;
         let fontSize = rem * 0.4;
-        this.lesson.content = '什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么什么'
         const length = util.textLength(this.lesson.content, fontSize);
         if (length > 9.2 * rem * 2) {
           this.isIntroOverflow = true;
@@ -355,12 +251,14 @@ export default {
       this.commenting = true;
       this.focusStatus = true;
     },
-    gotoReply (id) {
+    gotoReply (id, name) {
       this.replyId = id;
+      this.replyName = name;
       this.focusStatus = true;
     },
     cancelReply () {
       this.replyId = null;
+      this.replyName = null;
       this.commenting = false;
       this.focusStatus = false;
     },
@@ -371,6 +269,9 @@ export default {
     gotoCourse () {
       const cid = util.getParam('cid');
       location.href = '/?cid=' + cid + '#/course';
+    },
+    doLike (rid) {
+      alert('你点了赞！')
     }
   },
   destroyed() {},
@@ -413,31 +314,32 @@ export default {
         background: white;
         padding: 1.3333rem 0.4rem 0 0.4rem;
         .course-title {
-          font-size: 0.64rem;
+          font-size: 0.66666rem;
           color: #333333;
           padding-bottom: 1.3333rem;
         }
         .infos {
-          font-size: 0.293333rem;
+          font-size: 0.26666rem;
           color: #999999;
           display: flex;
           justify-content: space-between;
           padding-bottom: 0.4rem;
-          .time {
-
-          }
           .other {
+            display: flex;
             span {
               margin-left: 0.4rem;
+              display: flex;
+              align-items: center;
+              .text {
+                display: inline-block;
+              }
               .icon {
                 width: 0.32rem;
                 height: 0.32rem;
                 background-repeat: no-repeat;
                 background-size: cover;
-                display: inline-block;
                 margin-right: 0.13333rem;
-                position: relative;
-                top: 0.03333rem;
+                display: inline-block;
               }
               .icon.time {
                 background-image: url('/static/time.svg');
@@ -492,17 +394,20 @@ export default {
             -webkit-box-orient: vertical;
           }
           .open {
-            margin-bottom: 0.4rem;
             margin-top: 0.4rem;
             font-size: 0.4rem;
             text-align: center;
             color: @red;
           }
           .hr {
+            margin-top: 0.4rem;
             height: 1px;
             background: #cccccc;
           }
           .course {
+            .hr {
+              margin-top: 0;
+            }
             .back {
               padding: 0.53333rem 0;
               position: relative;
@@ -677,7 +582,7 @@ export default {
         bottom: 0;
         left: 0;
         background: white;
-        border-top: #cccccc solid thin;
+        border-top: #ebebeb solid thin;
         display: flex;
         justify-content: space-between;
         padding: 0.2rem 0.4rem;
@@ -715,7 +620,7 @@ export default {
           display: inline-block;
           height: 0.93333rem;
           border-radius: 4px;
-          border: #cccccc solid thin;
+          border: #ebebeb solid thin;
           width: 9.2rem;
           padding: 0 0.26666rem 0 0.93333rem;
           font-size: 0.4rem;
@@ -760,7 +665,7 @@ export default {
           textarea {
             width: 100%;
             height: 2.8rem;
-            border: #cccccc solid thin;
+            border: #ebebeb solid thin;
             color: #666666;
             font-size: 0.426666rem;
             padding: 0.4rem;

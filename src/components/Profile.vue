@@ -9,7 +9,7 @@
           <img src="/static/header.png">
         </div>
         <div class="name" @click="setMode(4)">
-          胡万祺 <div class="arrow-right"></div>
+          胡万祺<div class="arrow-right"></div>
         </div>
         <div class="record">
           <div class="icon"></div>
@@ -223,9 +223,11 @@ export default {
           text-align: center;
           height: 0.48rem;
           width: 100%;
+          display: flex;
+          align-items: center;
+          text-align: center;
+          justify-content: center;
           .arrow-right {
-            position: relative;
-            top: 0.04rem;
             margin-left: 0.13333rem;
             width: 0.16rem;
             height: 0.346666rem;
@@ -288,8 +290,8 @@ export default {
       }
       .row {
         width: 100%;
-        height: 1.306666rem;
-        line-height: 1.306666rem;
+        height: 1.3rem;
+        line-height: 1.3rem;
         padding: 0 0.4rem 0 1.44rem;
         background: white;
         position: relative;
@@ -303,22 +305,20 @@ export default {
           background-position: center;
           position: absolute;
           left: 0.4rem;
-          top: 0.3333rem;
+          top: 0.33rem;
+          border-radius: 4px;
           vertical-align: middle;
         }
         .shoppingcar {
           background-color: #f0944b;
-          border-radius: 4px;
           background-image: url('/static/shoppingcar.svg');
         }
         .jiudianbang {
           background-size: 0.64rem 0.64rem;
-          border-radius: 4px;
           background-image: url('/static/jiudianbang.png');
         }
         .gongzhonghao {
           background-color: #49ab54;
-          border-radius: 4px;
           background-image: url('/static/public.svg');
         }
         .arrow-right {
