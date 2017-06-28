@@ -6,27 +6,27 @@
       </div>
       <div class="header">
         <div class="avater">
-          <img src="/static/header.png">
+          <img :src="userinfo.headImg">
         </div>
         <div class="name" @click="setMode(4)">
-          胡万祺<div class="arrow-right"></div>
+          {{ userinfo.adminName }}<div class="arrow-right"></div>
         </div>
         <div class="record">
           <div class="icon"></div>
           <span>累计学习</span>
-          500小时40分钟
+          {{ listenedHour }}小时{{ listenedMinute }}分钟
         </div>
         <div class="infos">
           <div class="item">
-            <div class="value">23天</div>
+            <div class="value">{{ age }}天</div>
             <div class="label">加入成长营</div>
           </div>
           <div class="item">
-            <div class="value">4个</div>
+            <div class="value">{{ purchasedCourseCount }}个</div>
             <div class="label">报名课程</div>
           </div>
           <div class="item">
-            <div class="value">23节</div>
+            <div class="value">{{ listenedLessonCount }}节</div>
             <div class="label">学习课时</div>
           </div>
         </div>
@@ -66,36 +66,14 @@
         <span>361926890@qq.com</span>
       </div>
     </div>
-    <div class="page bought-page" v-if="mode === 3">
-      <div class="bought-item">
+    <div class="page bought-page" v-if="mode === 3 && courseList.length > 0">
+      <div class="bought-item" v-for="c in courseList" v-if="c !== null">
         <div class="avater">
-          <img src="/static/logo.png">
+          <img :src="c.bannerImg[0]">
         </div>
         <div class="desc">
           <div class="title">酒店经营法则</div>
-          <div class="orderid">订单号：1111111111</div>
-          <div class="time">购买时间：2017-06-13</div>
-          <div class="price">实付：¥ 199 （优惠：¥ 199）</div>
-        </div>
-      </div>
-      <div class="bought-item">
-        <div class="avater">
-          <img src="/static/logo.png">
-        </div>
-        <div class="desc">
-          <div class="title">酒店经营法则</div>
-          <div class="orderid">订单号：1111111111</div>
-          <div class="time">购买时间：2017-06-13</div>
-          <div class="price">实付：¥ 199 （优惠：¥ 199）</div>
-        </div>
-      </div>
-      <div class="bought-item">
-        <div class="avater">
-          <img src="/static/logo.png">
-        </div>
-        <div class="desc">
-          <div class="title">酒店经营法则</div>
-          <div class="orderid">订单号：1111111111</div>
+          <div class="orderid">订单号：{{ courseSn }}</div>
           <div class="time">购买时间：2017-06-13</div>
           <div class="price">实付：¥ 199 （优惠：¥ 199）</div>
         </div>
@@ -104,21 +82,21 @@
     <div class="page name-page" v-if="mode === 4">
       <!-- <div class="welcome">欢迎加入酒店营成长邦！</div> -->
       <div class="avater">
-        <img src="/static/header.png" @click="changeHeader">
+        <img :src="userinfo.headImg" @click="changeHeader">
       </div>
       <input class="avater-upload" type="file" @change="uploadAvater"></input>
-      <div class="wechat-name">李坚</div>
+      <div class="wechat-name">{{ userinfo.adminName }}</div>
       <div class="row name">
         <div class="label">姓名</div>
-        <input type="text" name="name" placeholder="请输入您的姓名">
+        <input type="text" name="name" placeholder="请输入您的姓名" v-model="userinfo.adminName">
       </div>
       <div class="row company">
         <div class="label">公司</div>
-        <input type="text" name="company" placeholder="请输入您的公司（选填）">
+        <input type="text" name="company" placeholder="请输入您的公司（选填）" v-model="userinfo.company">
       </div>
       <div class="row position">
         <div class="label">职位</div>
-        <input type="text" name="position" placeholder="请输入您的职位（选填）">
+        <input type="text" name="position" placeholder="请输入您的职位（选填）" v-model="userinfo.title">
       </div>
       <div class="confirm" @click="submitChange">确认修改</div>
       <!-- <div class="skip">跳过</div> -->
@@ -137,6 +115,13 @@ export default {
   data () {
     return {
       mode: 1, // 1主页，2aboutus，3购买记录, 4修改资料
+      age: 0,
+      listenedHour: 0,
+      listenedMinute: 0,
+      purchasedCourseCount: 0,
+      listenedLessonCount: 0,
+      userinfo: {},
+      courseList: [],
     }
   },
   created () {
@@ -152,16 +137,19 @@ export default {
   },
   methods: {
     popstate () {
-      const mode = +util.getParam('mode');
-      this.mode = mode || 1;
-      if (mode === 2) {
+      const mode = +util.getParam('mode') || 1;
+      this.mode = mode;
+      if (mode === 1 || mode === 4) {
+        document.title = '我';
+        this.getUser();
+      } else if (mode === 2) {
         document.title = '关于成长营';
         return false;
       } else if (mode === 3) {
         document.title = '购买记录';
+        this.getPaidCourseList();
         return false;
       }
-      document.title = '我';
     },
     setMode(mode) {
       this.mode = mode;
@@ -174,8 +162,37 @@ export default {
     uploadAvater: function (ev) {
       console.log(ev)
     },
-    submitChange: function() {
+    submitChange: function () {
       this.setMode(1)
+    },
+    getUser: function () {
+      util.getUserStatistics((json) => {
+        if (json.code === 0) {
+          this.age = json.data.signedDays;
+          this.listenedHour = parseInt(json.data.listenedTimeInSecond / 60 / 60);
+          this.listenedMinute = parseInt((json.data.listenedTimeInSecond - 60 * 60 * this.listenedHour) / 60);
+          this.purchasedCourseCount = json.data.purchasedCourseCount;
+          this.listenedLessonCount = json.data.listenedLessonCount;
+        } else {
+          console.warn('获取用户统计信息失败')
+        }
+      });
+      util.getUserInfo((json) => {
+        if (json.code === 0) {
+          this.userinfo = json.data;
+        } else {
+          console.warn('获取用户信息失败')
+        }
+      })
+    },
+    getPaidCourseList: function () {
+      util.getPaidCourseList((json) => {
+        if (json.code === 0) {
+          this.courseList = json.data.courseList;
+        } else {
+          console.warn('获取用户信息失败')
+        }
+      })
     }
   },
   destroyed() {},
@@ -212,7 +229,6 @@ export default {
           height: 1.86666rem;
           img {
             height: 1.86666rem;
-            border: solid medium white;
             border-radius: 1.86666rem;
           }
         }
@@ -280,7 +296,7 @@ export default {
             .label {
               font-size: 0.293333rem;
               color: #999999;
-              margin-top: 0.1rem;
+              margin-top: 0.2rem;
             }
           }
           .item:last-child {
@@ -413,10 +429,10 @@ export default {
           width: 2rem;
           height: 2.6666rem;
           position: relative;
-          border-radius: 4px;
           img {
             width: 100%;
             height: 100%;
+            border-radius: 4px;
           }
         }
         .desc {
@@ -436,12 +452,12 @@ export default {
             color: #666666;
           }
           .time {
-            margin-top: 0.35rem;
+            margin-top: 0.6666rem;
             font-size: 0.293333rem;
             color: #999999;
           }
           .price {
-            margin-top: 0.05rem;
+            margin-top: 0.186666rem;
             color: @red;
             font-size: 0.32rem;
           }
@@ -469,8 +485,10 @@ export default {
         width: 100%;
         text-align: center;
         margin-top: 0.6666rem;
+        overflow: hidden;
         img {
           height: 100%;
+          border-radius: 1.92rem;
         }
       }
       .wechat-name {
@@ -506,7 +524,7 @@ export default {
           display: block;
           width: 100%;
           margin: auto;
-          color: #cccccc;
+          color: #666666;
           -webkit-appearance: none;
         }
       }

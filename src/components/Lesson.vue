@@ -2,7 +2,7 @@ l.id<template>
   <div class="lesson-container">
     <div class="paid" v-if="true">
       <div class="player">
-        <audio-player v-if="songs.length !== 0" :sources="songs" :loop="false"></audio-player>
+        <audio-player v-if="songs.length !== 0" :sources="songs" :loop="false" :nextId="nextId" :preId="preId" :songLong="songLong"></audio-player>
       </div>
       <div class="main">
         <div class="course-title">{{ lesson.lessonNo }} | {{ lesson.title }}</div>
@@ -10,8 +10,8 @@ l.id<template>
           <div class="time">{{ lesson.publishTimeStr }}发布</div>
           <div class="other">
             <span><div class="icon time"></div>{{ lesson.lenStr }}</span>
-            <span><div class="icon download"></div>{{ lesson.resourceSize }}</span>
-            <span><div class="icon read"></div>{{ lesson.commentCount }}</span>
+            <span><div class="icon download"></div>{{ lesson.resourceSize || '???MB' }}</span>
+            <span><div class="icon read"></div>{{ lesson.commentCount || 0 }}</span>
           </div>
         </div>
         <div class="content">
@@ -26,8 +26,7 @@ l.id<template>
               <li>知识点3</li>
             </ul>
           </div> -->
-          <div class="article" :class="{overflow: isIntroOverflow && introOverflow}">
-            {{ lesson.content }}
+          <div class="article" :class="{overflow: isIntroOverflow && introOverflow}" v-html="lesson.content">
           </div>
           <div class="open" v-if="isIntroOverflow" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
           <div class="hr"></div>
@@ -54,33 +53,33 @@ l.id<template>
         </div>
       </div>
       <div class="discuss">
-          <div class="good">
+          <div class="good" v-if="lesson.eliteCommentList && lesson.eliteCommentList.commentList.length > 0">
             <div class="title">
               讨论
-              <span>精选（3）</span>
+              <span>精选（{{ lesson.eliteCommentList.commentList.length }}）</span>
             </div>
             <div class="comments">
-              <div class="item">
+              <div class="item" v-for="comment in lesson.eliteCommentList.commentList">
                 <div class="avater">
                   <img src="/static/header.png">
                 </div>
                 <div class="name">
-                  胡万祺  酒店邦<span class="tag">主讲人</span>
+                  {{ comment.userName }}  {{ comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
                 </div> 
                 <div class="content">
-                  这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论
+                  {{ comment.content }}
                 </div>
-                <div class="quote">
-                  这是引用这是引用这是引用这是引用这是引用这是引用这是引用这是引用这是引用
+                <div class="quote" v-for="reply in lesson.eliteCommentList.replyToCommentList" v-if="reply.id === comment.replytoId">
+                  {{ reply.userName + '：' + reply.content }}
                 </div>
                 <div class="bottom">
-                  <div class="time">07-18</div>
+                  <div class="time">{{ formatTime(comment.creationTime) }}</div>
                   <div class="box">
-                    <div class="like" @click="doLike(1)">
-                      <div class="icon"></div>
-                      111
+                    <div class="like" @click="doLike(comment)">
+                      <div class="icon" :class="{ liked: comment.liked }"></div>
+                      {{ comment.zanCount || 0 }}
                     </div>
-                    <div class="comments" @click="gotoReply(1, '胡万祺')">
+                    <div class="comments" @click="gotoReply(comment.id, comment.userName)">
                       回复
                     </div>
                   </div>
@@ -88,35 +87,35 @@ l.id<template>
               </div>
             </div>
           </div>
-          <div class="all">
+          <div class="all" v-if="lesson.commentList">
             <div class="title">
-              <span>全部（3）</span>
+              <span>全部（{{ lesson.commentList.commentList.length }}）</span>
             </div>
-            <div class="no-comment" v-if="comments.length === 0">
+            <div class="no-comment" v-if="lesson.commentList.commentList.length === 0">
               尚无讨论，说说你的看法吧！
             </div>
-            <div class="comments" v-if="comments.length !== 0">
-              <div class="item">
+            <div class="comments" v-if="lesson.commentList.commentList.length > 0">
+              <div class="item" v-for="comment in lesson.commentList.commentList">
                 <div class="avater">
                   <img src="/static/header.png">
                 </div>
                 <div class="name">
-                  胡万祺  酒店邦<span class="tag">主讲人</span>
+                  {{ comment.userName }}  {{ comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
                 </div> 
                 <div class="content">
-                  这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论这是评论
+                  {{ comment.content }}
                 </div>
-                <div class="quote">
-                  这是引用这是引用这是引用这是引用这是引用这是引用这是引用这是引用这是引用
+                <div class="quote" v-for="reply in lesson.commentList.replyToCommentList" v-if="reply.id === comment.replytoId">
+                  {{ reply.userName + '：' + reply.content }}
                 </div>
                 <div class="bottom">
-                  <div class="time">07-18</div>
+                  <div class="time">{{ formatTime(comment.creationTime) }}</div>
                   <div class="box">
-                    <div class="like">
-                      <div class="icon"></div>
-                      111
+                    <div class="like" @click="doLike(comment)">
+                      <div class="icon" :class="{ liked: comment.liked }"></div>
+                      {{ comment.zanCount || 0 }}
                     </div>
-                    <div class="comments">
+                    <div class="comments" @click="gotoReply(comment.id, comment.userName)">
                       回复
                     </div>
                   </div>
@@ -135,9 +134,9 @@ l.id<template>
         <div class="box">
           <div class="btns">
             <div class="cancel" @click="cancelReply">取消</div>
-            <div class="confirm">发布</div>
+            <div class="confirm" @click="submitReply">发布</div>
           </div>
-          <textarea v-focus="focusStatus" :placeholder="replyId ? `回复${replyName}` : '一起来参与讨论吧！'"></textarea>
+          <textarea v-model="myComment" v-focus="focusStatus" :placeholder="replyId ? `回复${replyName}` : '一起来参与讨论吧！'"></textarea>
         </div>
       </div>
     </div>
@@ -175,10 +174,12 @@ export default {
     return {
       selectedTab: 0,
       songs: [],
+      nextId: null,
+      preId: null,
       value: 1,
       swiperWidth: 0,
       commentId: 1,
-      comments: [1],
+      comments: [],
       commenting: false,
       replyId: null,
       replyName: null,
@@ -191,34 +192,17 @@ export default {
 
       isIntroOverflow: false,
       introOverflow: true,
+
+      songLong: '00:00',
+      myComment: ''
     }
   },
   created() {},
   mounted() {
-    this.songs = ['/static/test.mp3'];
-
+    // this.songs = ['/static/test.mp3'];
     const lid = util.getParam('lid');
     const cid = util.getParam('cid');
-    util.getLesson(lid, (json) => {
-      if (json.code === 0) {
-        document.title = json.data.title;
-        const publishTimeStr = json.data.publishTime && json.data.publishTime.split(' ')[0];
-        this.lesson = {
-          ...json.data,
-          publishTimeStr,
-          lenStr: moment(json.data.audioLen * 1000).format('mm:ss')
-        };
-        let rem = document.body.clientWidth / 10;
-        rem = rem > 75 ? 75 : rem;
-        let fontSize = rem * 0.4;
-        const length = util.textLength(this.lesson.content, fontSize);
-        if (length > 9.2 * rem * 2) {
-          this.isIntroOverflow = true;
-        }
-      } else {
-        console.warn('获取课时失败！')
-      }
-    });
+    this.updateLesson();
     util.getCourse(cid, (json) => {
       if (json.code === 0) {
         this.course = json.data;
@@ -226,6 +210,8 @@ export default {
         const lessonsNum = lessonList.length;
         this.swiperWidth = (lessonsNum * 300 + (lessonsNum - 1) * 20) / 75;
         const former = lessonList.indexOf(lessonList.find((d) => d.id == lid));
+        this.nextId = lessonList[former + 1] && lessonList[former + 1].id;
+        this.preId = lessonList[former - 1] && lessonList[former - 1].id;
         const offsetLeft = (former * 320) / 75 * (document.body.clientWidth / 10);
         setTimeout(function () {
           document.querySelector('.lessons').scrollLeft = offsetLeft;
@@ -236,6 +222,34 @@ export default {
     })
   },
   methods: {
+    updateLesson: function () {
+      const lid = util.getParam('lid');
+      const cid = util.getParam('cid');
+      util.getLesson(lid, (json) => {
+        if (json.code === 0) {
+          document.title = json.data.title;
+          this.songs = [json.data.audio];
+          console.log(this.songs);
+          const publishTimeStr = json.data.publishTime && json.data.publishTime.split(' ')[0];
+          this.songLong = moment(json.data.audioLen * 1000).format('mm:ss');
+          const content = json.data.content;
+          this.lesson = {
+            ...json.data,
+            publishTimeStr,
+            lenStr: this.songLong,
+          };
+          let rem = document.body.clientWidth / 10;
+          rem = rem > 75 ? 75 : rem;
+          let fontSize = rem * 0.4;
+          const length = util.textLength(content, fontSize);
+          if (length > 9.2 * rem * 2) {
+            this.isIntroOverflow = true;
+          }
+        } else {
+          console.warn('获取课时失败！')
+        }
+      });
+    },
     switchOverflow: function() {
       this.introOverflow = !this.introOverflow;
     },
@@ -262,6 +276,15 @@ export default {
       this.commenting = false;
       this.focusStatus = false;
     },
+    submitReply () {
+      const lid = util.getParam('lid');
+      util.newComment(lid, this.myComment, this.replyId, (json) => {
+        console.log(json)
+        this.myComment = null;
+        this.cancelReply();
+        this.updateLesson();
+      });
+    },
     gotoLesson (lid) {
       const cid = util.getParam('cid');
       location.href = '/?cid=' + cid + '&lid=' + lid + '#/lesson';
@@ -270,8 +293,25 @@ export default {
       const cid = util.getParam('cid');
       location.href = '/?cid=' + cid + '#/course';
     },
-    doLike (rid) {
-      alert('你点了赞！')
+    doLike (comment) {
+      if (comment.liked) {
+        return false;
+      }
+      const lid = util.getParam('lid');
+      util.addZan(lid, comment.id, (json) => {
+        if (json.code === 0) {
+          comment.liked = true;
+          comment.zanCount = comment.zanCount ? comment.zanCount + 1 : 1;
+        } else {
+          console.warn('点赞出错！');
+        }
+      })
+    },
+    nextLesson () {
+      console.log(this.course.lessonList);
+    },
+    formatTime (time) {
+      return util.formatTime(time);
     }
   },
   destroyed() {},
@@ -381,9 +421,9 @@ export default {
               width: 100%;
               margin: 0.53333rem 0;
             }
-            p + p {
+            /* p + p {
               margin-top: 1rem;
-            }
+            } */
           }
           .article.overflow {
             overflow: hidden;
@@ -552,16 +592,20 @@ export default {
             color: #999999;
             .box {
               display: flex;
+              align-items: center;
               .like {
                 margin-right: 0.4rem;
+                display: flex;
+                align-items: center;
                 .icon {
-                  width: 0.4rem;
-                  height: 0.4rem;
+                  width: 0.32rem;
+                  height: 0.32rem;
                   background-image: url('/static/like.svg');
-                  background-size: 0.4rem auto;
+                  background-size: 0.32rem auto;
                   background-repeat: no-repeat;
                   display: inline-block;
                   vertical-align: top;
+                  margin-right: 0.12rem;
                 }
                 .icon.liked {
                   background-image: url('/static/liked.svg');

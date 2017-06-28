@@ -10,7 +10,7 @@
         <div class="title">{{ course.title }}</div>
         <div class="sub-title">{{ course.subtitle }}</div>
         <div class="tags">
-          <div class="item" v-for="t in course.tag">{{ t }}</div>
+          <div class="item" v-for="t in course.tag">{{ t.name }}</div>
         </div>
       </div>
     </div>
@@ -37,7 +37,8 @@
       <div class="block who">
         <div class="label">适宜人群</div>
         <div class="intro">
-          {{ course.crowd || '暂无' }}
+          <div v-for="c in course.crowd">{{ c.name }}</div>
+          以及那些对酒店创意感兴趣的你
         </div>
         <div class="hr"></div>
       </div>
@@ -51,20 +52,20 @@
       <div class="block lessons">
         <div class="label">课时</div>
         <div class="list">
-          <div class="item" :class="{future: false}" @click="gotoLesson(l.id)" v-for="(l, index) in course.lessonList">
+          <div class="item" :class="{future: !l.isPublish}" @click="gotoLesson(l.id)" v-for="(l, index) in course.lessonList">
             <div class="up">
               <span>{{ l.lessonNo }}</span> | {{ l.title }}
-              <span class="tag" v-if="false">免费试听</span>
+              <span class="tag" v-if="l.freeListen">免费试听</span>
             </div> 
             <div class="down">
-              <p v-if="true">
+              <p v-if="l.isPublish">
                 <span>{{ l.publishTime }}</span>
                 <span>{{ l.resourceSize || '10.23MB' }}</span>
                 <span>{{ l.lenStr }}</span>
-                <span class="over" v-if="false">已播完</span>
-                <span class="ing" v-if="false">已播80%</span>
+                <span class="over" v-if="l.listenLen === l.audioLen">已播完</span>
+                <span class="ing" v-if="l.listenLen !== l.audioLen && l.listenLen">已播{{ parseInt(l.listenLen / l.audioLen * 100) }}%</span>
               </p>
-              <p v-if="false">
+              <p v-if="!l.isPublish">
                 尚未发布
               </p>
             </div>
@@ -83,8 +84,8 @@
       </div>
     </div>
     <div class="btns" v-if="!course.purchased">
-      <div class="item free">免费试读</div>
-      <div class="item buy" @click="gotoPay">订阅：¥ 199 / 10课时</div>
+      <div class="item free" @click="gotoFree">免费试读</div>
+      <div class="item buy" @click="gotoPay">订阅：¥ {{ course.charge }} / {{ course.lessonCount }}课时</div>
     </div>
   </div>
 </template>
@@ -93,8 +94,6 @@
 import util from '../util/index';
 import moment from 'moment';
 
-console.log(moment)
-
 export default {
   name: 'course',
   props: [],
@@ -102,7 +101,7 @@ export default {
     return {
       isIntroOverflow: false,
       introOverflow: true,
-      error: 'wrong wrong',
+      error: null,
       course: {}
     }
   },
@@ -115,7 +114,6 @@ export default {
         document.title = course.title;
         this.course = {
           ...course,
-          tag: ['标签标签111', '标签2'],
           lessonList: course.lessonList.map((d, i) => {
             let publishTime = '';
             let lenStr = '';
@@ -170,6 +168,7 @@ export default {
             paySign: paySign, // 支付签名
             success: function (res) {
               // 支付成功后的回调函数
+              alert('购买成功了，已购页面还没做');
             }
           });
         } else {
@@ -177,6 +176,20 @@ export default {
         }
         
       })
+    },
+    gotoFree: function () {
+      const cid = util.getParam('cid');
+      const lessonList = this.course.lessonList;
+      let lesson;
+      for (let i = 0; i < lessonList.length; i++) {
+        if (lessonList[i].freeListen) {
+          lesson = lessonList[i];
+        }
+      }
+      if (!lesson) {
+        return false;
+      }
+      location.href = '/?cid=' + cid + '&lid=' + lesson.id + '#/lesson';
     }
   },
   destroyed() {},
@@ -317,6 +330,9 @@ export default {
             color: #999999;
             .up {
               font-size: 0.4rem;
+              height: 0.6rem;
+              display: flex;
+              align-items: center;
               .tag {
                 display: inline-block;
                 border: @red solid thin;
@@ -332,7 +348,7 @@ export default {
             }
             .down {
               font-size: 0.293333rem;
-              margin-top: 0.15rem;
+              margin-top: 0.3rem;
               span {
                 margin-right: 0.4rem;
               }

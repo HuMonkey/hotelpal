@@ -14,17 +14,6 @@ Vue.directive('focus', {
   }
 })
 
-if (util.ua.wechat) {
-	try {
-    // document.domain = 'hotelpal.cn';
-  } catch (err) {
-  	alert(err)
-  }
-  var el = document.createElement('script');
-  el.setAttribute('src', 'https://res.wx.qq.com/open/js/jweixin-1.0.0.js');
-  document.body.appendChild(el);
-}
-
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

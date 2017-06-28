@@ -7,9 +7,9 @@
           <div class="duration">
             <div class="inner" :style="{ width: progress * 100 + '%' }"></div>
           </div>
-          <div class="dot" :style="{ left: progress * 100 + '%' }" @touchstart="startDrag"></div>
+          <div class="dot" :style="{ left: progress * 94 + '%' }" @touchstart="startDrag"></div>
         </div>
-        <div class="left">{{ left }}</div>
+        <div class="left">{{ left || songLong }}</div>
       </div>
       <div @click="setGoOn" class="go-on" :class="{clicked: goOn}">连续听</div>
     </div>
@@ -18,24 +18,22 @@
         <div class="bg"></div>
         15
       </div>
-      <div class="previous"></div>
+      <div class="previous" @click="preLesson"></div>
       <div class="switch" :class="{playing: playing}" @click="playOrPause"></div>
-      <div class="next"></div>
+      <div class="next" @click="nextLesson"></div>
       <div class="next-15" @click="next15">
         <div class="bg"></div>
         15
       </div>
     </div>
-    <!--<span>Total duration: {{ duration }} seconds</span>
-    <span>Progress: {{ (progress * 100) }}%</span>
-    <button @click="togglePlayback">{{ playing ? 'Pause' : 'Play' }}</button>
-    <button @click="stop">Stop</button>-->
   </div>
 </template>
 
 <script>
   import VueHowler from 'vue-howler';
   import debounce from 'debounce';
+
+  import util from '../util/index';
   
   const formatTime = function(seconds, ceil) {
     const fun = ceil ? Math.ceil : Math.floor;
@@ -48,32 +46,41 @@
 
   export default {
     mixins: [VueHowler],
+    props: ['nextId', 'preId', 'songLong'],
     data() {
       return {
         goOn: false,
         interval: null,
         current: '00:00',
-        left: '00:00',
+        left: null,
       }
     },
     mounted() {
-
+      window.onbeforeunload = this.saveProgress;
+      if (util.getParam('goon') == 1) {
+        this.goOn = true;
+        setTimeout(this.playOrPause, 2000);
+      }
     },
     methods: {
-      setGoOn() {
+      setGoOn () {
+        if (!this.nextId) {
+          alert('已经是最后一个课时啦！');
+          return false;
+        }
         this.goOn = !this.goOn;
       },
-      updateTime() {
+      updateTime () {
         this.current = formatTime(this.progress * this.duration, true);
         this.left = formatTime(this.duration - this.progress * this.duration, false);
       },
-      clickProgress(ev) {
+      clickProgress (ev) {
         if (!this.playing) {
           return false;
         }
-        // this.setProgress(ev.offsetX / this.duration);
+        // TODO 
       },
-      playOrPause() {
+      playOrPause () {
         if (this.playing) {
           this.pause();
           this.interval && clearInterval(this.interval);
@@ -83,12 +90,12 @@
           this.interval = setInterval(this.updateTime, 1000)
         }
       },
-      startDrag(ev) {
+      startDrag (ev) {
         dragging = true;
         this.mute();
         this.interval && clearInterval(this.interval);
       },
-      moveDrag(ev) {
+      moveDrag (ev) {
         if (!dragging || !this.playing) {
           return false;
         }
@@ -103,17 +110,17 @@
         }
         this.setProgress(p);
       },
-      debounceMove(ev) {
+      debounceMove (ev) {
         return debounce(() => {
           this.moveDrag(ev);
         }, 200);
       },
-      endDrag(ev) {
+      endDrag (ev) {
         dragging = false;
         this.unmute();
         this.interval = setInterval(this.updateTime, 1000)
       },
-      next15() {
+      next15 () {
         if (!this.playing) {
           return false;
         }
@@ -127,7 +134,7 @@
         this.setProgress(p);
         setTimeout(this.updateTime, 200);
       },
-      previous15() {
+      previous15 () {
         if (!this.playing) {
           return false;
         }
@@ -140,11 +147,48 @@
         }
         this.setProgress(p);
         setTimeout(this.updateTime, 200);
+      },
+      preLesson () {
+        if (!this.preId) {
+          return false;
+        }
+        const cid = util.getParam('cid');
+        location.href = '/?cid=' + cid + '&lid=' + this.preId + '#/lesson';
+      },
+      nextLesson () {
+        if (!this.nextId) {
+          return false;
+        }
+        const cid = util.getParam('cid');
+        location.href = '/?cid=' + cid + '&lid=' + this.nextId + '#/lesson';
+      },
+      saveProgress () {
+        const current = Math.ceil(this.duration * this.progress);
+        const lid = util.getParam('lid');
+        util.recordListenTime(lid, current, current, function (json) {
+          if (json.code === 0) {
+            sessionStorage.onbeforeunload = json;
+          } else {
+            console.warn('保存进度错误')
+          }
+        })
       }
     },
     destroyed() {
       this.interval && clearInterval(this.interval);
     },
+    watch: {
+      progress: function (value, oValue) {
+        if (this.goOn && value === 0 && oValue !== 0 && !draggin) {
+          if (!this.nextId) {
+            // TODO
+            return false;
+          }
+          const cid = util.getParam('cid');
+          location.href = '/?goon=1&cid=' + cid + '&lid=' + this.nextId + '#/lesson';
+        }
+      }
+    }
   }
 </script>
 
@@ -201,6 +245,7 @@
       .go-on {
         width: 1.4rem;
         height: 0.63rem;
+        line-height: 0.63rem;
         background-image: url('/static/goon-grey.svg');
         background-size: 1.4rem 0.63rem;
         text-align: center;

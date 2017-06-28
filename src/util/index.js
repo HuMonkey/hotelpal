@@ -7,14 +7,17 @@ const api = {
   getSign: '/hotelpal/user/getSign',
   sendCaptcha: '/hotelpal/user/sendCaptcha',
   verifyPhone: '/hotelpal/user/verifyPhone',
-  getPaidCourseList: '/hotelpal/user/getPaidCourseList',
   getUserInfo: '/hotelpal/user/getUserInfo',
   getUserStatistics: '/hotelpal/user/getUserStatistics',
   getPaidCourseList: '/hotelpal/user/getPaidCourseList',
   createPayOrder: '/hotelpal/user/createPayOrder',
 
   getLesson: '/hotelpal/lesson/getLesson',
+  newComment: '/hotelpal/user/newComment',
+  addZan: '/hotelpal/user/addZan',
+  recordListenTime: '/hotelpal/user/recordListenTime',
 
+  receiveRedirect: '/hotelpal/WeChat/receiveRedirect',
 };
 
 const util = {};
@@ -49,22 +52,16 @@ util.ua = {
  */
 // http://116.62.247.1:8080/hotelpal/course/getcourse?courseId=2
 util.config = {
-  host: 'http://116.62.247.1:8080', // 测试
-  // host: 'http://hotelpal.cn', // 线上
-  // wechat: {
-  //   appid: 'wx8ecfbf8357e25e45', // live.xinhuaapp.com
-  // },
-  // weibo: {
-  //   appid: '847545354', // live.xinhuaapp.com
-  //   redirect: 'http://live.xinhuaapp.com',
-  // }
+  // host: 'http://116.62.247.1:8080', // 测试
+  // host: 'http://192.168.0.14:8082', // 测试
+  host: 'http://hotelpal.cn', // 线上
 }
 
 /**
  * 获取课程列表
  */
 util.getCourseList = function (callback) {
-  fetch(util.config.host + api.getCourseList)
+  fetch(util.getUrl(util.config.host + api.getCourseList))
     .then(function(res) {
       return res.json()
     }).then(callback).catch(function(ex) {
@@ -76,7 +73,7 @@ util.getCourseList = function (callback) {
  * 获取课程
  */
 util.getCourse = function (id, callback) {
-  fetch(util.config.host + api.getCourse + '?courseId=' + id)
+  fetch(util.getUrl(util.config.host + api.getCourse + '?courseId=' + id))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -88,11 +85,11 @@ util.getCourse = function (id, callback) {
  * 获取微信签名
  */
 util.getSign = function (url, callback) {
-  fetch(util.config.host + api.getSign + '?url=' + url)
+  fetch(util.getUrl(util.config.host + api.getSign + '?url=' + url))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
-      console.log('parsing failed', ex)
+      console.warn('parsing failed', ex)
     })
 }
 
@@ -100,7 +97,7 @@ util.getSign = function (url, callback) {
  * 获取验证码
  */
 util.sendCaptcha = function (phone, callback) {
-  fetch(util.config.host + api.sendCaptcha + '?phone=' + phone)
+  fetch(util.getUrl(util.config.host + api.sendCaptcha + '?phone=' + phone))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -112,7 +109,7 @@ util.sendCaptcha = function (phone, callback) {
  * 验证手机
  */
 util.verifyPhone = function (phone, code, callback) {
-  fetch(util.config.host + api.verifyPhone + '?phone=' + phone + '&code=' + code)
+  fetch(util.getUrl(util.config.host + api.verifyPhone + '?phone=' + phone + '&code=' + code))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -124,7 +121,7 @@ util.verifyPhone = function (phone, code, callback) {
  * 获取已购课程
  */
 util.getPaidCourseList = function (callback) {
-  fetch(util.config.host + api.getPaidCourseList)
+  fetch(util.getUrl(util.config.host + api.getPaidCourseList))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -136,7 +133,7 @@ util.getPaidCourseList = function (callback) {
  * 获取用户信息
  */
 util.getUserInfo = function (callback) {
-  fetch(util.config.host + api.getUserInfo)
+  fetch(util.getUrl(util.config.host + api.getUserInfo))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -148,7 +145,7 @@ util.getUserInfo = function (callback) {
  * 获取用户统计信息
  */
 util.getUserStatistics = function (callback) {
-  fetch(util.config.host + api.getUserStatistics)
+  fetch(util.getUrl(util.config.host + api.getUserStatistics))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -160,7 +157,36 @@ util.getUserStatistics = function (callback) {
  * 获取课时信息
  */
 util.getLesson = function (lessonId, callback) {
-  fetch(util.config.host + api.getLesson + '?lessonId=' + lessonId)
+  fetch(util.getUrl(util.config.host + api.getLesson + '?lessonId=' + lessonId))
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 添加评论
+ */
+util.newComment = function (lessonId, comment, replyToCommentId, callback) {
+  let url = util.getUrl(util.config.host + api.newComment + '?lessonId=' + lessonId + '&comment=' + encodeURIComponent(comment));
+  if (replyToCommentId) {
+    url += '&replyToCommentId=' + replyToCommentId
+  }
+  fetch(url)
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 点赞
+ */
+util.addZan = function (lessonId, commentId, callback) {
+  let url = util.getUrl(util.config.host + api.addZan + '?lessonId=' + lessonId + '&commentId=' + commentId);
+  fetch(url)
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -172,7 +198,20 @@ util.getLesson = function (lessonId, callback) {
  * 获取已购课程
  */
 util.getPaidCourseList = function (callback) {
-  fetch(util.config.host + api.getPaidCourseList)
+  fetch(util.getUrl(util.config.host + api.getPaidCourseList))
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取已购课程
+ */
+util.recordListenTime = function (lessonId, recordLen, recordPos, callback) {
+  const url = util.config.host + api.recordListenTime + '?lessonId=' + lessonId + '&recordLen=' + recordLen + '&recordPos=' + recordPos;
+  fetch(util.getUrl(url))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -184,7 +223,19 @@ util.getPaidCourseList = function (callback) {
  * 创建微信支付订单
  */
 util.createPayOrder = function (cid, callback) {
-  fetch(util.config.host + api.createPayOrder + '?courseId=' + cid)
+  fetch(util.getUrl(util.config.host + api.createPayOrder + '?courseId=' + cid))
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ *
+ */
+util.receiveRedirect = function (code, callback) {
+  fetch(util.getUrl(util.config.host + api.receiveRedirect + '?code=' + code))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -359,6 +410,7 @@ util.textLength = function(para, fontSize) {
  * 如果 URL 发生变动，则需要重新签名
  */
 util.configWechat = function(appId, timestamp, nonceStr, signature, callback) {
+  console.log(appId, timestamp, nonceStr, signature)
   try {
     if (!util.ua.wechat) {
       return;
@@ -395,6 +447,52 @@ util.checkLogin = function () {
  */
 util.formatNum = function (num) {
   return num > 9 ? num : '0' + num;
+}
+
+/**
+ * 格式化时间戳
+ */
+util.formatTime = function (time) {
+  if (!time) {
+    return null;
+  }
+  var date = new Date(time);
+  var now = Date.now();
+  var diff = now - date.getTime();
+  var M_DAY = 24 * 60 * 60 * 1000;
+  var M_HOUR = 60 * 60 * 1000;
+  var days = Math.floor(diff / M_DAY)
+  diff = diff - days * M_DAY;
+  var hours = Math.floor(diff / M_HOUR)
+  diff = diff - hours * M_HOUR;
+  var minutes = Math.floor(diff / 60 / 1000);
+  var result;
+  if (days > 0) {
+    if (days > 30) {
+      var month = Math.floor(days / 30)
+      result = `${month}个月前`
+    } else {
+      result = `${days}天前`
+    }
+  } else if (hours > 0) {
+    result = `${hours}小时前`
+  } else if (minutes > 0) {
+    result = `${minutes}分钟前`
+  } else {
+    result = '刚刚'
+  }
+  return result;
+}
+
+util.getUrl = function (url) {
+  if (!sessionStorage.sessionId) {
+    return url;
+  }
+  let result = url.split('?')[0] + ';jsessionid=' + sessionStorage.sessionId
+  if (url.split('?')[1]) {
+    result += '?' + url.split('?')[1]
+  }
+  return result;
 }
 
 export default util;

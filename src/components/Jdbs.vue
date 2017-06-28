@@ -92,7 +92,7 @@
       </div>
     </div>
     <div class="btns">
-      <div class="item home"><div class="icon"></div>首页</div>
+      <div class="item home" @click="gotoHome"><div class="icon"></div>首页</div>
       <div class="item left"><div class="icon"></div>23条未听</div>
     </div>
   </div>
@@ -111,7 +111,11 @@ export default {
   mounted() {
     document.title = '酒店邦说';
   },
-  methods: {},
+  methods: {
+    gotoHome: function () {
+      location.href = '/#/';
+    },
+  },
   destroyed() {},
   watch: {},
   components: {}

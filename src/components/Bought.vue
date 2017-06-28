@@ -25,6 +25,14 @@
           <div class="time">05-20更新 | 已发布 11/12</div>
         </div>
       </div>
+      <div class="item">
+        <div class="img"><img src="/static/banner_1.jpg"></div>
+        <div class="main">
+          <div class="title">标题标题标题标题标题标题标题标题</div>
+          <div class="tips">已听完</div>
+          <div class="time">05-20更新 | 已发布 11/12</div>
+        </div>
+      </div>
     </div>
     <Bottomer :tag="2"></Bottomer>
   </div>
@@ -39,7 +47,7 @@ export default {
   props: [],
   data () {
     return {
-      courses: []
+      courses: [1]
     }
   },
   created() {},
@@ -121,7 +129,6 @@ export default {
       .item {
         background: white;
         width: 4.4rem;
-        height: 5.46666rem;
         border-radius: 4px;
         margin-bottom: 0.53333rem;
         overflow: hidden;
@@ -144,13 +151,13 @@ export default {
             text-overflow: ellipsis;
           }
           .tips {
-            margin-top: 0.2rem;
+            margin-top: 0.48rem;
             font-size: 0.32rem;
             color: #666666;
           }
           .time {
             font-size: 0.293333rem;
-            margin-top: 0.1rem;
+            margin-top: 0.26666rem;
             color: #cccccc;
           }
         }
