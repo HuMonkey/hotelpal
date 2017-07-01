@@ -16,6 +16,7 @@ const api = {
   newComment: '/hotelpal/user/newComment',
   addZan: '/hotelpal/user/addZan',
   recordListenTime: '/hotelpal/user/recordListenTime',
+  pay: '/hotelpal/user/pay',
 
   receiveRedirect: '/hotelpal/WeChat/receiveRedirect',
 };
@@ -224,6 +225,20 @@ util.recordListenTime = function (lessonId, recordLen, recordPos, callback) {
  */
 util.createPayOrder = function (cid, callback) {
   fetch(util.getUrl(util.config.host + api.createPayOrder + '?courseId=' + cid))
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/** 
+ * 支付成功
+ */
+util.pay = function (cid, tradeNo, callback) {
+  alert(1);
+  fetch(util.getUrl(util.config.host + api.pay + '?courseId=' + cid
+    + '&tradeNo=' + tradeNo + '&gift=0'))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {

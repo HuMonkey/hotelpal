@@ -9,7 +9,7 @@
           <img :src="userinfo.headImg">
         </div>
         <div class="name" @click="setMode(4)">
-          {{ userinfo.adminName }}<div class="arrow-right"></div>
+          {{ userinfo.nickname }}<div class="arrow-right"></div>
         </div>
         <div class="record">
           <div class="icon"></div>

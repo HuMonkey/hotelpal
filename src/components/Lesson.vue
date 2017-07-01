@@ -2,7 +2,7 @@ l.id<template>
   <div class="lesson-container">
     <div class="paid" v-if="true">
       <div class="player">
-        <audio-player v-if="songs.length !== 0" :sources="songs" :loop="false" :nextId="nextId" :preId="preId" :songLong="songLong"></audio-player>
+        <audio-player :source="song" :loop="false" :nextId="nextId" :preId="preId" :songLong="songLong"></audio-player>
       </div>
       <div class="main">
         <div class="course-title">{{ lesson.lessonNo }} | {{ lesson.title }}</div>
@@ -33,7 +33,7 @@ l.id<template>
           <div class="course">
             <div class="back">
               <div class="box" @click="gotoCourse">
-                <img :src="course.headImg">
+                <div class="img"><img :src="course.headImg"></div>
                 <div class="title">{{ course.title }}</div>
                 <div class="desc">{{course.userName}} · {{ course.userTitle }}</div>
                 <div class="arrow"></div>
@@ -173,7 +173,7 @@ export default {
   data () {
     return {
       selectedTab: 0,
-      songs: [],
+      song: null,
       nextId: null,
       preId: null,
       value: 1,
@@ -228,8 +228,7 @@ export default {
       util.getLesson(lid, (json) => {
         if (json.code === 0) {
           document.title = json.data.title;
-          this.songs = [json.data.audio];
-          console.log(this.songs);
+          this.song = json.data.audio;
           const publishTimeStr = json.data.publishTime && json.data.publishTime.split(' ')[0];
           this.songLong = moment(json.data.audioLen * 1000).format('mm:ss');
           const content = json.data.content;
@@ -456,11 +455,16 @@ export default {
                 height: 1.3333rem;
                 position: relative;
                 color: #999999;
-                img {
+                .img {
                   width: 1.3333rem;
                   height: 1.3333rem;
-                  border-radius: 1.3333rem;
+                  display: block;
                   float: left;
+                  overflow: hidden;
+                  border-radius: 1.3333rem;
+                  img {
+                    width: 100%;
+                  }
                 }
                 .title {
                   margin-left: 1.63333rem;
@@ -496,7 +500,7 @@ export default {
                 .item {
                   color: white;
                   padding: 0.26666rem 0.4rem;
-                  background: @red;
+                  background: #f0944a;
                   width: 4rem;
                   height: 100%;
                   border-radius: 4px;
@@ -513,7 +517,7 @@ export default {
                   }
                 }
                 .item.current {
-                  background: #f0944a;
+                  background: @red;
                 }
               }
             }

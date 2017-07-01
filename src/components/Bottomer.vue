@@ -55,7 +55,7 @@ export default {
   .bottomer-container {
     .footer {
       width: 100%;
-      height: 1.6rem;
+      height: 1.28rem;
       position: fixed;
       bottom: 0;
       left: 0;
@@ -65,16 +65,17 @@ export default {
       justify-content: space-between;
       border-top: #cccccc solid thin;
       background: white;
-      padding: 0.263333rem 1.253333rem;
+      padding: 0.16rem 1.253333rem;
       .item {
         height: 1.28rem;
         text-align: center;
+        color: #666666;
         .img {
-          width: 0.6rem;
-          height: 0.6rem;
+          width: 0.48rem;
+          height: 0.48rem;
           margin: auto;
-          margin-bottom: 0.1rem;
-          background-size: 0.6rem 0.6rem;
+          margin-bottom: 0.16rem;
+          background-size: 0.48rem 0.48rem;
           background-position: center;
         }
       }

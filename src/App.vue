@@ -18,6 +18,7 @@ export default {
     }
   },
   mounted () {
+    
     if (this.isWechat) {
       // 如果是html的静态页面在前端通过ajax将url传到后台签名，前端需要用js获取当前页面除去'#'hash部分的链接（可用location.href.split('#')[0]获取,而且需要encodeURIComponent），因为页面一旦分享，微信客户端会在你的链接末尾加入其它参数，如果不是动态获取当前链接，将导致分享后的页面签名失败。
       util.getSign((location.href.split('#')[0]), (json) => {

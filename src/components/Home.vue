@@ -34,7 +34,7 @@
         <div class="item" @click="gotoCourse(c.id)" v-for="c in courseList">
           <div class="avater">
             <div class="state" :class="{ coming: c.isPublish === 0, isnew: c.isPublish === 1 }">{{ c.isPublish ? '上新' : '预告' }}</div>
-            <img :src="c.bannerImg ? c.bannerImg[0] : c.headImg">
+            <img :src="c.headImg">
           </div>
           <div class="desc">
             <div class="name">{{ c.title }}</div>
@@ -44,7 +44,7 @@
               <div class="tags">
                 <div class="tag" :title="tag" v-for="tag in c.tag">{{ tag.name }}</div>
               </div>
-              <div class="price">¥ {{ c.charge }} / {{ c.lessonCount }}课时</div>
+              <div class="price">¥ {{ c.charge / 100 }} / {{ c.lessonCount }}课时</div>
             </div>
           </div>
         </div>
@@ -89,7 +89,7 @@ export default {
         this.courseList = json.data.courseList.map((c) => {
           return {
             ...c,
-            tag: c.tag.slice(0, 2)
+            tag: c.tag ? c.tag.slice(0, 2) : []
           }
         });
       } else {
@@ -241,7 +241,7 @@ export default {
             width: 2rem;
             height: 2.6666rem;
             position: relative;
-            border-radius: 10px;
+            border-radius: 0.13333rem;
             overflow: hidden;
             .state {
               width: 0.82rem;

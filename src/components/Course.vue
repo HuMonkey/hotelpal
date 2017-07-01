@@ -5,7 +5,7 @@
       <img src="/static/cross.png" @click="closeErrorTips">
     </div>
     <div class="header">
-      <img src="/static/banner_1.jpg">
+      <img :src="course.bannerImg && course.bannerImg[0]">
       <div class="desc">
         <div class="title">{{ course.title }}</div>
         <div class="sub-title">{{ course.subtitle }}</div>
@@ -18,19 +18,15 @@
       <div class="block teacher">
         <div class="label">主讲人</div>
         <div class="name">
-          <span>{{ course.userName }}</span>
-          {{ course.userTitle }}
+          <span class="userName">{{ course.userName }}</span>
+          <span class="userTitle">{{ course.userTitle }}</span>
         </div>
-        <div class="intro" v-if="course.speakerDescribe">
-          <p>{{ course.speakerDescribe || '暂无介绍' }}</p>
-        </div>
+        <div class="intro" v-if="course.speakerDescribe" v-html="course.speakerDescribe || '暂无介绍'"></div>
         <div class="hr"></div>
       </div>
       <div class="block course-intro">
         <div class="label">课程介绍</div>
-        <div class="intro" :class="{overflow: isIntroOverflow && introOverflow}">
-          {{ course.introduce || '暂无' }}
-        </div>
+        <div class="intro" :class="{overflow: isIntroOverflow && introOverflow}" v-html="course.introduce || '暂无'"></div>
         <div class="open" v-if="isIntroOverflow" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
         <div class="hr"></div>
       </div>
@@ -52,9 +48,9 @@
       <div class="block lessons">
         <div class="label">课时</div>
         <div class="list">
-          <div class="item" :class="{future: !l.isPublish}" @click="gotoLesson(l.id)" v-for="(l, index) in course.lessonList">
+          <div class="item" :class="{free: l.freeListen, future: !l.isPublish, finished: l.listenLen === l.audioLen && l.listenLen}" @click="gotoLesson(l)" v-for="(l, index) in course.lessonList">
             <div class="up">
-              <span>{{ l.lessonNo }}</span> | {{ l.title }}
+              <span>{{ l.lessonNo }}</span> | <span class="ltitle">{{ l.title }}</span>
               <span class="tag" v-if="l.freeListen">免费试听</span>
             </div> 
             <div class="down">
@@ -62,14 +58,14 @@
                 <span>{{ l.publishTime }}</span>
                 <span>{{ l.resourceSize || '10.23MB' }}</span>
                 <span>{{ l.lenStr }}</span>
-                <span class="over" v-if="l.listenLen === l.audioLen">已播完</span>
+                <span class="over" v-if="l.listenLen === l.audioLen && l.listenLen">已播完</span>
                 <span class="ing" v-if="l.listenLen !== l.audioLen && l.listenLen">已播{{ parseInt(l.listenLen / l.audioLen * 100) }}%</span>
               </p>
               <p v-if="!l.isPublish">
                 尚未发布
               </p>
             </div>
-            <div class="arrow"></div>
+            <div class="arrow" v-if="l.isPublish"></div>
           </div>
         </div>
         <div class="hr"></div>
@@ -85,7 +81,7 @@
     </div>
     <div class="btns" v-if="!course.purchased">
       <div class="item free" @click="gotoFree">免费试读</div>
-      <div class="item buy" @click="gotoPay">订阅：¥ {{ course.charge }} / {{ course.lessonCount }}课时</div>
+      <div class="item buy" @click="gotoPay">订阅：¥ {{ course.charge / 100 }} / {{ course.lessonCount }}课时</div>
     </div>
   </div>
 </template>
@@ -93,6 +89,10 @@
 <script>
 import util from '../util/index';
 import moment from 'moment';
+
+const formatDate = function(m, d) {
+  return (m > 9 ? m : '0' + m) + '-' + (d > 9 ? d : '0' + d)
+}
 
 export default {
   name: 'course',
@@ -118,7 +118,8 @@ export default {
             let publishTime = '';
             let lenStr = '';
             if (d.isPublish === 1) {
-              publishTime = moment(d.publishTime).format('MM-DD');
+              const temp = d.publishTime.split('-');
+              publishTime = formatDate(temp[1], temp[2]);
               lenStr = moment(d.audioLen * 1000).format('mm:ss');
             }
             return {
@@ -146,9 +147,13 @@ export default {
     closeErrorTips: function() {
       this.error = null;
     },
-    gotoLesson: function (lessonId) {
+    gotoLesson: function (lesson) {
+      if (!lesson.isPublish) {
+        // TODO
+        return false;
+      }
       const cid = util.getParam('cid');
-      location.href = '/?cid=' + cid + '&lid=' + lessonId + '#/lesson';
+      location.href = '/?cid=' + cid + '&lid=' + lesson.id + '#/lesson';
     },
     gotoHome: function () {
       location.href = '/#/';
@@ -158,7 +163,7 @@ export default {
       const cid = util.getParam('cid');
       util.createPayOrder(cid, (json) => {
         if (json.code === 0) {
-          const { appId, nonceStr, paySign, timeStamp } = json.data;
+          const { appId, nonceStr, paySign, timeStamp, tradeNo } = json.data;
           wx.chooseWXPay({
             timestamp: timeStamp,
             appId: appId,
@@ -166,9 +171,15 @@ export default {
             package: json.data.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
             signType: 'MD5', // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
             paySign: paySign, // 支付签名
-            success: function (res) {
+            success: (res) => {
               // 支付成功后的回调函数
-              alert('购买成功了，已购页面还没做');
+              this.course.purchased = true;
+              util.pay(cid, tradeNo, function (json) {
+                console.log(json)
+              });
+            },
+            error: () => {
+              console.warn('支付失败')
             }
           });
         } else {
@@ -182,7 +193,7 @@ export default {
       const lessonList = this.course.lessonList;
       let lesson;
       for (let i = 0; i < lessonList.length; i++) {
-        if (lessonList[i].freeListen) {
+        if (lessonList[i].freeListen && lessonList[i].isPublish) {
           lesson = lessonList[i];
         }
       }
@@ -273,13 +284,20 @@ export default {
           width: 100%;
           font-size: 0.32rem;
           height: 0.426666rem;
-          line-height: 0.426666rem;
-          border-left: @red 6px solid;
+          border-left: @red 4px solid;
           color: #999999;
-          span {
+          display: flex;
+          align-items: center;
+          .userName {
             margin: 0 0.26666rem;
             color: black;
             font-size: 0.426666rem;
+          }
+          .userTitle {
+            vertical-align: bottom;
+            display: flex;
+            align-items: flex-end;
+            height: 0.426666rem;
           }
         }
         .intro {
@@ -288,11 +306,12 @@ export default {
           line-height: 1.8;
           color: #666666;
           margin-top: 0.26666rem;
-          p {
-            margin-bottom: 1rem;
-          }
+          p {}
           p:last-child {
             margin-bottom: 0;
+          }
+          img {
+            margin: 0.26666rem 0;
           }
         }
         .open {
@@ -318,16 +337,19 @@ export default {
         }
       }
       .lessons {
+        .hr {
+          margin-top: 0.53333rem;
+        }
         .list {
           .item {
             width: 100%;
             height: 1.6rem;
             border-radius: 4px;
             border: #cccccc solid thin;
-            margin-bottom: 0.13333rem;
+            margin-bottom: 0.26666rem;
             padding: 0.15rem 0.4rem;
             position: relative;
-            color: #999999;
+            color: #666666;
             .up {
               font-size: 0.4rem;
               height: 0.6rem;
@@ -344,6 +366,13 @@ export default {
                 padding: 0 0.1rem;
                 vertical-align: bottom;
                 margin-left: 0.26666rem;
+              }
+              .ltitle {
+                display: inline-block;
+                max-width: 7.5rem;
+                white-space:nowrap; 
+                overflow:hidden;
+                text-overflow:ellipsis
               }
             }
             .down {
@@ -369,19 +398,26 @@ export default {
             }
           }
           .item.free {
-            color: #999999;
+            .up {
+              .ltitle {
+                max-width: 5.5rem;
+              }
+            }
           }
           .item.future {
             background: #f5f5f5;
             color: #cccccc;
           }
+          .item.finished {
+            color: #999999;
+          }
         }
       }
       .back {
-        padding: 0.4rem;
+        padding: 0.53333rem 0.4rem;
         .box {
           width: 100%;
-          background: #f5f5f5;
+          background: #ffffff;
           height: 2.13333rem;
           border-radius: 4px;
           border: #cccccc solid thin;

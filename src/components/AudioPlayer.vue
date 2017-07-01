@@ -1,19 +1,20 @@
 <template>
   <div class="audio-player">
-    <div class="top">
+    <audio :src="source" controls="controls" preload="true"></audio>
+    <div class="top" v-if="audio">
       <div class="progress">
         <div class="current">{{ current }}</div>
         <div class="bar" @touchmove="moveDrag" @touchend="endDrag">
           <div class="duration">
-            <div class="inner" :style="{ width: progress * 100 + '%' }"></div>
+            <div class="inner" :style="{ width: audio.currentTime / audio.duration * 100 + '%' }"></div>
           </div>
-          <div class="dot" :style="{ left: progress * 94 + '%' }" @touchstart="startDrag"></div>
+          <div class="dot" :style="{ left: audio.currentTime / audio.duration * 94 + '%' }" @touchstart="startDrag"></div>
         </div>
         <div class="left">{{ left || songLong }}</div>
       </div>
       <div @click="setGoOn" class="go-on" :class="{clicked: goOn}">连续听</div>
     </div>
-    <div class="bottom">
+    <div class="bottom" v-if="audio">
       <div class="previous-15" @click="previous15">
         <div class="bg"></div>
         15
@@ -30,9 +31,6 @@
 </template>
 
 <script>
-  import VueHowler from 'vue-howler';
-  import debounce from 'debounce';
-
   import util from '../util/index';
   
   const formatTime = function(seconds, ceil) {
@@ -45,18 +43,20 @@
   let dragging = false;
 
   export default {
-    mixins: [VueHowler],
-    props: ['nextId', 'preId', 'songLong'],
+    props: ['source', 'nextId', 'preId', 'songLong'],
     data() {
       return {
         goOn: false,
         interval: null,
         current: '00:00',
         left: null,
+        audio: null,
+        playing: false,
       }
     },
     mounted() {
       window.onbeforeunload = this.saveProgress;
+      this.audio = document.querySelector('.audio-player audio');
       if (util.getParam('goon') == 1) {
         this.goOn = true;
         setTimeout(this.playOrPause, 2000);
@@ -71,31 +71,45 @@
         this.goOn = !this.goOn;
       },
       updateTime () {
-        this.current = formatTime(this.progress * this.duration, true);
-        this.left = formatTime(this.duration - this.progress * this.duration, false);
+        const audio = this.audio;
+        if (audio.ended && this.goOn) {
+          if (!this.nextId) {
+            return false;
+          }
+          const cid = util.getParam('cid');
+          location.href = 'http://hotelpal.cn/?goon=1&cid=' + cid + '&lid=' + this.nextId + '#/lesson'
+        }
+        this.current = formatTime(audio.currentTime, true);
+        this.left = formatTime(audio.duration - audio.currentTime, false);
       },
       clickProgress (ev) {
-        if (!this.playing) {
+        if (this.paused) {
           return false;
         }
         // TODO 
       },
       playOrPause () {
+        const audio = this.audio;
+        if (!audio.duration) {
+          return false;
+        }
         if (this.playing) {
-          this.pause();
+          audio.pause();
           this.interval && clearInterval(this.interval);
         } else {
-          this.play();
+          audio.play();
           this.updateTime();
           this.interval = setInterval(this.updateTime, 1000)
         }
+        this.playing = !this.playing;
       },
       startDrag (ev) {
         dragging = true;
-        this.mute();
+        this.audio.muted = true;
         this.interval && clearInterval(this.interval);
       },
       moveDrag (ev) {
+        const audio = this.audio;
         if (!dragging || !this.playing) {
           return false;
         }
@@ -108,44 +122,28 @@
         if (p > 1) {
           p = 1;
         }
-        this.setProgress(p);
-      },
-      debounceMove (ev) {
-        return debounce(() => {
-          this.moveDrag(ev);
-        }, 200);
+        audio.currentTime = p * audio.duration;
+        this.updateTime();
       },
       endDrag (ev) {
         dragging = false;
-        this.unmute();
-        this.interval = setInterval(this.updateTime, 1000)
+        this.audio.muted = false;
+        this.interval = setInterval(this.updateTime, 1000);
       },
       next15 () {
+        const audio = this.audio;
         if (!this.playing) {
           return false;
         }
-        let p = (this.duration * this.progress + 15) / this.duration;
-        if (p < 0) {
-          p = 0;
-        } 
-        if (p > 1) {
-          p = 1;
-        }
-        this.setProgress(p);
+        audio.currentTime = audio.currentTime + 15;
         setTimeout(this.updateTime, 200);
       },
       previous15 () {
+        const audio = this.audio;
         if (!this.playing) {
           return false;
         }
-        let p = (this.duration * this.progress - 15) / this.duration;
-        if (p < 0) {
-          p = 0;
-        } 
-        if (p > 1) {
-          p = 1;
-        }
-        this.setProgress(p);
+        audio.currentTime = audio.currentTime - 15;
         setTimeout(this.updateTime, 200);
       },
       preLesson () {
@@ -163,7 +161,7 @@
         location.href = '/?cid=' + cid + '&lid=' + this.nextId + '#/lesson';
       },
       saveProgress () {
-        const current = Math.ceil(this.duration * this.progress);
+        const current = Math.ceil(this.audio.currentTime);
         const lid = util.getParam('lid');
         util.recordListenTime(lid, current, current, function (json) {
           if (json.code === 0) {
@@ -177,18 +175,7 @@
     destroyed() {
       this.interval && clearInterval(this.interval);
     },
-    watch: {
-      progress: function (value, oValue) {
-        if (this.goOn && value === 0 && oValue !== 0 && !draggin) {
-          if (!this.nextId) {
-            // TODO
-            return false;
-          }
-          const cid = util.getParam('cid');
-          location.href = '/?goon=1&cid=' + cid + '&lid=' + this.nextId + '#/lesson';
-        }
-      }
-    }
+    watch: {}
   }
 </script>
 
@@ -196,6 +183,9 @@
   @import '../variable.less';
 
   .audio-player {
+    audio {
+      display: none;
+    }
     .top {
       width: 100%;
       padding: 0.4rem 0.4rem;
@@ -211,9 +201,10 @@
         align-items: center;
         .current, .left {
           height: 0.4rem;
-          line-height: 0.4rem;
           width: 0.8rem;
           text-align: center;
+          display: flex;
+          align-items: center;
         }
         .bar {
           width: 5.6rem;
@@ -223,10 +214,10 @@
           align-items: center;
           .duration {
             width: 100%;
-            height: 4px;
+            height: 3px;
             background: #cccccc;
             .inner {
-              width: 50%;
+              width: 0;
               height: 100%;
               background: @red;
             }
@@ -234,7 +225,7 @@
           .dot {
             position: absolute;
             top: 0;
-            left: 2.8rem;
+            left: 0;
             width: 0.4rem;
             height: 0.4rem;
             border-radius: 0.4rem;
@@ -245,11 +236,12 @@
       .go-on {
         width: 1.4rem;
         height: 0.63rem;
-        line-height: 0.63rem;
         background-image: url('/static/goon-grey.svg');
         background-size: 1.4rem 0.63rem;
-        text-align: center;
         transform: scale(0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
       .go-on.clicked {
         color: @red;
@@ -272,6 +264,9 @@
         text-align: center;
         line-height: 0.8rem;
         transform: scale(0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
         .bg {
           position: absolute;
           left: 0;
@@ -311,7 +306,7 @@
         width: 1.28rem;
         height: 1.28rem;
         background-image: url('/static/play.svg');
-        background-size: 1.26rem 1.26rem;
+        background-size: 1.2rem 1.2rem;
         background-position: center;
         background-repeat: no-repeat;
       }
