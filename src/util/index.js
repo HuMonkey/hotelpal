@@ -14,6 +14,7 @@ const api = {
   saveUserProp: '/hotelpal/user/saveUserProp',
 
   getLesson: '/hotelpal/lesson/getLesson',
+  getInternalLessonList: '/hotelpal/lesson/getInternalLessonList',
   newComment: '/hotelpal/user/newComment',
   addZan: '/hotelpal/user/addZan',
   recordListenTime: '/hotelpal/user/recordListenTime',
@@ -265,6 +266,18 @@ util.receiveRedirect = function (code, callback) {
  */
 util.saveUserProp = function (headImg, nickname, company, title, callback) {
   fetch(util.getUrl(util.config.host + api.saveUserProp + '?headImg=' + headImg + '&nickname=' + nickname + '&company=' + company + '&title=' + title))
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取自主课程
+ */
+util.getInternalLessonList = function (callback) {
+  fetch(util.getUrl(util.config.host + api.getInternalLessonList))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {

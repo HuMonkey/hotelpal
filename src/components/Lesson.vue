@@ -252,14 +252,6 @@ export default {
     switchOverflow: function() {
       this.introOverflow = !this.introOverflow;
     },
-    addCurrentTime () {
-      const currentTime = this.audio.currentTime;
-      this.audio.currentTime = currentTime + 15;
-    },
-    minusCurrentTime () {
-      const currentTime = this.audio.currentTime;
-      this.audio.currentTime = currentTime - 15;
-    },
     gotoComment () {
       this.commenting = true;
       this.focusStatus = true;
@@ -278,7 +270,6 @@ export default {
     submitReply () {
       const lid = util.getParam('lid');
       util.newComment(lid, this.myComment, this.replyId, (json) => {
-        console.log(json)
         this.myComment = null;
         this.cancelReply();
         this.updateLesson();
