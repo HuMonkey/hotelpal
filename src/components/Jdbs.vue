@@ -12,59 +12,7 @@
       <div class="sort"><div class="icon"></div>倒序</div>
     </div>
     <div class="list">
-      <div class="item">
-        <div class="name">
-          <div class="arrow"></div>
-          <span>怎么在工作中快速学习、获得晋升？</span>
-        </div>
-        <div class="infos">
-          <span>今天</span>
-          <span>5.2MB</span>
-          <span>12:23</span>
-          <span class="left">已播80%</span>
-        </div>
-        <div class="arrow-right"></div>
-      </div>
-      <div class="item">
-        <div class="name">
-          <div class="arrow"></div>
-          <span>怎么在工作中快速学习、获得晋升？</span>
-        </div>
-        <div class="infos">
-          <span>今天</span>
-          <span>5.2MB</span>
-          <span>12:23</span>
-          <span class="left">已播80%</span>
-        </div>
-        <div class="arrow-right"></div>
-      </div>
-      <div class="item disable">
-        <div class="name">
-          <div class="arrow"></div>
-          <span>怎么在工作中快速学习、获得晋升？</span>
-        </div>
-        <div class="infos">
-          <span>今天</span>
-          <span>5.2MB</span>
-          <span>12:23</span>
-          <span class="left">已播80%</span>
-        </div>
-        <div class="arrow-right"></div>
-      </div>
-      <div class="item disable">
-        <div class="name">
-          <div class="arrow"></div>
-          <span>怎么在工作中快速学习、获得晋升？</span>
-        </div>
-        <div class="infos">
-          <span>今天</span>
-          <span>5.2MB</span>
-          <span>12:23</span>
-          <span class="left">已播80%</span>
-        </div>
-        <div class="arrow-right"></div>
-      </div>
-      <div class="item disable">
+      <div class="item" @click="GotoJdbsItem(1)">
         <div class="name">
           <div class="arrow"></div>
           <span>怎么在工作中快速学习、获得晋升？</span>
@@ -115,6 +63,9 @@ export default {
     gotoHome: function () {
       location.href = '/#/';
     },
+    GotoJdbsItem: function (id) {
+      location.href = '/?id=' + id + '#/jdbsitem'
+    }
   },
   destroyed() {},
   watch: {},
@@ -227,7 +178,7 @@ export default {
         .infos {
           font-size: 0.32rem;
           color: #999999;
-          margin-top: 0.2rem;
+          margin-top: 0.48rem;
           padding-left: 0.3rem;
           span {
             margin-right: 0.4rem;

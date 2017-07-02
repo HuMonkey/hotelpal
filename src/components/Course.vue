@@ -45,6 +45,13 @@
         </div>
         <div class="hr"></div>
       </div>
+      <div class="block care">
+        <div class="label">注意事项</div>
+        <div class="intro">
+          {{ '暂无' }}
+        </div>
+        <div class="hr"></div>
+      </div>
       <div class="block lessons">
         <div class="label">课时</div>
         <div class="list">

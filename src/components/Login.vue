@@ -21,24 +21,24 @@
     <div class="step second" v-if="step === 2">
       <div class="welcome">欢迎加入酒店营成长邦！</div>
       <div class="avater">
-        <img src="/static/header.png" @click="changeHeader">
+        <img :src="userinfo.headImg" @click="changeHeader">
       </div>
       <input class="avater-upload" type="file" @change="uploadAvater"></input>
-      <div class="wechat-name">李坚</div>
+      <div class="wechat-name">{{ userinfo.nickname }}</div>
       <div class="row name">
         <div class="label">姓名</div>
-        <input type="text" name="name" placeholder="请输入您的姓名">
+        <input type="text" name="name" placeholder="请输入您的姓名" v-model="userinfo.nickname">
       </div>
       <div class="row company">
         <div class="label">公司</div>
-        <input type="text" name="company" placeholder="请输入您的公司（选填）">
+        <input type="text" name="company" placeholder="请输入您的公司（选填）" v-model="userinfo.company">
       </div>
       <div class="row position">
         <div class="label">职位</div>
-        <input type="text" name="position" placeholder="请输入您的职位（选填）">
+        <input type="text" name="position" placeholder="请输入您的职位（选填）" v-model="userinfo.title">
       </div>
-      <div class="confirm">确认</div>
-      <div class="skip">跳过</div>
+      <div class="confirm" @click="submitChange">确认</div>
+      <div class="skip" @click="skip">跳过</div>
     </div>
   </div>
 </template>
@@ -59,6 +59,8 @@ export default {
 
       phone: '',
       code: '',
+
+      userinfo: {}
     }
   },
   created() {},
@@ -106,17 +108,49 @@ export default {
       util.verifyPhone(this.phone, this.code, (json) => {
         if (json.code === 0) {
           util.setCookie('isLogin', '1', '12d');
-          location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
+          // TODO
+          if (json) {
+            util.getUserInfo((json) => {
+              if (json.code === 0) {
+                this.userinfo = json.data;
+                this.step = 2;
+              } else {
+                console.warn('获取用户信息失败')
+              }
+            })
+          } else {
+            location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
+          }
+          // location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
         } else {
           this.setError('验证失败，请重试');
         }
       })
     },
+    skip: function () {
+      location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
+    },
     changeHeader: function () {
       document.querySelector('.avater-upload').click();
     },
     uploadAvater: function (ev) {
-      console.log(ev)
+      const input = ev.target;
+      var data = new FormData()
+      data.append('file', input.files[0])
+      fetch('/hotelpal/image/uploadImg', {
+        method: 'POST',
+        body: data
+      }).then(function(response) {
+        return response.json()
+      }).then((json) => {
+        if (json.code === 0) {
+          this.userinfo.headImg = json.data.imgurl;
+        } else {
+          console.warn('上传图片失败');
+        }
+      }).catch(function(ex) {
+        console.log('parsing failed', ex)
+      })
     },
     setError: function (text) {
       this.error = text;
@@ -124,7 +158,17 @@ export default {
         this.error = null;
       }, 4000);
       return false;
-    }
+    },
+    submitChange: function () {
+      const { headImg, nickname, company, title } = this.userinfo;
+      util.saveUserProp(headImg, nickname, company, title, (json) => {
+        if (json.code === 0) {
+          location.href = decodeURIComponent(util.getParam('redirect') || '/#/');
+        } else {
+          console.warn('修改用户信息成功！');
+        }
+      })
+    },
   },
   destroyed() {},
   watch: {},
@@ -234,7 +278,7 @@ export default {
     .second {
       background: white;
       padding-top: 0.53333rem;
-      color: #cccccc;
+      color: #666666;
       .avater-upload {
         display: none;
       }
@@ -251,7 +295,9 @@ export default {
         text-align: center;
         margin-top: 0.6666rem;
         img {
-          height: 100%;
+          width: 1.92rem;
+          height: 1.92rem;
+          border-radius: 1.92rem;
         }
       }
       .wechat-name {
@@ -287,7 +333,7 @@ export default {
           display: block;
           width: 100%;
           margin: auto;
-          color: #cccccc;
+          color: #999999;
           -webkit-appearance: none;
         }
       }

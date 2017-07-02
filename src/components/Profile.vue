@@ -67,15 +67,15 @@
       </div>
     </div>
     <div class="page bought-page" v-if="mode === 3 && courseList.length > 0">
-      <div class="bought-item" v-for="c in courseList" v-if="c !== null">
+      <div class="bought-item" v-for="c in courseList" v-if="c !== null" @click="gotoCourse(c)">
         <div class="avater">
-          <img :src="c.bannerImg[0]">
+          <img :src="c.headImg">
         </div>
         <div class="desc">
-          <div class="title">酒店经营法则</div>
-          <div class="orderid">订单号：{{ courseSn }}</div>
-          <div class="time">购买时间：2017-06-13</div>
-          <div class="price">实付：¥ 199 （优惠：¥ 199）</div>
+          <div class="title">{{ c.title }}</div>
+          <div class="orderid">订单号：{{ c.tradeNo }}</div>
+          <div class="time">购买时间：{{ c.purchaseDate }}</div>
+          <div class="price">实付：¥ {{ c.payment }} <span>（优惠：¥ {{ c.originalCharge ? c.originalCharge - c.payment : 0 }}）</span></div>
         </div>
       </div>
     </div>
@@ -88,7 +88,7 @@
       <div class="wechat-name">{{ userinfo.adminName }}</div>
       <div class="row name">
         <div class="label">姓名</div>
-        <input type="text" name="name" placeholder="请输入您的姓名" v-model="userinfo.adminName">
+        <input type="text" name="name" placeholder="请输入您的姓名" v-model="userinfo.nickname">
       </div>
       <div class="row company">
         <div class="label">公司</div>
@@ -133,15 +133,18 @@ export default {
     })
   },
   mounted() {
+    this.getUser();
     this.popstate();
   },
   methods: {
+    gotoCourse: function (course) {
+      location.href = '/?cid=' + course.id + '#/course';
+    },
     popstate () {
       const mode = +util.getParam('mode') || 1;
       this.mode = mode;
       if (mode === 1 || mode === 4) {
         document.title = '我';
-        this.getUser();
       } else if (mode === 2) {
         document.title = '关于成长营';
         return false;
@@ -160,9 +163,33 @@ export default {
       document.querySelector('.avater-upload').click();
     },
     uploadAvater: function (ev) {
-      console.log(ev)
+      const input = ev.target;
+      var data = new FormData()
+      data.append('file', input.files[0])
+      fetch('/hotelpal/image/uploadImg', {
+        method: 'POST',
+        body: data
+      }).then(function(response) {
+        return response.json()
+      }).then((json) => {
+        if (json.code === 0) {
+          this.userinfo.headImg = json.data.imgurl;
+        } else {
+          console.warn('上传图片失败');
+        }
+      }).catch(function(ex) {
+        console.log('parsing failed', ex)
+      })
     },
     submitChange: function () {
+      const { headImg, nickname, company, title } = this.userinfo;
+      util.saveUserProp(headImg, nickname, company, title, (json) => {
+        if (json.code === 0) {
+          console.log(json);
+        } else {
+          console.warn('修改用户信息成功！');
+        }
+      })
       this.setMode(1)
     },
     getUser: function () {
@@ -228,6 +255,7 @@ export default {
           margin-top: -0.93333rem;
           height: 1.86666rem;
           img {
+            width: 1.86666rem;
             height: 1.86666rem;
             border-radius: 1.86666rem;
           }

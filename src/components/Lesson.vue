@@ -1,4 +1,4 @@
-l.id<template>
+<template>
   <div class="lesson-container">
     <div class="paid" v-if="true">
       <div class="player">

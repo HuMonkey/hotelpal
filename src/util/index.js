@@ -11,6 +11,7 @@ const api = {
   getUserStatistics: '/hotelpal/user/getUserStatistics',
   getPaidCourseList: '/hotelpal/user/getPaidCourseList',
   createPayOrder: '/hotelpal/user/createPayOrder',
+  saveUserProp: '/hotelpal/user/saveUserProp',
 
   getLesson: '/hotelpal/lesson/getLesson',
   newComment: '/hotelpal/user/newComment',
@@ -19,6 +20,7 @@ const api = {
   pay: '/hotelpal/user/pay',
 
   receiveRedirect: '/hotelpal/WeChat/receiveRedirect',
+
 };
 
 const util = {};
@@ -247,10 +249,22 @@ util.pay = function (cid, tradeNo, callback) {
 }
 
 /**
- *
+ * 
  */
 util.receiveRedirect = function (code, callback) {
   fetch(util.getUrl(util.config.host + api.receiveRedirect + '?code=' + code))
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 修改用户信息
+ */
+util.saveUserProp = function (headImg, nickname, company, title, callback) {
+  fetch(util.getUrl(util.config.host + api.saveUserProp + '?headImg=' + headImg + '&nickname=' + nickname + '&company=' + company + '&title=' + title))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
