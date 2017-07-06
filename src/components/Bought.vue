@@ -59,7 +59,6 @@ export default {
             updateDate: formatDate(temp[1], temp[2]),
           }
         });
-        this.courses = this.courses.concat(this.courses).concat(this.courses).concat(this.courses).concat(this.courses).concat(this.courses).concat(this.courses).concat(this.courses).concat(this.courses)
       } else {
         console.warn('获取已购课程出错');
       }

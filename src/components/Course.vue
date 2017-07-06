@@ -329,7 +329,7 @@ export default {
         }
         .hr {
           height: 1px;
-          background: #cccccc;
+          background: @hrColor;
           margin-top: 0.4rem;
         }
       }
@@ -345,6 +345,7 @@ export default {
       }
       .lessons {
         .hr {
+          background: @hrColor;
           margin-top: 0.53333rem;
         }
         .list {

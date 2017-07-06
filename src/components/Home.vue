@@ -10,18 +10,19 @@
     <div class="free">
       <div class="title">
         <div class="name">酒店邦说 | 免费</div>
-        <div class="all" @click="gotoJdbs">查看全部
+        <div class="all" @click="gotoJdbs">
+          <div>查看全部</div>
           <div class="arrow-right"></div>
         </div>
       </div>
       <div class="hr"></div>
-      <div class="list">
-        <div class="item">
+      <div class="list" v-if="lessonList.length > 0">
+        <div class="item" v-for="l in lessonList">
           <div class="name">
             <div class="arrow"></div>
-            <span>怎么在工作中快速学习、获得晋升？</span>
+            <span>{{ l.title }}</span>
           </div>
-          <div class="time">昨天</div>
+          <div class="time">{{ l.publishTime }}</div>
         </div>
       </div>
     </div>
@@ -80,6 +81,7 @@ export default {
       selectedTab: 0,
       courseList: [],
       jdbsList: [],
+      lessonList: [],
     }
   },
   created() {},
@@ -98,6 +100,18 @@ export default {
     })
     util.getUserInfo(function (json) {
       console.log(json)
+    })
+    util.getInternalLessonList((json) => {
+      if (json.code === 0) {
+        this.lessonList = json.data.lessonList.slice(0, 4).map((d) => {
+          return {
+            ...d,
+            publishTime: util.processDateStr(d.publishTime)
+          }
+        });
+      } else {
+        console.warn('获取自主课程列表出错！');
+      }
     })
   },
   methods: {
@@ -164,29 +178,35 @@ export default {
       .title {
         width: 100%;
         height: 0.986666rem;
-        line-height: 0.986666rem;
+        line-height: 1;
         font-size: 0.346666rem;
         display: flex;
         justify-content: space-between;
         padding: 0 @paddingLR;
         .name {
           color: #999999;
+          display: flex;
+          align-items: center;
         }
-        .arrow-right {
-          position: relative;
-          top: 0.04rem;
-          margin-left: 0.13333rem;
-          width: 0.16rem;
-          height: 0.346666rem;
-          display: inline-block;
-          background-size: 0.16rem 0.346666rem;
-          background-position: center;
-          background-image: url("/static/arrow-right.svg");
+        .all {
+          display: flex;
+          align-items: center;
+          div {
+            display: inline-block;
+            height: 0.26666rem;
+          }
+          .arrow-right {
+            margin-left: 0.13333rem;
+            width: 0.16rem;
+            background-size: 0.16rem 0.26666rem;
+            background-position: center;
+            background-image: url("/static/arrow-right.svg");
+          }
         }
       }
       .hr {
         margin: 0 @paddingLR 0 @paddingLR;
-        background: #ebebeb;
+        background: @hrColor;
         height: 1px;
       }
     }
@@ -201,8 +221,12 @@ export default {
           font-size: 0.4rem;
           display: flex;
           justify-content: space-between;
+          align-items: center;
           cursor: pointer;
           .name {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             .arrow {
               display: inline-block;
               border: 0.12rem solid #ffffff;
@@ -211,7 +235,7 @@ export default {
               height: 0;
             }
             span {
-              margin-left: -0.1rem;
+              margin-left: 0.13333rem;
             }
           }
           .time {
@@ -243,6 +267,8 @@ export default {
             position: relative;
             border-radius: 0.13333rem;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
             .state {
               width: 0.82rem;
               height: 0.426666rem;
@@ -263,7 +289,6 @@ export default {
               background: #f0944a;
             }
             img {
-              width: 100%;
               height: 100%;
             }
           }

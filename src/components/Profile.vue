@@ -2,7 +2,7 @@
   <div class="profile-container">
     <div class="index-page" v-if="mode === 1">
       <div class="banner">
-        <img src="/static/banner_1.jpg">
+        <img src="/static/profile_bg.png">
       </div>
       <div class="header">
         <div class="avater">
@@ -54,8 +54,9 @@
       <div class="logo">
         <img src="/static/logo.png">
       </div>
+      <div class="slogon">酒店邦成长营，与你一起成长</div>
       <div class="desc">
-        一大段一大段一大段一大段一大段一大段一大段一大段一大段一大段一大段一大段一大段一大段一大段一大段一大段一大段一大段一大段
+        酒店邦成长营，为你提供高效、有价值的行业知识服务，帮助你拓宽认知思维与提升实战能力，以取得更好的职业发展。我们提倡酒店行业人成为终生学习者，酒店邦成长营愿与你一起成长。
       </div>
       <div class="item contact">
         联系客服
@@ -408,12 +409,21 @@ export default {
           height: 2.13333rem
         }
       }
+      .slogon {
+        color: #333333;
+        font-size: 0.48rem;
+        text-align: center;
+        line-height: 1;
+        width: 100%;
+        margin-top: 0.746666rem;
+        font-weight: 600;
+      }
       .desc {
         padding: 0 0.4rem;
         font-size: 0.4rem;
         color: #666666;
         line-height: 1.8;
-        margin-top: 0.6666rem;
+        margin-top: 0.48rem;
         margin-bottom: 0.8rem;
       }
       .item {
@@ -457,8 +467,9 @@ export default {
           width: 2rem;
           height: 2.6666rem;
           position: relative;
+          display: flex;
+          justify-content: center;
           img {
-            width: 100%;
             height: 100%;
             border-radius: 4px;
           }

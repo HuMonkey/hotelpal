@@ -1,6 +1,6 @@
 <template>
   <div class="lesson-container">
-    <div class="paid" v-if="true">
+    <div class="paid" v-if="purchased || freeListen">
       <div class="player">
         <audio-player :source="song" :loop="false" :nextId="nextId" :preId="preId" :songLong="songLong"></audio-player>
       </div>
@@ -140,23 +140,23 @@
         </div>
       </div>
     </div>
-    <div class="not-paid" v-if="false">
+    <div class="not-paid" v-if="!purchased && !freeListen">
       <div class="box">
         <div class="top">
-          <div class="text">你需要先购买课程<br> <span class="price">¥ 199 / 10课时</span></div>
+          <div class="text">你需要先购买课程<br> <span class="price">¥ {{ course.charge / 100 }} / {{ course.lessonCount }}课时</span></div>
         </div>
         <div class="avater">
-          <img src="/static/logo.png">
+          <img :src="course.headImg">
         </div>
         <div class="bottom">
-          <div class="name">胡万祺</div>
-          <div class="who">酒店帮创始人</div>
-          <div class="course">什么鬼什么鬼什么鬼</div>
-          <div class="desc">介绍介绍</div>
-          <div class="btn">购买课程  获取知识</div>
+          <div class="name">{{ course.userName }}</div>
+          <div class="who">{{ course.userTitle }}</div>
+          <div class="course">{{ course.title }}</div>
+          <div class="desc">{{ course.subtitle }}</div>
+          <div class="btn" @click="gotoPay">购买课程  获取知识</div>
         </div>
       </div>
-      <div class="log">你已经购买？点此 <span>登录</span></div>
+      <div class="log">你已经购买？点此 <span @click="gotoLogin">登录</span></div>
     </div>
   </div>
 </template>
@@ -184,6 +184,9 @@ export default {
       replyId: null,
       replyName: null,
 
+      purchased: true,
+      freeListen: true,
+
       lesson: {},
       course: {},
 
@@ -206,6 +209,7 @@ export default {
     util.getCourse(cid, (json) => {
       if (json.code === 0) {
         this.course = json.data;
+        this.purchased = json.data.purchased;
         const lessonList = this.course.lessonList;
         const lessonsNum = lessonList.length;
         this.swiperWidth = (lessonsNum * 300 + (lessonsNum - 1) * 20) / 75;
@@ -222,6 +226,9 @@ export default {
     })
   },
   methods: {
+    gotoLogin: function () {
+      location.href = '/?redirect=' + encodeURIComponent(location.href) + '#/login'
+    },
     updateLesson: function () {
       const lid = util.getParam('lid');
       const cid = util.getParam('cid');
@@ -232,6 +239,7 @@ export default {
           const publishTimeStr = json.data.publishTime && json.data.publishTime.split(' ')[0];
           this.songLong = moment(json.data.audioLen * 1000).format('mm:ss');
           const content = json.data.content;
+          this.freeListen = json.data.freeListen;
           this.lesson = {
             ...json.data,
             publishTimeStr,
@@ -269,6 +277,10 @@ export default {
     },
     submitReply () {
       const lid = util.getParam('lid');
+      if (this.myComment && this.myComment.length < 20) {
+        alert('回复至少20字以上');
+        return false;
+      }
       util.newComment(lid, this.myComment, this.replyId, (json) => {
         this.myComment = null;
         this.cancelReply();
@@ -302,7 +314,37 @@ export default {
     },
     formatTime (time) {
       return util.formatTime(time);
-    }
+    },
+    gotoPay: function () {
+      util.checkLogin();
+      const cid = util.getParam('cid');
+      util.createPayOrder(cid, (json) => {
+        if (json.code === 0) {
+          const { appId, nonceStr, paySign, timeStamp, tradeNo } = json.data;
+          wx.chooseWXPay({
+            timestamp: timeStamp,
+            appId: appId,
+            nonceStr: nonceStr, // 支付签名随机串，不长于 32 位
+            package: json.data.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
+            signType: 'MD5', // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
+            paySign: paySign, // 支付签名
+            success: (res) => {
+              // 支付成功后的回调函数
+              this.course.purchased = true;
+              this.purchased = true;
+              util.pay(cid, tradeNo, function (json) {
+                console.log(json)
+              });
+            },
+            error: () => {
+              console.warn('支付失败')
+            }
+          });
+        } else {
+          console.warn('支付出现了点问题')
+        }
+      })
+    },
   },
   destroyed() {},
   watch: {
@@ -392,7 +434,7 @@ export default {
         .content {
           line-height: 1.8;
           font-size: 0.4rem;
-          color: #999999;
+          color: #666666;
           .summary {
             padding-bottom: 1rem;
           }
@@ -432,10 +474,11 @@ export default {
           .hr {
             margin-top: 0.4rem;
             height: 1px;
-            background: #cccccc;
+            background: @hrColor;
           }
           .course {
             .hr {
+              background: @hrColor;
               margin-top: 0;
             }
             .back {

@@ -296,11 +296,11 @@ export default {
       height: 3.06666rem;
       margin: 0;
       background: white;
-      box-shadow: 0px 1px 10px #cccccc;
     }
     .main {
       background: white;
       padding: 1.3333rem 0.4rem 0.4rem 0.4rem;
+      margin-top: 0.26666rem;
       .course-title {
         font-size: 0.66666rem;
         color: #333333;
@@ -390,7 +390,7 @@ export default {
         .hr {
           margin-top: 0.4rem;
           height: 1px;
-          background: #cccccc;
+          background: @hrColor;
         }
       }
     }

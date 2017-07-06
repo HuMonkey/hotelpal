@@ -58,7 +58,7 @@ util.ua = {
 util.config = {
   // host: 'http://116.62.247.1:8080', // 测试
   // host: 'http://192.168.0.14:8082', // 测试
-  host: 'http://hotelpal.cn', // 线上
+  host: '//hotelpal.cn', // 线上
 }
 
 /**
@@ -535,6 +535,16 @@ util.getUrl = function (url) {
     result += '?' + url.split('?')[1]
   }
   return result;
+}
+
+util.processDateStr = function (date) {
+  const temp = date.split('-');
+  for (let i = 0; i < temp.length; i++) {
+    if (temp[i].length === 1) {
+      temp[i] = '0' + temp[i]
+    }
+  }
+  return temp.join('-');
 }
 
 export default util;
