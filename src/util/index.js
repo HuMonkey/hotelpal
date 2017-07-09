@@ -3,6 +3,7 @@ import 'whatwg-fetch'
 const api = {
   getCourse: '/hotelpal/course/getCourse',
   getCourseList: '/hotelpal/course/getCourseList',
+  getMainBanner: '/hotelpal/course/getMainBanner',
   
   getSign: '/hotelpal/user/getSign',
   sendCaptcha: '/hotelpal/user/sendCaptcha',
@@ -19,6 +20,7 @@ const api = {
   addZan: '/hotelpal/user/addZan',
   recordListenTime: '/hotelpal/user/recordListenTime',
   pay: '/hotelpal/user/pay',
+  openRedPacket: '/hotelpal/user/openRedPacket',
 
   receiveRedirect: '/hotelpal/WeChat/receiveRedirect',
 
@@ -58,7 +60,7 @@ util.ua = {
 util.config = {
   // host: 'http://116.62.247.1:8080', // 测试
   // host: 'http://192.168.0.14:8082', // 测试
-  host: '//hotelpal.cn', // 线上
+  host: 'http://hotelpal.cn', // 线上
 }
 
 /**
@@ -239,9 +241,17 @@ util.createPayOrder = function (cid, callback) {
  * 支付成功
  */
 util.pay = function (cid, tradeNo, callback) {
-  alert(1);
   fetch(util.getUrl(util.config.host + api.pay + '?courseId=' + cid
     + '&tradeNo=' + tradeNo + '&gift=0'))
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+util.openRedPacket = function (nonce, callback) {
+  fetch(util.getUrl(util.config.host + api.openRedPacket + '?nonce=' + nonce))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -278,6 +288,18 @@ util.saveUserProp = function (headImg, nickname, company, title, callback) {
  */
 util.getInternalLessonList = function (callback) {
   fetch(util.getUrl(util.config.host + api.getInternalLessonList))
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取首页banner
+ */
+util.getMainBanner = function (callback) {
+  fetch(util.getUrl(util.config.host + api.getMainBanner))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -334,8 +356,8 @@ util.changeURL = function(options, replaceMode, hash) {
   })
 
   var paramsArr = [];
-  Object.keys(params).forEach((j) => {
-    if (params[j] != null) {
+  Object.keys(options).forEach((j) => {
+    if (options[j] != null) {
       paramsArr.push(j + '=' + encodeURIComponent(params[j]))
     }
   })
@@ -452,7 +474,6 @@ util.textLength = function(para, fontSize) {
  * 如果 URL 发生变动，则需要重新签名
  */
 util.configWechat = function(appId, timestamp, nonceStr, signature, callback) {
-  console.log(appId, timestamp, nonceStr, signature)
   try {
     if (!util.ua.wechat) {
       return;
@@ -498,9 +519,9 @@ util.formatTime = function (time) {
   if (!time) {
     return null;
   }
-  var date = new Date(time);
-  var now = Date.now();
-  var diff = now - date.getTime();
+  var date = new Date(time.replace(/\-/g, "/"));
+  var now = new Date();
+  var diff = now.getTime() - date.getTime();
   var M_DAY = 24 * 60 * 60 * 1000;
   var M_HOUR = 60 * 60 * 1000;
   var days = Math.floor(diff / M_DAY)

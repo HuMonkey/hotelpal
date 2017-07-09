@@ -45,12 +45,13 @@ export default {
       lessonList: []
     }
   },
-  created() {},
-  mounted() {
+  created() {
     document.title = '酒店邦说';
+  },
+  mounted() {
     util.getInternalLessonList((json) => {
       if (json.code === 0) {
-        this.lessonList = json.data.lessonList.map((d) => {
+        this.lessonList = json.data.lessonResponseList.map((d) => {
           return {
             ...d,
             audioLen: moment(d.audioLen * 1000).format('mm:ss')

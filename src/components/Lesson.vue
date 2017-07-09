@@ -1,162 +1,174 @@
 <template>
   <div class="lesson-container">
-    <div class="paid" v-if="purchased || freeListen">
-      <div class="player">
-        <audio-player :source="song" :loop="false" :nextId="nextId" :preId="preId" :songLong="songLong"></audio-player>
-      </div>
-      <div class="main">
-        <div class="course-title">{{ lesson.lessonNo }} | {{ lesson.title }}</div>
-        <div class="infos">
-          <div class="time">{{ lesson.publishTimeStr }}发布</div>
-          <div class="other">
-            <span><div class="icon time"></div>{{ lesson.lenStr }}</span>
-            <span><div class="icon download"></div>{{ lesson.resourceSize || '???MB' }}</span>
-            <span><div class="icon read"></div>{{ lesson.commentCount || 0 }}</span>
-          </div>
+    <Error :error="error" v-if="error"></Error>
+    <Hongbao v-if="isHongbao === 1"></Hongbao>
+    <div v-if="isHongbao === 0">
+      <div class="paid" v-if="purchased || freeListen">
+        <div class="player">
+          <audio-player :source="song" :loop="false" :nextId="nextId" :preId="preId" :songLong="songLong"></audio-player>
         </div>
-        <div class="content">
-          <!-- <div class="summary">
-            一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆
-          </div>
-          <div class="points">
-            <div class="title">知识点</div>
-            <ul>
-              <li>知识点1</li>
-              <li>知识点2</li>
-              <li>知识点3</li>
-            </ul>
-          </div> -->
-          <div class="article" :class="{overflow: isIntroOverflow && introOverflow}" v-html="lesson.content">
-          </div>
-          <div class="open" v-if="isIntroOverflow" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
-          <div class="hr"></div>
-          <div class="course">
-            <div class="back">
-              <div class="box" @click="gotoCourse">
-                <div class="img"><img :src="course.headImg"></div>
-                <div class="title">{{ course.title }}</div>
-                <div class="desc">{{course.userName}} · {{ course.userTitle }}</div>
-                <div class="arrow"></div>
-              </div>
+        <div class="main">
+          <div class="course-title">{{ lesson.lessonNo }} | {{ lesson.title }}</div>
+          <div class="infos">
+            <div class="time">{{ lesson.publishTimeStr }}发布</div>
+            <div class="other">
+              <span><div class="icon time"></div>{{ lesson.lenStr }}</span>
+              <span><div class="icon download"></div>{{ lesson.resourceSize || '???MB' }}</span>
+              <span><div class="icon read"></div>{{ lesson.commentCount || 0 }}</span>
             </div>
+          </div>
+          <div class="content">
+            <!-- <div class="summary">
+              一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆
+            </div>
+            <div class="points">
+              <div class="title">知识点</div>
+              <ul>
+                <li>知识点1</li>
+                <li>知识点2</li>
+                <li>知识点3</li>
+              </ul>
+            </div> -->
+            <div class="article" :class="{overflow: isIntroOverflow && introOverflow}" v-html="lesson.content">
+            </div>
+            <div class="open" v-if="isIntroOverflow" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
             <div class="hr"></div>
-            <div class="lessons">
-              <div class="swiper" :style="{width: swiperWidth + 'rem'}">
-                <div class="item" :class="{current: l.id === lesson.id}" v-for="l in course.lessonList" @click="gotoLesson(l.id)">
-                  <div class="inner">
-                    {{ l.lessonNo }} | {{ l.title }}
+            <div class="course">
+              <div class="back">
+                <div class="box" @click="gotoCourse">
+                  <div class="img"><img :src="course.headImg"></div>
+                  <div class="title">{{ course.title }}</div>
+                  <div class="desc">{{course.userName}} · {{ course.userTitle }}</div>
+                  <div class="arrow"></div>
+                </div>
+              </div>
+              <div class="hr"></div>
+              <div class="lessons">
+                <div class="swiper" :style="{width: swiperWidth + 'rem'}">
+                  <div class="item" :class="{current: l.id === lesson.id}" v-for="l in course.lessonList" @click="gotoLesson(l.id)">
+                    <div class="inner">
+                      {{ l.lessonNo }} | {{ l.title }}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="discuss">
-          <div class="good" v-if="lesson.eliteCommentList && lesson.eliteCommentList.commentList.length > 0">
-            <div class="title">
-              讨论
-              <span>精选（{{ lesson.eliteCommentList.commentList.length }}）</span>
-            </div>
-            <div class="comments">
-              <div class="item" v-for="comment in lesson.eliteCommentList.commentList">
-                <div class="avater">
-                  <img src="/static/header.png">
-                </div>
-                <div class="name">
-                  {{ comment.userName }}  {{ comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
-                </div> 
-                <div class="content">
-                  {{ comment.content }}
-                </div>
-                <div class="quote" v-for="reply in lesson.eliteCommentList.replyToCommentList" v-if="reply.id === comment.replytoId">
-                  {{ reply.userName + '：' + reply.content }}
-                </div>
-                <div class="bottom">
-                  <div class="time">{{ formatTime(comment.creationTime) }}</div>
-                  <div class="box">
-                    <div class="like" @click="doLike(comment)">
-                      <div class="icon" :class="{ liked: comment.liked }"></div>
-                      {{ comment.zanCount || 0 }}
-                    </div>
-                    <div class="comments" @click="gotoReply(comment.id, comment.userName)">
-                      回复
+        <div class="discuss">
+            <div class="good" v-if="lesson.eliteCommentList && lesson.eliteCommentList.commentList.length > 0">
+              <div class="title">
+                讨论
+                <span>精选（{{ lesson.eliteCommentList.commentList.length }}）</span>
+              </div>
+              <div class="comments">
+                <div class="item" v-for="comment in lesson.eliteCommentList.commentList">
+                  <div class="avater">
+                    <img src="/static/header.png">
+                  </div>
+                  <div class="name">
+                    {{ comment.userName }}  {{ comment.userCompany + '·' + comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
+                  </div> 
+                  <div class="content">
+                    {{ comment.content }}
+                  </div>
+                  <div class="quote" v-for="reply in lesson.eliteCommentList.replyToCommentList" v-if="reply.id === comment.replytoId">
+                    {{ reply.userName + '：' + reply.content }}
+                  </div>
+                  <div class="bottom">
+                    <div class="time">{{ formatTime(comment.creationTime) }}</div>
+                    <div class="box">
+                      <div class="like" @click="doLike(comment)">
+                        <div class="icon" :class="{ liked: comment.liked }"></div>
+                        {{ comment.zanCount || 0 }}
+                      </div>
+                      <div class="comments" @click="gotoReply(comment.id, comment.userName)">
+                        回复
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="all" v-if="lesson.commentList">
-            <div class="title">
-              <span>全部（{{ lesson.commentList.commentList.length }}）</span>
-            </div>
-            <div class="no-comment" v-if="lesson.commentList.commentList.length === 0">
-              尚无讨论，说说你的看法吧！
-            </div>
-            <div class="comments" v-if="lesson.commentList.commentList.length > 0">
-              <div class="item" v-for="comment in lesson.commentList.commentList">
-                <div class="avater">
-                  <img src="/static/header.png">
-                </div>
-                <div class="name">
-                  {{ comment.userName }}  {{ comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
-                </div> 
-                <div class="content">
-                  {{ comment.content }}
-                </div>
-                <div class="quote" v-for="reply in lesson.commentList.replyToCommentList" v-if="reply.id === comment.replytoId">
-                  {{ reply.userName + '：' + reply.content }}
-                </div>
-                <div class="bottom">
-                  <div class="time">{{ formatTime(comment.creationTime) }}</div>
-                  <div class="box">
-                    <div class="like" @click="doLike(comment)">
-                      <div class="icon" :class="{ liked: comment.liked }"></div>
-                      {{ comment.zanCount || 0 }}
-                    </div>
-                    <div class="comments" @click="gotoReply(comment.id, comment.userName)">
-                      回复
+            <div class="all" v-if="lesson.commentList">
+              <div class="title">
+                <span>全部（{{ lesson.commentList.commentList.length }}）</span>
+              </div>
+              <div class="no-comment" v-if="lesson.commentList.commentList.length === 0">
+                尚无讨论，说说你的看法吧！
+              </div>
+              <div class="comments" v-if="lesson.commentList.commentList.length > 0">
+                <div class="item" v-for="comment in lesson.commentList.commentList">
+                  <div class="avater">
+                    <img src="/static/header.png">
+                  </div>
+                  <div class="name">
+                    {{ comment.userName }}  {{ comment.userCompany + '·' + comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
+                  </div> 
+                  <div class="content">
+                    {{ comment.content }}
+                  </div>
+                  <div class="quote" v-for="reply in lesson.commentList.replyToCommentList" v-if="reply.id === comment.replytoId">
+                    {{ reply.userName + '：' + reply.content }}
+                  </div>
+                  <div class="bottom">
+                    <div class="time">{{ formatTime(comment.creationTime) }}</div>
+                    <div class="box">
+                      <div class="like" @click="doLike(comment)">
+                        <div class="icon" :class="{ liked: comment.liked }"></div>
+                        {{ comment.zanCount || 0 }}
+                      </div>
+                      <div class="comments" @click="gotoReply(comment.id, comment.userName)">
+                        回复
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+        </div>
+        <div class="comment-box" v-if="!commenting">
+          <div class="pen"></div>
+          <input type="text" name="comment" placeholder="输入你的评论" @click="gotoComment">
+          <div class="hongbao" v-if="lesson.redPacketRemained > 0" @click="showHongbaoTips(true)">
+            <img src="/static/hongbao.gif">
           </div>
+          <!-- <div class="btn">发送</div> -->
+        </div>
+        <div class="reply-box" v-if="replyId !== null || commenting">
+          <div class="cover" @click="cancelReply"></div>
+          <div class="box">
+            <div class="btns">
+              <div class="cancel" @click="cancelReply">取消</div>
+              <div class="confirm" @click="submitReply">发布</div>
+            </div>
+            <textarea v-model="myComment" v-focus="focusStatus" :placeholder="replyId ? `回复${replyName}` : '一起来参与讨论吧！'"></textarea>
+          </div>
+        </div>
+        <div class="hongbaoTips" v-if="hongbaoTips && lesson.redPacketRemained > 0" @click="showHongbaoTips(false)">
+          <img src="/static/hongbaotips.png">
+        </div>
       </div>
-      <div class="comment-box" v-if="!commenting">
-        <div class="pen"></div>
-        <input type="text" name="comment" placeholder="输入你的评论" @click="gotoComment">
-        <!-- <div class="btn">发送</div> -->
-      </div>
-      <div class="reply-box" v-if="replyId !== null || commenting">
-        <div class="cover" @click="cancelReply"></div>
+      <div class="not-paid" v-if="!purchased && !freeListen">
         <div class="box">
-          <div class="btns">
-            <div class="cancel" @click="cancelReply">取消</div>
-            <div class="confirm" @click="submitReply">发布</div>
+          <div class="top">
+            <div class="text">你需要先购买课程<br> <span class="price">¥ {{ course.charge / 100 }} / {{ course.lessonCount }}课时</span></div>
           </div>
-          <textarea v-model="myComment" v-focus="focusStatus" :placeholder="replyId ? `回复${replyName}` : '一起来参与讨论吧！'"></textarea>
+          <div class="avater">
+            <div class="img">
+              <img :src="course.headImg">
+            </div>
+          </div>
+          <div class="bottom">
+            <div class="name">{{ course.userName }}</div>
+            <div class="who">{{ course.userTitle }}</div>
+            <div class="course">{{ course.title }}</div>
+            <div class="desc">{{ course.subtitle }}</div>
+            <div class="btn" @click="gotoPay">购买课程  获取知识</div>
+          </div>
         </div>
+        <div class="log">你已经购买？点此 <span @click="gotoLogin">登录</span></div>
       </div>
-    </div>
-    <div class="not-paid" v-if="!purchased && !freeListen">
-      <div class="box">
-        <div class="top">
-          <div class="text">你需要先购买课程<br> <span class="price">¥ {{ course.charge / 100 }} / {{ course.lessonCount }}课时</span></div>
-        </div>
-        <div class="avater">
-          <img :src="course.headImg">
-        </div>
-        <div class="bottom">
-          <div class="name">{{ course.userName }}</div>
-          <div class="who">{{ course.userTitle }}</div>
-          <div class="course">{{ course.title }}</div>
-          <div class="desc">{{ course.subtitle }}</div>
-          <div class="btn" @click="gotoPay">购买课程  获取知识</div>
-        </div>
-      </div>
-      <div class="log">你已经购买？点此 <span @click="gotoLogin">登录</span></div>
     </div>
   </div>
 </template>
@@ -166,6 +178,8 @@ import moment from 'moment';
 
 import util from '../util/index'
 import AudioPlayer from './AudioPlayer.vue'
+import Error from './Error.vue'
+import Hongbao from './Hongbao'
 
 export default {
   name: 'lesson',
@@ -197,14 +211,33 @@ export default {
       introOverflow: true,
 
       songLong: '00:00',
-      myComment: ''
+      myComment: '',
+
+      errorTimeout: null,
+      error: null,
+
+      hongbaoTips: false,
+
+      isHongbao: 0,
+      fromHongbao: 0,
+
+      userInfo: {},
     }
   },
-  created() {},
+  created() {
+    document.title = '加载课时...';
+  },
   mounted() {
     // this.songs = ['/static/test.mp3'];
     const lid = util.getParam('lid');
     const cid = util.getParam('cid');
+    this.isHongbao = +util.getParam('isHongbao') || 0;
+    this.fromHongbao = +util.getParam('fromHongbao') || 0;
+
+    if (this.isHongbao === 1) {
+      return false;
+    }
+
     this.updateLesson();
     util.getCourse(cid, (json) => {
       if (json.code === 0) {
@@ -224,8 +257,23 @@ export default {
         console.warn('获取课程信息失败！')
       }
     })
+
+    util.getUserInfo((json) => {
+      if (json.code === 0) {
+        this.userInfo = json.data;
+      } else {
+        console.warn('获取课程信息失败！')
+      }
+    })
   },
   methods: {
+    setError: function (error) {
+      this.error = error;
+      this.errorTimeout && clearTimeout(this.errorTimeout)
+      this.errorTimeout = setTimeout(() => {
+        this.error = null;
+      }, 4000);
+    },
     gotoLogin: function () {
       location.href = '/?redirect=' + encodeURIComponent(location.href) + '#/login'
     },
@@ -252,6 +300,9 @@ export default {
           if (length > 9.2 * rem * 2) {
             this.isIntroOverflow = true;
           }
+        } else if (json.code === 40301) {
+          this.purchased = false;
+          this.freeListen = false;
         } else {
           console.warn('获取课时失败！')
         }
@@ -277,8 +328,8 @@ export default {
     },
     submitReply () {
       const lid = util.getParam('lid');
-      if (this.myComment && this.myComment.length < 20) {
-        alert('回复至少20字以上');
+      if (!this.myComment || this.myComment.length < 20) {
+        this.setError('回复至少20字以上');
         return false;
       }
       util.newComment(lid, this.myComment, this.replyId, (json) => {
@@ -345,8 +396,27 @@ export default {
         }
       })
     },
+    showHongbaoTips (b) {
+      this.hongbaoTips = b;
+      const cid = util.getParam('cid');
+      const lid = util.getParam('lid');
+      if (b) {
+        const isHongbao = 1;
+        const userName = this.userInfo.nickname;
+        const userHeader = this.userInfo.headImg;
+        util.changeURL({
+          cid, lid, isHongbao, userName, userHeader
+        }, true)
+      } else {
+        util.changeURL({
+          cid, lid
+        }, true)
+      }
+    }
   },
-  destroyed() {},
+  destroyed() {
+    clearInterval(this.interval);
+  },
   watch: {
     focusStatus() {
       if (this.focusStatus) {
@@ -359,7 +429,7 @@ export default {
     }
   },
   components: {
-    AudioPlayer
+    AudioPlayer, Error, Hongbao
   }
 }
 </script>
@@ -371,6 +441,18 @@ export default {
     background: #f5f5f5;
     .paid {
       padding-top: 3.226666rem;
+      .hongbaoTips {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        z-index: 9999;
+        img {
+          width: 100%;
+          height: 100%;
+        }
+      }
       .player {
         width: 100%;
         height: 3.06666rem;
@@ -409,7 +491,7 @@ export default {
                 width: 0.32rem;
                 height: 0.32rem;
                 background-repeat: no-repeat;
-                background-size: cover;
+                background-size: 0.32rem 0.32rem;
                 margin-right: 0.13333rem;
                 display: inline-block;
               }
@@ -464,6 +546,9 @@ export default {
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
+            img {
+              display: none;
+            }
           }
           .open {
             margin-top: 0.4rem;
@@ -497,7 +582,7 @@ export default {
                   overflow: hidden;
                   border-radius: 1.3333rem;
                   img {
-                    width: 100%;
+                    height: 100%;
                   }
                 }
                 .title {
@@ -681,12 +766,10 @@ export default {
         :-ms-input-placeholder { /* Internet Explorer 10+ */ 
           color: #cccccc; 
         } 
-        img {
-          position: absolute;
-          left: 0.6666rem;
-          top: 0.4rem;
-          width: 0.53333rem;
-          height: 0.53333rem;
+        .hongbao {
+          img {
+            height: 1rem;
+          }
         }
         .pen {
           position: absolute;
@@ -798,10 +881,16 @@ export default {
           left: 0;
           width: 100%;
           text-align: center;
-          img {
+          .img {
             width: 1.92rem;
             height: 1.92rem;
-            border-radius: 2rem;
+            border-radius: 1.92rem;
+            overflow: hidden;
+            display: inline-block;
+            img {
+              width: 1.92rem;
+              height: auto;
+            }
           }
         }
         .bottom {

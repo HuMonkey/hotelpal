@@ -1,6 +1,6 @@
 <template>
   <div class="audio-player">
-    <audio :src="source" controls="controls" preload="true"></audio>
+    <audio :src="source" controls="controls" preload="preload"></audio>
     <div class="top" v-if="audio">
       <div class="progress">
         <div class="current">{{ current }}</div>
@@ -19,9 +19,9 @@
         <div class="bg"></div>
         15
       </div>
-      <div class="previous" @click="preLesson"></div>
+      <div class="previous" @click="preLesson" :class="{empty: !preId}"></div>
       <div class="switch" :class="{playing: playing}" @click="playOrPause"></div>
-      <div class="next" @click="nextLesson"></div>
+      <div class="next" @click="nextLesson" :class="{empty: !nextId}"></div>
       <div class="next-15" @click="next15">
         <div class="bg"></div>
         15
@@ -79,8 +79,12 @@
           const cid = util.getParam('cid');
           location.href = 'http://hotelpal.cn/?goon=1&cid=' + cid + '&lid=' + this.nextId + '#/lesson'
         }
-        this.current = formatTime(audio.currentTime, true);
-        this.left = formatTime(audio.duration - audio.currentTime, false);
+        this.current = formatTime(audio.currentTime || 0, true);
+        if (!audio.duration) {
+          this.left = this.songLong;
+        } else {
+          this.left = formatTime(audio.duration - audio.currentTime, false);
+        }
       },
       clickProgress (ev) {
         if (this.paused) {
@@ -90,9 +94,10 @@
       },
       playOrPause () {
         const audio = this.audio;
-        if (!audio.duration) {
-          return false;
-        }
+        // if (!audio.duration) {
+        //   alert(audio.error)
+        //   return false;
+        // }
         if (this.playing) {
           audio.pause();
           this.interval && clearInterval(this.interval);
@@ -301,6 +306,9 @@
       }
       .next {
         background-image: url('/static/next.svg');
+      }
+      .previous.empty, .next.empty {
+        background: none;
       }
       .switch {
         width: 1.28rem;

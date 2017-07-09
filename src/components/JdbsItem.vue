@@ -51,7 +51,7 @@
                   <img src="/static/header.png">
                 </div>
                 <div class="name">
-                  {{ comment.userName }}  {{ comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
+                  {{ comment.userName }}  {{ comment.userCompany + '·' + comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
                 </div> 
                 <div class="content">
                   {{ comment.content }}
@@ -87,7 +87,7 @@
                   <img src="/static/header.png">
                 </div>
                 <div class="name">
-                  {{ comment.userName }}  {{ comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
+                  {{ comment.userName }}  {{ comment.userCompany + '·' + comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
                 </div> 
                 <div class="content">
                   {{ comment.content }}
@@ -162,7 +162,9 @@ export default {
       myComment: ''
     }
   },
-  created() {},
+  created() {
+    document.title = '酒店邦说';
+  },
   mounted() {
     this.updateLesson();
   },

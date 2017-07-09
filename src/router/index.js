@@ -53,11 +53,6 @@ export default new Router({
       path: '/jdbsitem',
       name: 'jdbsitem',
       component: JdbsItem
-    },
-    {
-      path: '/hongbao',
-      name: 'Hongbao',
-      component: Hongbao
     }
   ]
 })

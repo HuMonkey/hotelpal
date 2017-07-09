@@ -19,7 +19,7 @@
         <div class="label">主讲人</div>
         <div class="name">
           <span class="userName">{{ course.userName }}</span>
-          <span class="userTitle">{{ course.userTitle }}</span>
+          <span class="userTitle">{{ course.company + '·' + course.userTitle }}</span>
         </div>
         <div class="intro" v-if="course.speakerDescribe" v-html="course.speakerDescribe || '暂无介绍'"></div>
         <div class="hr"></div>
@@ -33,31 +33,27 @@
       <div class="block who">
         <div class="label">适宜人群</div>
         <div class="intro">
-          <div v-for="c in course.crowd">{{ c.name }}</div>
-          以及那些对酒店创意感兴趣的你
+          <div v-html="course.crowd || '暂无'"></div>
+          <!-- 以及那些对酒店创意感兴趣的你 -->
         </div>
         <div class="hr"></div>
       </div>
       <div class="block getting">
         <div class="label">你将收获</div>
-        <div class="intro">
-          {{ course.gain || '暂无' }}
-        </div>
+        <div class="intro" v-html="course.gain || '暂无'"></div>
         <div class="hr"></div>
       </div>
       <div class="block care">
-        <div class="label">注意事项</div>
-        <div class="intro">
-          {{ '暂无' }}
-        </div>
+        <div class="label">订阅须知</div>
+        <div class="intro" v-html="course.subscribe || '暂无'"></div>
         <div class="hr"></div>
       </div>
       <div class="block lessons">
         <div class="label">课时</div>
         <div class="list">
-          <div class="item" :class="{free: l.freeListen, future: !l.isPublish, finished: l.listenLen === l.audioLen && l.listenLen}" @click="gotoLesson(l)" v-for="(l, index) in course.lessonList">
+          <div class="item" :class="{free: l.freeListen, future: !l.isPublish, finished: l.listenLen === l.audioLen && l.listenLen}" @click="gotoLesson(l)" v-for="(l, index) in course.lessonList" :id="'lesson-' + l.id">
             <div class="up">
-              <span>{{ l.lessonNo }}</span> | <span class="ltitle">{{ l.title }}</span>
+              <span>{{ l.lessonOrder }}</span> | <span class="ltitle">{{ l.title }}</span>
               <span class="tag" v-if="l.freeListen">免费试听</span>
             </div> 
             <div class="down">
@@ -87,7 +83,7 @@
       </div>
     </div>
     <div class="btns" v-if="!course.purchased">
-      <div class="item free" @click="gotoFree">免费试读</div>
+      <div class="item free" v-if="hasFree" @click="gotoFree">免费试读</div>
       <div class="item buy" @click="gotoPay">订阅：¥ {{ course.charge / 100 }} / {{ course.lessonCount }}课时</div>
     </div>
   </div>
@@ -98,7 +94,7 @@ import util from '../util/index';
 import moment from 'moment';
 
 const formatDate = function(m, d) {
-  return (m > 9 ? m : '0' + m) + '-' + (d > 9 ? d : '0' + d)
+  return (m.length > 1 ? m : '0' + m) + '-' + (d.length > 1 ? d : '0' + d)
 }
 
 export default {
@@ -112,7 +108,9 @@ export default {
       course: {}
     }
   },
-  created() {},
+  created() {
+    document.title = '加载课程...';
+  },
   mounted() {
     const courseId = util.getParam('cid');
     util.getCourse(courseId, (json) => {
@@ -124,14 +122,18 @@ export default {
           lessonList: course.lessonList.map((d, i) => {
             let publishTime = '';
             let lenStr = '';
+            let lessonOrder = d.lessonOrder && d.lessonOrder.toString();
             if (d.isPublish === 1) {
               const temp = d.publishTime.split('-');
               publishTime = formatDate(temp[1], temp[2]);
               lenStr = moment(d.audioLen * 1000).format('mm:ss');
             }
+            if (lessonOrder && lessonOrder.length < 2) {
+              lessonOrder = '0' + lessonOrder;
+            }
             return {
               ...d,
-              publishTime, lenStr
+              publishTime, lenStr, lessonOrder
             }
           })
         };
@@ -204,14 +206,26 @@ export default {
           lesson = lessonList[i];
         }
       }
-      if (!lesson) {
-        return false;
-      }
-      location.href = '/?cid=' + cid + '&lid=' + lesson.id + '#/lesson';
+      document.body.scrollTop = document.querySelector('#lesson-' + lesson.id).getBoundingClientRect().top + document.body.scrollTop;
+      // location.href = '/?cid=' + cid + '&lid=' + lesson.id + '#/lesson';
     }
   },
   destroyed() {},
-  watch: {},
+  computed: {
+    hasFree: function () {
+      const lessonList = this.course.lessonList;
+      if (!lessonList) {
+        return false;
+      }
+      for (let i = 0; i < lessonList.length; i++) {
+        console.log(lessonList[i]);
+        if (lessonList[i].freeListen === 1) {
+          return true;
+        }
+      }
+      return false;
+    }
+  },
   components: {}
 }
 </script>
@@ -341,6 +355,9 @@ export default {
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
+          img {
+            display: none;
+          }
         }
       }
       .lessons {

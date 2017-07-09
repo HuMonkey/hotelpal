@@ -1,25 +1,29 @@
 <template>
   <div class="hongbao-container">
-    <div class="avater" v-if="false">
-      <img src="/static/header.png">
+    <div v-if="number > 0">
+      <div class="aavater">
+        <div class="img"><img :src="userHeader"></div>
+      </div>
+      <div class="name">{{ userName + '请你学知识' }}</div>
     </div>
-    <div class="name" v-if="false">名字名字名字名字名字名</div>
-    <div class="over-tips">
+    <div class="over-tips" v-if="number === 0">
       知识红包已抢完，<span @click="gotoHome">去查看更多课程</span><div class="icon"></div>    
     </div>
-    <div class="hongbao">
-      <img src="/static/hongbao.png">
+    <div class="hongbao" v-if="number !== null">
+      <img class="hongbao-bg" src="/static/hongbao.png">
       <div class="box">
         <div class="avater">
-          <img src="/static/header.png">
+          <img :src="course.headImg">
         </div>
         <div class="desc">
-          <div class="title">标题标题标题标题标题标题</div>
-          <div class="who">胡万祺<br />浙江大学</div>
+          <div class="title">{{ course.title }}</div>
+          <div class="title">{{ lesson.title }}</div>
+          <div class="who">{{ course.userName }}<br />{{ course.company }}</div>
         </div>
       </div>
-      <div class="btn over">抢完了</div>
-      <div class="tips">文案文案文案呢文案呢文案呢</div>
+      <div class="btn" :class="{over: number == 0}" @click="openRedPacket">{{ number > 0 ? '抢' : '抢完了' }}</div>
+      <div class="tips" v-if="number > 0">限量三个名额，快来领取</div>
+      <div class="tips" v-if="number === 0">名额已抢完</div>
     </div>
   </div>
 </template>
@@ -31,14 +35,61 @@ export default {
   name: 'hongbao',
   props: [],
   data () {
-    return {}
+    return {
+      number: null,
+      course: {},
+      lesson: {},
+
+      userName: '',
+      userHeader: '',
+    }
   },
   created() {},
-  mounted() {},
+  mounted() {
+    const lid = util.getParam('lid');
+    const cid = util.getParam('cid');
+    const userName = util.getParam('userName');
+    const userHeader = util.getParam('userHeader');
+
+    this.userName = decodeURIComponent(userName);
+    this.userHeader = decodeURIComponent(userHeader);
+
+    util.getCourse(cid, (json) => {
+      if (json.code === 0) {
+        this.course = json.data;
+      } else {
+        console.warn('获取课程信息失败！')
+      }
+    })
+
+    util.getLesson(lid, (json) => {
+      if (json.code === 0) {
+        this.lesson = json.data;
+        this.number = json.data.redPacketRemained;
+      } else {
+        console.warn('获取课时失败！')
+      }
+    });
+  },
   methods: {
     gotoHome: function () {
       location.href = '/';
-    }
+    },
+    openRedPacket: function () {
+      if (this.number == 0) {
+        return false;
+      }
+      util.openRedPacket(this.lesson.redPacketNonce, (json) => {
+        if (json.code === 0) {
+          console.log(json);
+          const lid = util.getParam('lid');
+          const cid = util.getParam('cid');
+          location.href = '/?cid=' + cid + '&lid=' + lid + '&fromHongbao=1#/lesson'
+        } else {
+          console.warn('拆红包失败！')
+        }
+      })
+    } 
   },
   destroyed() {},
   watch: {},
@@ -49,6 +100,7 @@ export default {
 <style lang="less">
   @import '../variable.less';
   .hongbao-container {
+    overflow: hidden;
     .over-tips {
       position: relative;
       text-align: center;
@@ -70,12 +122,20 @@ export default {
         background-repeat: no-repeat;
       }
     }
-    .avater {
-      text-align: center;
-      img {
+    .aavater {
+      margin-top: 0.8rem;
+      overflow: hidden;
+      .img {
         width: 1.3rem;
         height: 1.3rem;
         border-radius: 1.3rem;
+        margin: auto;
+        display: block;
+        overflow: hidden;
+        text-align: center;
+        img {
+          width: 1.3rem;
+        }
       }
     }
     .name {
@@ -96,7 +156,7 @@ export default {
       height: 8.93333rem;
       text-align: center;
       position: relative;
-      img {
+      .hongbao-bg {
         height: 100%;
       }
       .box {
@@ -108,32 +168,35 @@ export default {
         transform: rotate(-6deg);
         padding: 0.4rem 0.4rem;
         display: flex;
-        justify-content: space-between;
         .avater {
           width: 1.2rem;
           height: 1.73333rem;
           position: relative;
           img {
             width: 100%;
+            height: 100%;
           }
         }
         .desc {
           font-size: 0.32rem;
-          width: 3.33333rem;
+          width: 2.53333rem;
           height: 1.73333rem;
           padding: 0.1rem 0;
           color: #666666;
           text-align: left;
           margin-left: 0.4rem;
           .title {
-            height: 0.64rem;
-            line-height: 1.2;
+            width: 100%;
+            height: 0.4rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
           .name, .who {
             height: 0.64rem;
             line-height: 1.2;
             color: #999999;
-            margin-top: 0.263333rem;
+            margin-top: 0.1rem;
           }
         }
       }

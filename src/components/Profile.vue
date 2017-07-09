@@ -1,5 +1,6 @@
 <template>
   <div class="profile-container">
+    <Error :error="error" v-if="error"></Error>
     <div class="index-page" v-if="mode === 1">
       <div class="banner">
         <img src="/static/profile_bg.png">
@@ -67,16 +68,26 @@
         <span>361926890@qq.com</span>
       </div>
     </div>
-    <div class="page bought-page" v-if="mode === 3 && courseList.length > 0">
-      <div class="bought-item" v-for="c in courseList" v-if="c !== null" @click="gotoCourse(c)">
-        <div class="avater">
-          <img :src="c.headImg">
+    <div class="page bought-page" v-if="mode === 3">
+      <div class="nothing" v-if="courseList.length === 0">
+        <div class="shopping-car"></div>
+        <p>你还没有购买课程</p>
+        <div class="buy" @click="gotoHome">
+          <div class="magnifier"></div>
+          发现课程
         </div>
-        <div class="desc">
-          <div class="title">{{ c.title }}</div>
-          <div class="orderid">订单号：{{ c.tradeNo }}</div>
-          <div class="time">购买时间：{{ c.purchaseDate }}</div>
-          <div class="price">实付：¥ {{ c.payment }} <span>（优惠：¥ {{ c.originalCharge ? c.originalCharge - c.payment : 0 }}）</span></div>
+      </div>
+      <div v-if="courseList.length > 0">
+        <div class="bought-item" v-for="c in courseList" v-if="c !== null" @click="gotoCourse(c)">
+          <div class="avater">
+            <img :src="c.headImg">
+          </div>
+          <div class="desc">
+            <div class="title">{{ c.title }}</div>
+            <div class="orderid">订单号：{{ c.tradeNo }}</div>
+            <div class="time">购买时间：{{ c.purchaseDate }}</div>
+            <div class="price">实付：¥ {{ c.payment / 100 }} <span v-if="c.originalCharge">（优惠：¥ {{ c.originalCharge ? c.originalCharge - c.payment : 0 }}）</span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -109,6 +120,7 @@
 <script>
 import util from '../util/index'
 import Bottomer from './Bottomer.vue'
+import Error from './Error.vue'
 
 export default {
   name: 'profile',
@@ -123,6 +135,8 @@ export default {
       listenedLessonCount: 0,
       userinfo: {},
       courseList: [],
+      error: null,
+      errorTimeout: null,
     }
   },
   created () {
@@ -138,6 +152,16 @@ export default {
     this.popstate();
   },
   methods: {
+    gotoHome: function () {
+      location.href = '/#/';
+    },
+    setError: function (error) {
+      this.error = error;
+      this.errorTimeout && clearTimeout(this.errorTimeout)
+      this.errorTimeout = setTimeout(() => {
+        this.error = null;
+      }, 4000);
+    },
     gotoCourse: function (course) {
       location.href = '/?cid=' + course.id + '#/course';
     },
@@ -184,6 +208,10 @@ export default {
     },
     submitChange: function () {
       const { headImg, nickname, company, title } = this.userinfo;
+      if (!nickname) {
+        this.setError('昵称不能为空');
+        return false;
+      }
       util.saveUserProp(headImg, nickname, company, title, (json) => {
         if (json.code === 0) {
           console.log(json);
@@ -221,12 +249,12 @@ export default {
           console.warn('获取用户信息失败')
         }
       })
-    }
+    },
   },
   destroyed() {},
   watch: {},
   components: {
-    Bottomer
+    Bottomer, Error
   }
 }
 </script>
@@ -237,6 +265,23 @@ export default {
   .profile-container {
     width: 100%;
     height: 100%;
+    .error-tips {
+      position: fixed;
+      z-index: 99;
+      background: @red;
+      color: white;
+      padding: 0 0.4rem;
+      height: 0.8rem;
+      width: 100%;
+      font-size: 0.4rem;
+      line-height: 0.8rem;
+      img {
+        height: 0.4rem;
+        position: absolute;
+        top: 0.2rem;
+        right: 0.4rem;
+      }
+    }
     .index-page {
       .banner {
         width: 100%;
@@ -456,6 +501,47 @@ export default {
     .page.bought-page {
       background: #f1f1f1;
       padding-top: 0.26666rem;
+      .nothing {
+        width: 100%;
+        height: 100%;
+        padding-top: 2rem;
+        text-align: center;
+        .shopping-car {
+          display: inline-block;
+          width: 3.3333rem;
+          height: 2.6666rem;
+          background-size: 3.3333rem 2.6666rem;
+          background-image: url('/static/empty1.png')
+        }
+        p {
+          margin-top: 0.8rem;
+          font-size: 0.46rem;
+          color: #cccccc;
+        }
+        .buy {
+          border: @red solid thin;
+          border-radius: 4px;
+          color: @red;
+          font-size: 0.4rem;
+          text-align: center;
+          width: 3.53333rem;
+          height: 1.146666rem;
+          margin-top: 0.53333rem;
+          line-height: 1.14rem;
+          display: inline-block;
+          text-align: center;
+          .magnifier {
+            display: inline-block;
+            width: 0.5rem;
+            height: 0.5rem;
+            position: relative;
+            top: 0.12rem;
+            background-size: 0.5rem 0.5rem;
+            background-image: url('/static/magnifier.svg');
+            margin-right: 0.2rem;
+          }
+        }
+      }
       .bought-item {
         background: white;
         padding: 0.26666rem 0.4rem;
@@ -469,6 +555,7 @@ export default {
           position: relative;
           display: flex;
           justify-content: center;
+          overflow: hidden;
           img {
             height: 100%;
             border-radius: 4px;

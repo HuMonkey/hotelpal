@@ -1,6 +1,6 @@
 <template>
   <div class="bought-container">
-    <div class="nothing" v-if="courses.length === 0">
+    <div class="nothing" v-if="courses && courses.length === 0">
       <div class="shopping-car"></div>
       <p>你还没有购买课程</p>
       <div class="buy" @click="gotoHome">
@@ -8,7 +8,7 @@
         发现课程
       </div>
     </div>
-    <div v-if="courses.length > 0" class="wrap">
+    <div v-if="courses && courses.length > 0" class="wrap">
       <div class="list">
         <div class="item" v-for="c in courses" @click="gotoCourse(c.id)">
           <div class="img"><img :src="c.headImg"></div>
@@ -26,7 +26,6 @@
         </div>
       </div>
     </div>
-    
     <Bottomer :tag="2"></Bottomer>
   </div>
 </template>
@@ -44,12 +43,13 @@ export default {
   props: [],
   data () {
     return {
-      courses: []
+      courses: null
     }
   },
-  created() {},
-  mounted() {
+  created() {
     document.title = '已购课程';
+  },
+  mounted() {
     util.getPaidCourseList((json) => {
       if (json.code === 0) {
         this.courses = json.data.courseList.map((d) => {
@@ -98,7 +98,7 @@ export default {
         width: 3.3333rem;
         height: 2.6666rem;
         background-size: 3.3333rem 2.6666rem;
-        background-image: url('/static/jiudianbang.png')
+        background-image: url('/static/empty2.png')
       }
       p {
         margin-top: 0.8rem;
@@ -186,6 +186,7 @@ export default {
               white-space: nowrap; 
               overflow: hidden; 
               text-overflow: ellipsis;
+              font-weight: 600;
             }
             .tips {
               margin-top: 0.48rem;

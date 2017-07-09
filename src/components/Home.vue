@@ -17,7 +17,7 @@
       </div>
       <div class="hr"></div>
       <div class="list" v-if="lessonList.length > 0">
-        <div class="item" v-for="l in lessonList">
+        <div class="item" v-for="l in lessonList" @click="gotoJdbsItem(l.id)">
           <div class="name">
             <div class="arrow"></div>
             <span>{{ l.title }}</span>
@@ -43,7 +43,7 @@
             <div class="content">{{ c.subtitle || '暂无介绍' }}</div>
             <div class="row">
               <div class="tags">
-                <div class="tag" :title="tag" v-for="tag in c.tag">{{ tag.name }}</div>
+                <div class="tag" :title="tag.name" v-for="tag in c.tag">{{ tag.name }}</div>
               </div>
               <div class="price">¥ {{ c.charge / 100 }} / {{ c.lessonCount }}课时</div>
             </div>
@@ -66,25 +66,23 @@ export default {
   data () {
     return {
       swiperOption: {
-        autoplay: 8000,
+        autoplay: 3000,
         setWrapperSize: true,
         pagination: '.swiper-pagination',
         paginationClickable:true,
         mousewheelControl: true,
         observeParents: true,
       },
-      swiperSlides: [
-        '/static/banner_1.jpg',
-        '/static/banner_2.jpg',
-        '/static/banner_3.jpg',
-      ],
+      swiperSlides: [],
       selectedTab: 0,
       courseList: [],
       jdbsList: [],
       lessonList: [],
     }
   },
-  created() {},
+  created() {
+    document.title = '酒店邦成长营';
+  },
   mounted() {
     util.getCourseList((json) => {
       if (json.code === 0) {
@@ -98,15 +96,23 @@ export default {
         console.warn('get course list fail');
       }
     })
-    util.getUserInfo(function (json) {
-      console.log(json)
+    util.getMainBanner((json) => {
+      if (json.code === 0) {
+        this.swiperSlides = json.data.list.map((d) => {
+          return d.bannerImg;
+        });
+        console.log(this.swiper);
+      } else {
+        console.warn('get banner list fail');
+      }
     })
     util.getInternalLessonList((json) => {
+      console.log(json)
       if (json.code === 0) {
-        this.lessonList = json.data.lessonList.slice(0, 4).map((d) => {
+        this.lessonList = json.data.lessonResponseList.slice(0, 4).map((d) => {
           return {
             ...d,
-            publishTime: util.processDateStr(d.publishTime)
+            publishTime: d.publishTime && util.processDateStr(d.publishTime)
           }
         });
       } else {
@@ -115,6 +121,9 @@ export default {
     })
   },
   methods: {
+    gotoJdbsItem: function (id) {
+      location.href = '/?id=' + id + '#/jdbsitem'
+    },
     gotoCourse: function (courseId) {
       location.href = '/?cid=' + courseId + '#/course';
     },
@@ -322,7 +331,7 @@ export default {
                 .tag {
                   padding: 0 0.186666rem;
                   border: #cccccc solid thin;
-                  font-size: 0.32rem;
+                  font-size: 0.293333rem;
                   height: 0.48rem;
                   line-height: 0.453333rem;
                   border-radius: 4px;
@@ -330,7 +339,7 @@ export default {
                   float: left;
                   white-space: nowrap; 
                   max-width: 2rem;
-                  margin-right: 0.26666rem;
+                  margin-right: 0.13333rem;
                   overflow: hidden;
                   text-overflow: ellipsis;
                 }

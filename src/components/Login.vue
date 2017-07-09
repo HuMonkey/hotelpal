@@ -1,9 +1,6 @@
 <template>
   <div class="login-container">
-    <div class="error-tips" v-if="error">
-      {{ error }}
-      <img src="/static/cross.png" @click="closeErrorTips">
-    </div>
+    <Error :error="error" v-if="error"></Error>
     <div class="step first" v-if="step === 1">
       <div class="logo">
         <img src="/static/jiudianbang.png">
@@ -47,6 +44,8 @@
 import util from '../util/index'
 import isMobilePhone from 'validator/lib/isMobilePhone'
 
+import Error from './Error.vue'
+
 export default {
   name: 'login',
   props: [],
@@ -60,16 +59,22 @@ export default {
       phone: '',
       code: '',
 
-      userinfo: {}
+      userinfo: {},
+
+      errorTimeout: null,
     }
   },
-  created() {},
-  mounted() {
+  created() {
     document.title = '登录';
   },
+  mounted() {},
   methods: {
-    closeErrorTips: function () {
-      this.error = null;
+    setError: function (error) {
+      this.error = error;
+      this.errorTimeout && clearTimeout(this.errorTimeout)
+      this.errorTimeout = setTimeout(() => {
+        this.error = null;
+      }, 4000);
     },
     getVerifyCode: function () {
       if (this.disabled) {
@@ -77,6 +82,7 @@ export default {
       }
       if (!isMobilePhone(this.phone, 'zh-CN')) {
         this.setError('请填写手机号码！');
+        return false;
       }
       this.disabled = true;
       let time = 60;
@@ -92,24 +98,24 @@ export default {
       util.sendCaptcha(this.phone, (json) => {
         if (json.code === 0) {
           // TODO
-          // util.setCookie('isLogin', '1', '12d');
         } else {
-          this.setError('获取失败，请重试');
+          console.warn('获取失败，请重试');
         }
       })
     },
     verifyPhone: function () {
       if (!isMobilePhone(this.phone, 'zh-CN')) {
         this.setError('请填写手机号码！');
+        return false;
       }
       if (!this.code) {
         this.setError('请填写验证码！');
+        return false;
       }
       util.verifyPhone(this.phone, this.code, (json) => {
         if (json.code === 0) {
           util.setCookie('isLogin', '1', '12d');
-          // TODO
-          if (json) {
+          if (json.data.newPhone) {
             util.getUserInfo((json) => {
               if (json.code === 0) {
                 this.userinfo = json.data;
@@ -121,9 +127,8 @@ export default {
           } else {
             location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
           }
-          // location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
         } else {
-          this.setError('验证失败，请重试');
+          console.warn('验证失败，请重试');
         }
       })
     },
@@ -152,27 +157,22 @@ export default {
         console.log('parsing failed', ex)
       })
     },
-    setError: function (text) {
-      this.error = text;
-      setTimeout(() => {
-        this.error = null;
-      }, 4000);
-      return false;
-    },
     submitChange: function () {
       const { headImg, nickname, company, title } = this.userinfo;
       util.saveUserProp(headImg, nickname, company, title, (json) => {
         if (json.code === 0) {
           location.href = decodeURIComponent(util.getParam('redirect') || '/#/');
         } else {
-          console.warn('修改用户信息成功！');
+          console.warn('修改用户信息不成功！');
         }
       })
     },
   },
   destroyed() {},
   watch: {},
-  components: {}
+  components: {
+    Error
+  }
 }
 </script>
 
@@ -182,23 +182,6 @@ export default {
   .login-container {
     width: 100%;
     height: 100%;
-    .error-tips {
-      position: fixed;
-      z-index: 99;
-      background: @red;
-      color: white;
-      padding: 0 0.4rem;
-      height: 0.8rem;
-      width: 100%;
-      font-size: 0.4rem;
-      line-height: 0.8rem;
-      img {
-        height: 0.4rem;
-        position: absolute;
-        top: 0.2rem;
-        right: 0.4rem;
-      }
-    }
     .step {
       width: 100%;
       height: 100%;
