@@ -2,7 +2,7 @@
   <div class="home-container">
     <swiper :options="swiperOption">
       <swiper-slide v-for="slide in swiperSlides">
-        <img :src="slide">
+        <a :href="slide.link"><img :src="slide.bannerImg"></a>
       </swiper-slide>
       <div class="swiper-pagination" slot="pagination"></div>
     </swiper>
@@ -98,16 +98,13 @@ export default {
     })
     util.getMainBanner((json) => {
       if (json.code === 0) {
-        this.swiperSlides = json.data.list.map((d) => {
-          return d.bannerImg;
-        });
+        this.swiperSlides = json.data.list;
         console.log(this.swiper);
       } else {
         console.warn('get banner list fail');
       }
     })
-    util.getInternalLessonList((json) => {
-      console.log(json)
+    util.getInternalLessonList(null, null, (json) => {
       if (json.code === 0) {
         this.lessonList = json.data.lessonResponseList.slice(0, 4).map((d) => {
           return {

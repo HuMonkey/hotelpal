@@ -8,7 +8,7 @@
           <audio-player :source="song" :loop="false" :nextId="nextId" :preId="preId" :songLong="songLong"></audio-player>
         </div>
         <div class="main">
-          <div class="course-title">{{ lesson.lessonNo }} | {{ lesson.title }}</div>
+          <div class="course-title">{{ lesson.lessonOrder }} | {{ lesson.title }}</div>
           <div class="infos">
             <div class="time">{{ lesson.publishTimeStr }}发布</div>
             <div class="other">
@@ -288,9 +288,13 @@ export default {
           this.songLong = moment(json.data.audioLen * 1000).format('mm:ss');
           const content = json.data.content;
           this.freeListen = json.data.freeListen;
+          let lessonOrder = json.data.lessonOrder.toString()
+          if (lessonOrder.length < 2) {
+            lessonOrder = '0' + lessonOrder;
+          }
           this.lesson = {
             ...json.data,
-            publishTimeStr,
+            publishTimeStr, lessonOrder,
             lenStr: this.songLong,
           };
           let rem = document.body.clientWidth / 10;

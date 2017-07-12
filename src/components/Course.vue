@@ -51,9 +51,9 @@
       <div class="block lessons">
         <div class="label">课时</div>
         <div class="list">
-          <div class="item" :class="{free: l.freeListen, future: !l.isPublish, finished: l.listenLen === l.audioLen && l.listenLen}" @click="gotoLesson(l)" v-for="(l, index) in course.lessonList" :id="'lesson-' + l.id">
+          <div class="item" :class="{free: l.freeListen, future: !l.isPublish, finished: l.listenLen && l.listenLen >= l.audioLen}" @click="gotoLesson(l)" v-for="(l, index) in course.lessonList" :id="'lesson-' + l.id">
             <div class="up">
-              <span>{{ l.lessonOrder }}</span> | <span class="ltitle">{{ l.title }}</span>
+              <span>{{ l.lessonOrder }}</span><span class="vr">|</span><span class="ltitle">{{ l.title }}</span>
               <span class="tag" v-if="l.freeListen">免费试听</span>
             </div> 
             <div class="down">
@@ -93,8 +93,9 @@
 import util from '../util/index';
 import moment from 'moment';
 
-const formatDate = function(m, d) {
-  return (m.length > 1 ? m : '0' + m) + '-' + (d.length > 1 ? d : '0' + d)
+const formatDate = function(y, m, d) {
+  let year = y == (new Date()).getFullYear() ? '' : y + '-';
+  return year + (m.length > 1 ? m : '0' + m) + '-' + (d.length > 1 ? d : '0' + d)
 }
 
 export default {
@@ -125,7 +126,7 @@ export default {
             let lessonOrder = d.lessonOrder && d.lessonOrder.toString();
             if (d.isPublish === 1) {
               const temp = d.publishTime.split('-');
-              publishTime = formatDate(temp[1], temp[2]);
+              publishTime = formatDate(temp[0], temp[1], temp[2]);
               lenStr = moment(d.audioLen * 1000).format('mm:ss');
             }
             if (lessonOrder && lessonOrder.length < 2) {
@@ -204,10 +205,13 @@ export default {
       for (let i = 0; i < lessonList.length; i++) {
         if (lessonList[i].freeListen && lessonList[i].isPublish) {
           lesson = lessonList[i];
+          break;
         }
       }
+      if (!lesson) {
+        return false;
+      }
       document.body.scrollTop = document.querySelector('#lesson-' + lesson.id).getBoundingClientRect().top + document.body.scrollTop;
-      // location.href = '/?cid=' + cid + '&lid=' + lesson.id + '#/lesson';
     }
   },
   destroyed() {},
@@ -380,6 +384,9 @@ export default {
               height: 0.6rem;
               display: flex;
               align-items: center;
+              .vr {
+                margin: 0 0.13333rem;
+              }
               .tag {
                 display: inline-block;
                 border: @red solid thin;
@@ -394,7 +401,7 @@ export default {
               }
               .ltitle {
                 display: inline-block;
-                max-width: 7.5rem;
+                max-width: 7rem;
                 white-space:nowrap; 
                 overflow:hidden;
                 text-overflow:ellipsis
@@ -425,7 +432,7 @@ export default {
           .item.free {
             .up {
               .ltitle {
-                max-width: 5.5rem;
+                max-width: 5rem;
               }
             }
           }
