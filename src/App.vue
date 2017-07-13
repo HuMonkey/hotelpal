@@ -64,6 +64,7 @@ html, body {
   width: 100%;
   height: 100%;
   margin: 0;
+  line-height: 1;
 }
 
 #app {
@@ -71,5 +72,6 @@ html, body {
   height: 100%;
   background: @bg;
   position: relative;
+  font: 12px/1.5 tahoma,arial,'Hiragino Sans GB','\5b8b\4f53',sans-serif;
 }
 </style>

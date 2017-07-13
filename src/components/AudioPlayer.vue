@@ -43,7 +43,7 @@
   let dragging = false;
 
   export default {
-    props: ['source', 'nextId', 'preId', 'songLong'],
+    props: ['source', 'nextId', 'preId', 'songLong', 'type'],
     data() {
       return {
         goOn: false,
@@ -76,8 +76,12 @@
           if (!this.nextId) {
             return false;
           }
+          if (this.type == 1) {
+            location.href = '/?goon=1&id=' + this.nextId + '#/jdbsitem';
+            return false;
+          }
           const cid = util.getParam('cid');
-          location.href = 'http://hotelpal.cn/?goon=1&cid=' + cid + '&lid=' + this.nextId + '#/lesson'
+          location.href = '/?goon=1&cid=' + cid + '&lid=' + this.nextId + '#/lesson'
         }
         this.current = formatTime(audio.currentTime || 0, true);
         if (!audio.duration) {
@@ -155,11 +159,19 @@
         if (!this.preId) {
           return false;
         }
+        if (this.type == 1) {
+          location.href = '/?id=' + this.preId + '#/jdbsitem';
+          return false;
+        }
         const cid = util.getParam('cid');
         location.href = '/?cid=' + cid + '&lid=' + this.preId + '#/lesson';
       },
       nextLesson () {
         if (!this.nextId) {
+          return false;
+        }
+        if (this.type == 1) {
+          location.href = '/?id=' + this.nextId + '#/jdbsitem';
           return false;
         }
         const cid = util.getParam('cid');
@@ -240,13 +252,13 @@
       }
       .go-on {
         width: 1.4rem;
-        height: 0.63rem;
+        height: 0.8rem;
         background-image: url('/static/goon-grey.svg');
-        background-size: 1.4rem 0.63rem;
+        background-size: 1.4rem 0.8rem;
         transform: scale(0.8);
         display: flex;
         justify-content: center;
-        align-items: center;
+        line-height: 0.7rem;
       }
       .go-on.clicked {
         color: @red;

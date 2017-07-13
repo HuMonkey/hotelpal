@@ -14,7 +14,7 @@
           <div class="img"><img :src="c.headImg"></div>
           <div class="main">
             <div class="title">{{ c.title }}</div>
-            <div class="tips">已听完</div>
+            <div class="tips">{{ c.msg }}</div>
             <div class="time">{{c.updateDate}}更新 | 已发布 {{c.publishedLessonCount}}/{{c.lessonCount}}</div>
           </div>
         </div>
@@ -34,8 +34,9 @@
 import util from '../util/index'
 import Bottomer from './Bottomer.vue'
 
-const formatDate = function(m, d) {
-  return (m > 9 ? m : '0' + m) + '-' + (d > 9 ? d : '0' + d)
+const formatDate = function(y, m, d) {
+  let year = y == (new Date()).getFullYear() ? '' : y + '-';
+  return year + (m.length > 1 ? m : '0' + m) + '-' + (d.length > 1 ? d : '0' + d)
 }
 
 export default {
@@ -56,7 +57,7 @@ export default {
           const temp = d.updateDate.split('-');
           return {
             ...d,
-            updateDate: formatDate(temp[1], temp[2]),
+            updateDate: formatDate(temp[0], temp[1], temp[2]),
           }
         });
       } else {

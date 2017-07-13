@@ -1,6 +1,6 @@
 <template>
   <div class="error-container" v-show="error && show">
-    {{ error }}
+    <span>{{ error }}</span>
     <img src="/static/cross.png" @click="closeErrorTips">
   </div>
 </template>
@@ -34,12 +34,11 @@ export default {
     height: 0.8rem;
     width: 100%;
     font-size: 0.4rem;
-    line-height: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     img {
       height: 0.4rem;
-      position: absolute;
-      top: 0.2rem;
-      right: 0.4rem;
     }
   }
 </style>

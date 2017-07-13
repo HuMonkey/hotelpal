@@ -10,10 +10,10 @@
     </div>
     <div v-if="lesson">
       <div class="player">
-        <audio-player :source="song" :loop="false" :nextId="nextId" :preId="preId" :songLong="songLong"></audio-player>
+        <audio-player :source="song" :loop="false" :nextId="lesson.nextLessonId" type="1" :preId="lesson.previousLessonId" :songLong="songLong"></audio-player>
       </div>
       <div class="main">
-        <div class="course-title">{{ lesson.lessonNo }} | {{ lesson.title }}</div>
+        <div class="course-title">{{ lesson.title }}</div>
         <div class="infos">
           <div class="time">{{ lesson.publishTimeStr }}发布</div>
           <div class="other">
@@ -142,8 +142,6 @@ export default {
   data () {
     return {
       song: null,
-      nextId: null,
-      preId: null,
 
       commentId: 1,
       comments: [],
@@ -327,7 +325,7 @@ export default {
               width: 0.32rem;
               height: 0.32rem;
               background-repeat: no-repeat;
-              background-size: cover;
+              background-size: 0.32rem 0.32rem;
               margin-right: 0.13333rem;
               display: inline-block;
             }

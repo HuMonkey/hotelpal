@@ -108,6 +108,7 @@ export default {
     width: 100%;
     min-height: 100%;
     padding: 0 0 1.26666rem 0;
+    line-height: 1;
     background: white;
     .header {
       width: 100%;
@@ -276,6 +277,7 @@ export default {
         span {
           display: inline-block;
           margin-top: 0.16rem;
+          line-height: 1;
         }
       }
       .left {

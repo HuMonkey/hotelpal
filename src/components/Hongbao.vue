@@ -101,6 +101,7 @@ export default {
   @import '../variable.less';
   .hongbao-container {
     overflow: hidden;
+    line-height: 1;
     .over-tips {
       position: relative;
       text-align: center;
@@ -172,8 +173,11 @@ export default {
           width: 1.2rem;
           height: 1.73333rem;
           position: relative;
+          overflow: hidden;
+          display: flex;
+          justify-content: center;
+          border-radius: 4px;
           img {
-            width: 100%;
             height: 100%;
           }
         }
@@ -187,16 +191,15 @@ export default {
           margin-left: 0.4rem;
           .title {
             width: 100%;
-            height: 0.4rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            margin-bottom: 0.06666rem;
           }
           .name, .who {
-            height: 0.64rem;
-            line-height: 1.2;
             color: #999999;
             margin-top: 0.1rem;
+            line-height: 1.2;
           }
         }
       }

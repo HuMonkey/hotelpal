@@ -37,7 +37,7 @@ export default {
     },
     gotoProfile: function () {
       if (util.getCookie('isLogin') != 1) {
-        location.href = '/#/login';
+        location.href = '/?redirect=' + encodeURIComponent('/#/profile') + '#/login';
         return false;
       }
       location.href = '/#/profile';
@@ -53,6 +53,7 @@ export default {
   @import '../variable.less';
 
   .bottomer-container {
+    line-height: 1;
     .footer {
       width: 100%;
       height: 1.28rem;

@@ -45,7 +45,7 @@
       <div class="hr">
         <div class="inner"></div>
       </div>
-      <div class="row wechat">
+      <div class="row wechat" @click="setMode(5)">
         <div class="icon gongzhonghao"></div>
         关注公众号
         <div class="arrow-right"></div>
@@ -53,7 +53,7 @@
     </div>
     <div class="page about-page" v-if="mode === 2">
       <div class="logo">
-        <img src="/static/logo.png">
+        <img src="/static/jiudianbang.png">
       </div>
       <div class="slogon">酒店邦成长营，与你一起成长</div>
       <div class="desc">
@@ -86,7 +86,7 @@
             <div class="title">{{ c.title }}</div>
             <div class="orderid">订单号：{{ c.tradeNo }}</div>
             <div class="time">购买时间：{{ c.purchaseDate }}</div>
-            <div class="price">实付：¥ {{ c.payment / 100 }} <span v-if="c.originalCharge">（优惠：¥ {{ c.originalCharge ? c.originalCharge - c.payment : 0 }}）</span></div>
+            <div class="price">实付：¥ {{ c.payment / 100 }} <span v-if="c.originalCharge && c.originalCharge != c.payment">（优惠：¥ {{ (c.originalCharge - c.payment) / 100 }}）</span></div>
           </div>
         </div>
       </div>
@@ -113,6 +113,11 @@
       <div class="confirm" @click="submitChange">确认修改</div>
       <!-- <div class="skip">跳过</div> -->
     </div>
+    <div class="page gongzhonghao-page" v-if="mode === 5">
+      <img src="/static/chahua1.png" class="chahua1">
+      <img src="/static/gongzhonghao.png" class="erweima">
+      <div class="tips">长按二维码关注微信公众号</div>
+    </div>
     <Bottomer :tag="3"></Bottomer>
   </div>
 </template>
@@ -127,7 +132,7 @@ export default {
   props: [],
   data () {
     return {
-      mode: 1, // 1主页，2aboutus，3购买记录, 4修改资料
+      mode: 1, // 1主页，2aboutus，3购买记录, 4修改资料， 5公众号
       age: 0,
       listenedHour: 0,
       listenedMinute: 0,
@@ -176,6 +181,9 @@ export default {
       } else if (mode === 3) {
         document.title = '购买记录';
         this.getPaidCourseList();
+        return false;
+      } else if (mode === 5) {
+        document.title = '公众号';
         return false;
       }
     },
@@ -500,6 +508,7 @@ export default {
     }
     .page.bought-page {
       background: #f1f1f1;
+      height: 100%;
       padding-top: 0.26666rem;
       .nothing {
         width: 100%;
@@ -549,6 +558,7 @@ export default {
         display: flex;
         justify-content: space-between;
         margin-bottom: 0.26666rem;
+        line-height: 1;
         .avater {
           width: 2rem;
           height: 2.6666rem;
@@ -556,6 +566,7 @@ export default {
           display: flex;
           justify-content: center;
           overflow: hidden;
+          border-radius: 4px;
           img {
             height: 100%;
             border-radius: 4px;
@@ -567,27 +578,51 @@ export default {
           padding: 0.13333rem 0;
           .title {
             width: 100%;
-            font-size: 0.4rem;
-            height: 0.4rem;
+            font-size: 0.373333rem;
             color: #333333;
             font-weight: 600;
           }
           .orderid {
             margin-top: 0.186666rem;
-            font-size: 0.346666rem;
+            font-size: 0.32rem;
             color: #666666;
           }
           .time {
-            margin-top: 0.6666rem;
+            margin-top: 0.586666rem;
             font-size: 0.293333rem;
             color: #999999;
           }
           .price {
-            margin-top: 0.186666rem;
+            margin-top: 0.26666rem;
             color: @red;
-            font-size: 0.32rem;
+            font-size: 0.293333rem;
           }
         }
+      }
+    }
+    .page.gongzhonghao-page {
+      background: #e9e9e9;
+      padding-top: 1.06666rem;
+      color: #666666;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      .chahua1 {
+        display: block;
+        margin: auto;
+        width: 6rem;
+      }
+      .erweima {
+        display: block;
+        width: 3.73333rem;
+        margin: auto;
+        margin-top: 1.06666rem;
+      }
+      .tips {
+        font-size: 0.32rem;
+        text-align: center;
+        width: 100%;
+        margin-top: 0.16rem;
       }
     }
     .page.name-page {

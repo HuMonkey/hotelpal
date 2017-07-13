@@ -5,7 +5,7 @@
     <div v-if="isHongbao === 0">
       <div class="paid" v-if="purchased || freeListen">
         <div class="player">
-          <audio-player :source="song" :loop="false" :nextId="nextId" :preId="preId" :songLong="songLong"></audio-player>
+          <audio-player :source="song" :loop="false" :nextId="lesson.nextLessonId" :preId="lesson.previousLessonId" :songLong="songLong"></audio-player>
         </div>
         <div class="main">
           <div class="course-title">{{ lesson.lessonOrder }} | {{ lesson.title }}</div>
@@ -152,7 +152,7 @@
       <div class="not-paid" v-if="!purchased && !freeListen">
         <div class="box">
           <div class="top">
-            <div class="text">你需要先购买课程<br> <span class="price">¥ {{ course.charge / 100 }} / {{ course.lessonCount }}课时</span></div>
+            <div class="text">你需要先购买课程<br> <span class="price">¥ {{ course.charge ? course.charge / 100 : 0 }} / {{ course.lessonCount }}课时</span></div>
           </div>
           <div class="avater">
             <div class="img">
@@ -188,8 +188,6 @@ export default {
     return {
       selectedTab: 0,
       song: null,
-      nextId: null,
-      preId: null,
       value: 1,
       swiperWidth: 0,
       commentId: 1,
@@ -247,8 +245,6 @@ export default {
         const lessonsNum = lessonList.length;
         this.swiperWidth = (lessonsNum * 300 + (lessonsNum - 1) * 20) / 75;
         const former = lessonList.indexOf(lessonList.find((d) => d.id == lid));
-        this.nextId = lessonList[former + 1] && lessonList[former + 1].id;
-        this.preId = lessonList[former - 1] && lessonList[former - 1].id;
         const offsetLeft = (former * 320) / 75 * (document.body.clientWidth / 10);
         setTimeout(function () {
           document.querySelector('.lessons').scrollLeft = offsetLeft;
@@ -272,7 +268,7 @@ export default {
       this.errorTimeout && clearTimeout(this.errorTimeout)
       this.errorTimeout = setTimeout(() => {
         this.error = null;
-      }, 4000);
+      }, 100000);
     },
     gotoLogin: function () {
       location.href = '/?redirect=' + encodeURIComponent(location.href) + '#/login'

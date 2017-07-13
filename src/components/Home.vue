@@ -147,6 +147,7 @@ export default {
     width: 100%;  
     color: #666666;  
     padding-bottom: 1.6rem;
+    line-height: 1;
     .swiper-container {
       width: 100%;
       height: 3.3333rem;
