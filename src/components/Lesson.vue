@@ -1,12 +1,12 @@
 <template>
   <div class="lesson-container">
     <Error :error="error" v-if="error"></Error>
-    <Hongbao v-if="isHongbao === 1"></Hongbao>
-    <div v-if="isHongbao === 0">
+    <Hongbao v-if="lesson && isHongbao === 1"></Hongbao>
+    <div v-if="lesson && isHongbao === 0">
       <div class="paid" v-if="purchased || freeListen">
         <img class="zshb_banner" src="/static/zshb_banner.png" v-if="fromHongbao == 1">
         <div class="player">
-          <audio-player :source="song" :loop="false" :nextId="lesson.nextLessonId" :preId="lesson.previousLessonId" :songLong="songLong"></audio-player>
+          <audio-player :source="song" :loop="false" :listenLen="lesson.listenLen" :nextId="lesson.nextLessonId" :preId="lesson.previousLessonId" :songLong="songLong" :audioLen="lesson.audioLen"></audio-player>
         </div>
         <div class="main">
           <div class="course-title">{{ lesson.lessonOrder }} | {{ lesson.title }}</div>
@@ -131,7 +131,7 @@
         <div class="comment-box" v-if="!commenting">
           <div class="pen"></div>
           <input type="text" name="comment" placeholder="输入你的评论" @click="gotoComment">
-          <div class="hongbao" v-if="lesson.redPacketRemained > 0" @click="showHongbaoTips(true)">
+          <div class="hongbao" v-if="!freeListen && lesson.redPacketRemained > 0" @click="showHongbaoTips(true)">
             <img src="/static/hongbao2.gif">
           </div>
           <!-- <div class="btn">发送</div> -->
@@ -200,7 +200,7 @@ export default {
       purchased: true,
       freeListen: true,
 
-      lesson: {},
+      lesson: null,
       course: {},
 
       focusStatus: false,
@@ -232,8 +232,6 @@ export default {
     const cid = util.getParam('cid');
     this.isHongbao = +util.getParam('isHongbao') || 0;
     this.fromHongbao = +util.getParam('fromHongbao') || 0;
-
-    console.log(this.fromHongbao)
 
     if (this.isHongbao === 1) {
       return false;
@@ -271,7 +269,7 @@ export default {
       this.errorTimeout && clearTimeout(this.errorTimeout)
       this.errorTimeout = setTimeout(() => {
         this.error = null;
-      }, 100000);
+      }, 4000);
     },
     gotoLogin: function () {
       location.href = '/?redirect=' + encodeURIComponent(location.href) + '#/login'
@@ -384,10 +382,8 @@ export default {
             paySign: paySign, // 支付签名
             success: (res) => {
               // 支付成功后的回调函数
-              this.course.purchased = true;
-              this.purchased = true;
               util.pay(cid, tradeNo, function (json) {
-                console.log(json)
+                location.reload();
               });
             },
             error: () => {
@@ -564,12 +560,11 @@ export default {
           }
           .hr {
             margin-top: 0.4rem;
-            height: 1px;
-            background: @hrColor;
+            border-top: @border;
           }
           .course {
             .hr {
-              background: @hrColor;
+              border-top: @border;
               margin-top: 0;
             }
             .back {
@@ -657,6 +652,7 @@ export default {
           line-height: 0.48rem;
           font-size: 0.48rem;
           color: #333333;
+          margin-bottom: 0.4rem;
           span {
             font-size: 0.4rem;
             color: #999999;
@@ -672,7 +668,7 @@ export default {
         .item {
           padding-left: 1.06666rem;
           position: relative;
-          margin: 0.4rem 0; 
+          margin-bottom: 0.8rem; 
           .avater {
             position: absolute;
             left: 0;

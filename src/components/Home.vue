@@ -109,14 +109,13 @@ export default {
     util.getMainBanner((json) => {
       if (json.code === 0) {
         this.swiperSlides = json.data.list;
-        console.log(this.swiper);
       } else {
         console.warn('get banner list fail');
       }
     })
-    util.getInternalLessonList(null, null, (json) => {
+    util.getInternalLessonList(0, 4, 'desc', (json) => {
       if (json.code === 0) {
-        this.lessonList = json.data.lessonResponseList.slice(0, 4).map((d) => {
+        this.lessonList = json.data.lessonResponseList.map((d) => {
           return {
             ...d,
             publishTime: d.publishTime && util.processDateStr(d.publishTime)
@@ -210,21 +209,21 @@ export default {
           align-items: center;
           div {
             display: inline-block;
-            height: 0.26666rem;
           }
           .arrow-right {
             margin-left: 0.13333rem;
             width: 0.16rem;
+            height: 100%;
             background-size: 0.16rem 0.26666rem;
             background-position: center;
             background-image: url("/static/arrow-right.svg");
+            background-repeat: no-repeat;
           }
         }
       }
       .hr {
         margin: 0 @paddingLR 0 @paddingLR;
-        background: @hrColor;
-        height: 1px;
+        border-top: @border;
       }
     }
     .free {
@@ -246,13 +245,13 @@ export default {
             align-items: center;
             .arrow {
               display: inline-block;
-              border: 0.12rem solid #ffffff;
-              border-left-color: #666666;
+              border: 0.13333rem solid #ffffff;
+              border-left-color: #ccc;
               width: 0;
               height: 0;
             }
             span {
-              margin-left: 0.13333rem;
+              margin-left: 0.06rem;
             }
           }
           .time {
@@ -275,7 +274,7 @@ export default {
         padding: 0 @paddingLR;
         .item {
           padding: 0.26666rem 0 0.26666rem 0;
-          border-top: solid thin #ebebeb;
+          border-top: @border;
           display: flex;
           justify-content: space-between;
           .avater {
@@ -289,13 +288,14 @@ export default {
             .state {
               width: 0.82rem;
               height: 0.426666rem;
-              border-radius: 4px;
+              border-radius: 2px;
               padding-left: 0.1rem;
-              text-align: center;
-              line-height: 0.426666rem;
+              display: flex;
+              justify-content: center;
+              align-items: center;
               color: white;
               position: absolute;
-              top: 10px;
+              top: 0.13333rem;
               left: -0.1rem;
               font-size: 0.26666rem;
             }
@@ -319,6 +319,7 @@ export default {
               font-size: 0.4rem;
               height: 0.4rem;
               color: #333333;
+              font-weight: 600;
             }
             .who {
               margin-top: 0.186666rem;
@@ -327,7 +328,8 @@ export default {
             }
             .content {
               margin-top: 0.48rem;
-              font-size: 0.293333rem;
+              color: #999999;
+              font-size: 0.32rem;
             }
             .row {
               margin-top: 0.153333rem;
@@ -342,12 +344,12 @@ export default {
                   font-size: 0.293333rem;
                   height: 0.48rem;
                   line-height: 0.453333rem;
-                  border-radius: 4px;
+                  border-radius: 2px;
                   color: #aaaaaa;
                   float: left;
                   white-space: nowrap; 
                   max-width: 2rem;
-                  margin-right: 0.13333rem;
+                  margin-right: 0.4rem;
                   overflow: hidden;
                   text-overflow: ellipsis;
                 }

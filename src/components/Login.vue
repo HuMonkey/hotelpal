@@ -24,14 +24,17 @@
       <div class="wechat-name">{{ userinfo.nickname }}</div>
       <div class="row name">
         <div class="label">姓名</div>
+        <div class="vr"></div>
         <input type="text" name="name" placeholder="请输入您的姓名" v-model="userinfo.nickname">
       </div>
       <div class="row company">
         <div class="label">公司</div>
+        <div class="vr"></div>
         <input type="text" name="company" placeholder="请输入您的公司（选填）" v-model="userinfo.company">
       </div>
       <div class="row position">
         <div class="label">职位</div>
+        <div class="vr"></div>
         <input type="text" name="position" placeholder="请输入您的职位（选填）" v-model="userinfo.title">
       </div>
       <div class="confirm" @click="submitChange">确认</div>
@@ -67,7 +70,11 @@ export default {
   created() {
     document.title = '登录';
   },
-  mounted() {},
+  mounted() {
+    if ( util.getCookie('isLogin') == 1) {
+      location.href = '/#/';
+    }
+  },
   methods: {
     setError: function (error) {
       this.error = error;
@@ -118,6 +125,8 @@ export default {
           if (json.data.newPhone) {
             util.getUserInfo((json) => {
               if (json.code === 0) {
+                json.data.company = json.data.company || '';
+                json.data.title = json.data.title || '';
                 this.userinfo = json.data;
                 this.step = 2;
               } else {
@@ -200,7 +209,7 @@ export default {
     } 
     .first {
       background: white;
-      padding-top: 1rem;
+      padding-top: 0.8rem;
       .logo {
         text-align: center;
         img {
@@ -220,7 +229,7 @@ export default {
           display: block;
           width: 7.86666rem;
           margin: auto;
-          color: #999999;
+          color: #333333;
           -webkit-appearance: none;
         }
         .btn {
@@ -260,7 +269,7 @@ export default {
     }
     .second {
       background: white;
-      padding-top: 0.53333rem;
+      padding-top: 0.66666rem;
       color: #666666;
       .avater-upload {
         display: none;
@@ -308,6 +317,14 @@ export default {
           left: 0.4rem;
           color: #666666;
         }
+        .vr {
+          height: 0.6666rem;
+          border-left: @border;
+          position: absolute;
+          top: 0.26666rem;
+          left: 1.46666rem;
+          color: #666666;
+        }
         input {
           height: 1.173333rem;
           border-radius: 4px;
@@ -316,13 +333,13 @@ export default {
           display: block;
           width: 100%;
           margin: auto;
-          color: #999999;
+          color: #333333;
           -webkit-appearance: none;
         }
       }
       .confirm {
         margin: auto;
-        margin-top: 0.53333rem;
+        margin-top: 0.8rem;
         font-size: 0.426666rem;
         width: 7.86666rem;
         background: @red;

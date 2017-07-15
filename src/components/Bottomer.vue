@@ -33,6 +33,10 @@ export default {
       location.href = '/#/';
     },
     gotoBought: function () {
+      if (util.getCookie('isLogin') != 1) {
+        location.href = '/?redirect=' + encodeURIComponent('/#/bought') + '#/login';
+        return false;
+      }
       location.href = '/#/bought';
     },
     gotoProfile: function () {
@@ -64,7 +68,7 @@ export default {
       z-index: 999;
       font-size: 0.32rem;
       justify-content: space-between;
-      border-top: #cccccc solid thin;
+      border-top: #ebebeb solid thin;
       background: white;
       padding: 0.16rem 1.253333rem;
       .item {

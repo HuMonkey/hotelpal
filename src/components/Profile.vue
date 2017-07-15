@@ -69,7 +69,7 @@
       </div>
     </div>
     <div class="page bought-page" v-if="mode === 3">
-      <div class="nothing" v-if="courseList.length === 0">
+      <div class="nothing" v-if="courseList && courseList.length === 0">
         <div class="shopping-car"></div>
         <p>你还没有购买课程</p>
         <div class="buy" @click="gotoHome">
@@ -77,7 +77,7 @@
           发现课程
         </div>
       </div>
-      <div v-if="courseList.length > 0">
+      <div v-if="courseList && courseList.length > 0">
         <div class="bought-item" v-for="c in courseList" v-if="c !== null" @click="gotoCourse(c)">
           <div class="avater">
             <img :src="c.headImg">
@@ -114,11 +114,14 @@
       <!-- <div class="skip">跳过</div> -->
     </div>
     <div class="page gongzhonghao-page" v-if="mode === 5">
-      <img src="/static/chahua1.png" class="chahua1">
-      <img src="/static/gongzhonghao.png" class="erweima">
-      <div class="tips">长按二维码关注微信公众号</div>
+      <iframe class='chahua1' src="/static/chahua1.svg" frameborder="0"></iframe>
+      <div class="thing">
+        <img src="/static/gongzhonghao.png" class="erweima">
+        <div class="tips">长按二维码</div>
+        <div class="tips">关注微信公众号</div>
+      </div>
     </div>
-    <Bottomer :tag="3"></Bottomer>
+    <Bottomer :tag="3" v-if="mode === 1"></Bottomer>
   </div>
 </template>
 
@@ -139,7 +142,7 @@ export default {
       purchasedCourseCount: 0,
       listenedLessonCount: 0,
       userinfo: {},
-      courseList: [],
+      courseList: null,
       error: null,
       errorTimeout: null,
     }
@@ -273,6 +276,7 @@ export default {
   .profile-container {
     width: 100%;
     height: 100%;
+    line-height: 1;
     .error-tips {
       position: fixed;
       z-index: 99;
@@ -305,11 +309,12 @@ export default {
         padding-bottom: 0.26666rem;
         .avater {
           width: 100%;
-          text-align: center;
+          display: flex;
+          justify-content: center;
           margin-top: -0.93333rem;
           height: 1.86666rem;
+          overflow: hidden;
           img {
-            width: 1.86666rem;
             height: 1.86666rem;
             border-radius: 1.86666rem;
           }
@@ -337,12 +342,10 @@ export default {
         }
         .record {
           width: 100%;
-          height: 0.4rem;
           font-size: 0.4rem;
           color: #666666;
           text-align: center;
           margin-top: 0.8rem;
-          vertical-align: center;
           .icon {
             width: 0.4rem;
             height: 0.4rem;
@@ -363,14 +366,12 @@ export default {
         }
         .infos {
           width: 100%;
-          height: 1.1rem;
           display: flex;
-          margin-top: 0.6rem;
+          margin-top: 0.53333rem;
           .item {
             flex: 1;
-            height: 100%;
             text-align: center;
-            border-right: #cccccc solid thin;
+            border-right: #f5f5f5 solid thin;
             .value {
               font-size: 0.4rem;
               color: #666666;
@@ -378,7 +379,7 @@ export default {
             .label {
               font-size: 0.293333rem;
               color: #999999;
-              margin-top: 0.2rem;
+              margin-top: 0.213333rem;
             }
           }
           .item:last-child {
@@ -440,8 +441,7 @@ export default {
         background: white;
         padding-left: 1.44rem;
         .inner {
-          height: 1px;
-          background: #cccccc;
+          border-top: @border;
         }
       }
       .page {
@@ -569,7 +569,6 @@ export default {
           border-radius: 4px;
           img {
             height: 100%;
-            border-radius: 4px;
           }
         }
         .desc {
@@ -588,7 +587,7 @@ export default {
             color: #666666;
           }
           .time {
-            margin-top: 0.586666rem;
+            margin-top: 0.7rem;
             font-size: 0.293333rem;
             color: #999999;
           }
@@ -601,28 +600,36 @@ export default {
       }
     }
     .page.gongzhonghao-page {
-      background: #e9e9e9;
-      padding-top: 1.06666rem;
+      background-image: url('/static/gongzhonghao_bg.svg');
+      background-size: 100% auto;
+      background-repeat: repeat-y;
       color: #666666;
       width: 100%;
       height: 100%;
       overflow: auto;
+      line-height: 1;
       .chahua1 {
-        display: block;
-        margin: auto;
-        width: 6rem;
-      }
-      .erweima {
-        display: block;
-        width: 3.73333rem;
-        margin: auto;
-        margin-top: 1.06666rem;
-      }
-      .tips {
-        font-size: 0.32rem;
-        text-align: center;
         width: 100%;
-        margin-top: 0.16rem;
+      }
+      .thing {
+        width: 100%;
+        position: absolute;
+        left: 0;
+        bottom: 0.6666rem;
+        .erweima {
+          display: block;
+          margin: auto;
+          // width: 3.73333rem;
+        }
+        .tips {
+          font-size: 0.32rem;
+          text-align: center;
+          margin-top: 0.32rem;
+          color: white;
+        }
+        .tips:last-child {
+          margin-top: 0.13333rem;
+        }
       }
     }
     .page.name-page {
@@ -644,7 +651,8 @@ export default {
       .avater {
         height: 1.92rem;
         width: 100%;
-        text-align: center;
+        display: flex;
+        justify-content: center;
         margin-top: 0.6666rem;
         overflow: hidden;
         img {

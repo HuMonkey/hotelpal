@@ -19,6 +19,7 @@ const api = {
   newComment: '/hotelpal/user/newComment',
   addZan: '/hotelpal/user/addZan',
   recordListenTime: '/hotelpal/user/recordListenTime',
+  recordListenPos: '/hotelpal/user/recordListenPos',
   pay: '/hotelpal/user/pay',
   openRedPacket: '/hotelpal/user/openRedPacket',
 
@@ -213,10 +214,23 @@ util.getPaidCourseList = function (callback) {
 }
 
 /**
- * 获取已购课程
+ * 记录已听时长
  */
-util.recordListenTime = function (lessonId, recordLen, recordPos, callback) {
-  const url = util.config.host + api.recordListenTime + '?lessonId=' + lessonId + '&recordLen=' + recordLen + '&recordPos=' + recordPos;
+util.recordListenTime = function (lessonId, callback) {
+  const url = util.config.host + api.recordListenTime + '?lessonId=' + lessonId;
+  fetch(util.getUrl(url))
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 记录听的位置
+ */
+util.recordListenPos = function (lessonId, pos, callback) {
+  const url = util.config.host + api.recordListenPos + '?lessonId=' + lessonId + '&recordPos=' + pos;
   fetch(util.getUrl(url))
     .then(function(response) {
       return response.json()
@@ -552,10 +566,11 @@ util.formatTime = function (time) {
 }
 
 util.getUrl = function (url) {
-  if (!sessionStorage.sessionId) {
+  const sessionId = util.getCookie('sessionId');
+  if (!sessionId) {
     return url;
   }
-  let result = url.split('?')[0] + ';jsessionid=' + sessionStorage.sessionId
+  let result = url.split('?')[0] + ';jsessionid=' + sessionId
   if (url.split('?')[1]) {
     result += '?' + url.split('?')[1]
   }

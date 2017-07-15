@@ -139,8 +139,7 @@ export default {
       }
     }
     .hr {
-      height: 1px;
-      background: @hrColor;
+      border-top: @border;
       margin-top: 0.4rem;
     }
     .block {
@@ -191,8 +190,7 @@ export default {
         color: @red;
       }
       .hr {
-        height: 1px;
-        background: @hrColor;
+        border-top: @border;
         margin-top: 0.4rem;
       }
     }

@@ -14,7 +14,7 @@
           <div class="img"><img :src="c.headImg"></div>
           <div class="main">
             <div class="title">{{ c.title }}</div>
-            <div class="tips">{{ c.msg }}</div>
+            <div class="tips">{{ c.msg || '暂无' }}</div>
             <div class="time">{{c.updateDate}}更新 | 已发布 {{c.publishedLessonCount}}/{{c.lessonCount}}</div>
           </div>
         </div>
@@ -58,9 +58,9 @@ export default {
           return {
             ...d,
             updateDate: formatDate(temp[0], temp[1], temp[2]),
+            // msg: 'ddd',
           }
         });
-        this.courses = [];
       } else {
         console.warn('获取已购课程出错');
       }
@@ -89,6 +89,7 @@ export default {
     width: 100%;
     height: 100%;
     padding-bottom: 1.28rem;
+    line-height: 1;
     .nothing {
       width: 100%;
       height: 100%;
@@ -143,9 +144,7 @@ export default {
           font-size: 0.4rem;
           text-align: center;
           width: 3.53333rem;
-          height: 1.146666rem;
           margin: auto;
-          line-height: 1.14rem;
           display: inline-block;
           .magnifier {
             display: inline-block;
@@ -161,7 +160,7 @@ export default {
       }
       .list {
         width: 100%;
-        padding: 0.53333rem 0.4rem;
+        padding: 0.4rem 0.4rem;
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
@@ -174,8 +173,11 @@ export default {
           .img {
             width: 100%;
             height: 3.3333rem;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
             img {
-              width: 100%;
+              // width: 100%;
               height: 100%;
             }
           }

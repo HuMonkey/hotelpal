@@ -5,12 +5,12 @@
       <span>酒店邦说</span>
       <div class="arrow-right"></div>
     </div>
-    <div class="banner">
-      <img src="/static/banner_1.jpg">
+    <div class="banner" v-if="lesson">
+      <img :src="lesson.coverImg">
     </div>
     <div v-if="lesson">
       <div class="player">
-        <audio-player :source="song" :loop="false" :nextId="lesson.nextLessonId" type="1" :preId="lesson.previousLessonId" :songLong="songLong"></audio-player>
+        <audio-player :source="song" :loop="false" :nextId="lesson.nextLessonId" type="1" :preId="lesson.previousLessonId" :songLong="songLong" :audioLen="lesson.audioLen" :listenLen="lesson.listenLen"></audio-player>
       </div>
       <div class="main">
         <div class="course-title">{{ lesson.title }}</div>
@@ -388,8 +388,7 @@ export default {
           color: @red;
         }
         .hr {
-          margin-top: 0.4rem;
-          height: 1px;
+          border-top: @border;
           background: @hrColor;
         }
       }

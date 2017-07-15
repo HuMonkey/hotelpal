@@ -4,100 +4,102 @@
       {{ error }}
       <img src="/static/cross.png" @click="closeErrorTips">
     </div>
-    <div class="header">
-      <img :src="course.bannerImg && course.bannerImg[0]">
-      <div class="desc" v-if="!course.purchased">
-        <div class="title">{{ course.title }}</div>
-        <div class="sub-title">{{ course.subtitle }}</div>
-        <div class="tags">
-          <div class="item" v-for="t in course.tag">{{ t.name }}</div>
-        </div>
-      </div>
-      <div class="desc" v-if="course.purchased">
-        <div class="title">{{ course.userName }}</div>
-        <div class="sub-title">{{ course.userTitle }}</div>
-      </div>
-    </div>
-    <div class="content">
-      <div class="gotoDetail" v-if="course.purchased" @click="gotoDetail">
-        <div class="title">{{ course.title }}</div>
-        <div class="sub-title">{{ course.subtitle }}</div>
-        <div class="tags" v-if="course.tag && course.tag.length > 0">
-          <div class="item" v-for="t in course.tag">{{ t.name }}</div>
-        </div>
-        <div class="arrow"></div>
-      </div>
-      <div class="block teacher" v-if="!course.purchased">
-        <div class="label">主讲人</div>
-        <div class="name">
-          <span class="userName">{{ course.userName }}</span>
-          <span class="userTitle">{{ course.company + '·' + course.userTitle }}</span>
-        </div>
-        <div class="intro" v-if="course.speakerDescribe" v-html="course.speakerDescribe || '暂无介绍'"></div>
-        <div class="hr"></div>
-      </div>
-      <div class="block course-intro" v-if="!course.purchased">
-        <div class="label">课程介绍</div>
-        <div class="intro" :class="{overflow: isIntroOverflow && introOverflow}" v-html="course.introduce || '暂无'"></div>
-        <div class="open" v-if="isIntroOverflow" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
-        <div class="hr"></div>
-      </div>
-      <div class="block who" v-if="!course.purchased">
-        <div class="label">适宜人群</div>
-        <div class="intro">
-          <div v-html="course.crowd || '暂无'"></div>
-          <!-- 以及那些对酒店创意感兴趣的你 -->
-        </div>
-        <div class="hr"></div>
-      </div>
-      <div class="block getting" v-if="!course.purchased">
-        <div class="label">你将收获</div>
-        <div class="intro" v-html="course.gain || '暂无'"></div>
-        <div class="hr"></div>
-      </div>
-      <div class="block care" v-if="!course.purchased">
-        <div class="label">订阅须知</div>
-        <div class="intro" v-html="course.subscribe || '暂无'"></div>
-        <div class="hr"></div>
-      </div>
-      <div class="block lessons">
-        <div class="label">课时</div>
-        <div class="list">
-          <div class="item" :class="{free: l.freeListen, future: !l.isPublish, finished: l.listenLen && l.listenLen >= l.audioLen}" @click="gotoLesson(l)" v-for="(l, index) in course.lessonList" :id="'lesson-' + l.id">
-            <div class="up">
-              <span>{{ l.lessonOrder }}</span><span class="vr">|</span><span class="ltitle">{{ l.title }}</span>
-              <span class="tag" v-if="l.freeListen">免费试听</span>
-            </div> 
-            <div class="down">
-              <p v-if="l.isPublish">
-                <span>{{ l.publishTime }}</span>
-                <span>{{ l.resourceSize || '10.23MB' }}</span>
-                <span>{{ l.lenStr }}</span>
-                <span class="over" v-if="l.listenLen === l.audioLen && l.listenLen">已播完</span>
-                <span class="ing" v-if="l.listenLen !== l.audioLen && l.listenLen">已播{{ parseInt(l.listenLen / l.audioLen * 100) }}%</span>
-              </p>
-              <p v-if="!l.isPublish">
-                尚未发布
-              </p>
-            </div>
-            <div class="arrow" v-if="l.isPublish"></div>
+    <div v-if="course">
+      <div class="header">
+        <img :src="course.bannerImg && course.bannerImg[0]">
+        <div class="desc" v-if="!course.purchased">
+          <div class="title">{{ course.title }}</div>
+          <div class="sub-title">{{ course.subtitle }}</div>
+          <div class="tags">
+            <div class="item" v-for="t in course.tag">{{ t.name }}</div>
           </div>
         </div>
-        <div class="hr"></div>
-      </div>
-      <div class="block back">
-        <div class="box" @click="gotoHome">
-          <img src="/static/jiudianbang.png">
-          <div class="title">酒店邦成长营</div>
-          <div class="desc">发现更多酒店人的必修课</div>
-          <div class="arrow"></div>
+        <div class="desc" v-if="course.purchased">
+          <div class="title">{{ course.userName }}</div>
+          <div class="sub-title">{{ course.userTitle }}</div>
         </div>
       </div>
-    </div>
-    <div class="btns" v-if="!course.purchased">
-      <div class="item free" v-if="hasFree" @click="gotoFree">免费试读</div>
-      <div class="item buy" @click="gotoPay">订阅：¥ {{ course.charge / 100 }} / {{ course.lessonCount }}课时</div>
-    </div>
+      <div class="content">
+        <div class="gotoDetail" v-if="course.purchased" @click="gotoDetail">
+          <div class="title">{{ course.title }}</div>
+          <div class="sub-title">{{ course.subtitle }}</div>
+          <div class="tags" v-if="course.tag && course.tag.length > 0">
+            <div class="item" v-for="t in course.tag">{{ t.name }}</div>
+          </div>
+          <div class="arrow"></div>
+        </div>
+        <div class="block teacher" v-if="!course.purchased">
+          <div class="label">主讲人</div>
+          <div class="name">
+            <span class="userName">{{ course.userName }}</span>
+            <span class="userTitle">{{ course.company + '·' + course.userTitle }}</span>
+          </div>
+          <div class="intro" v-if="course.speakerDescribe" v-html="course.speakerDescribe || '暂无介绍'"></div>
+          <div class="hr"></div>
+        </div>
+        <div class="block course-intro" v-if="!course.purchased">
+          <div class="label">课程介绍</div>
+          <div class="intro" :class="{overflow: isIntroOverflow && introOverflow}" v-html="course.introduce || '暂无'"></div>
+          <div class="open" v-if="isIntroOverflow" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
+          <div class="hr"></div>
+        </div>
+        <div class="block who" v-if="!course.purchased">
+          <div class="label">适宜人群</div>
+          <div class="intro">
+            <div v-html="course.crowd || '暂无'"></div>
+            <!-- 以及那些对酒店创意感兴趣的你 -->
+          </div>
+          <div class="hr"></div>
+        </div>
+        <div class="block getting" v-if="!course.purchased">
+          <div class="label">你将收获</div>
+          <div class="intro" v-html="course.gain || '暂无'"></div>
+          <div class="hr"></div>
+        </div>
+        <div class="block care" v-if="!course.purchased">
+          <div class="label">订阅须知</div>
+          <div class="intro" v-html="course.subscribe || '暂无'"></div>
+          <div class="hr"></div>
+        </div>
+        <div class="block lessons">
+          <div class="label">课时</div>
+          <div class="list">
+            <div class="item" :class="{free: l.freeListen, future: !l.isPublish, finished: l.listenLen && l.listenLen >= l.audioLen}" @click="gotoLesson(l)" v-for="(l, index) in course.lessonList" :id="'lesson-' + l.id">
+              <div class="up">
+                <span>{{ l.lessonOrder }}</span><span class="vr">|</span><span class="ltitle">{{ l.title }}</span>
+                <span class="tag" v-if="l.freeListen">免费试听</span>
+              </div> 
+              <div class="down">
+                <p v-if="l.isPublish">
+                  <span>{{ l.publishTime }}</span>
+                  <span>{{ l.resourceSize || '10.23MB' }}</span>
+                  <span>{{ l.lenStr }}</span>
+                  <span class="over" v-if="l.listenLen && l.listenLen >= l.audioLen">已播完</span>
+                  <span class="ing" v-if="l.listenLen && l.listenLen < l.audioLen">已播{{ parseInt(l.listenLen / l.audioLen * 100) }}%</span>
+                </p>
+                <p v-if="!l.isPublish">
+                  尚未发布
+                </p>
+              </div>
+              <div class="arrow" v-if="l.isPublish"></div>
+            </div>
+          </div>
+          <div class="hr"></div>
+        </div>
+        <div class="block back">
+          <div class="box" @click="gotoHome">
+            <img src="/static/jiudianbang.png">
+            <div class="title">酒店邦成长营</div>
+            <div class="desc">发现更多酒店人的必修课</div>
+            <div class="arrow"></div>
+          </div>
+        </div>
+      </div>
+      <div class="btns" v-if="!course.purchased">
+        <div class="item free" v-if="hasFree" @click="gotoFree">免费试读</div>
+        <div class="item buy" @click="gotoPay">订阅：¥ {{ course.charge / 100 }} / {{ course.lessonCount }}课时</div>
+      </div>
+    </div>  
   </div>
 </template>
 
@@ -411,8 +413,7 @@ export default {
           color: @red;
         }
         .hr {
-          height: 1px;
-          background: @hrColor;
+          border-top: @border;
           margin-top: 0.4rem;
         }
       }
@@ -431,38 +432,39 @@ export default {
       }
       .lessons {
         .hr {
-          background: @hrColor;
+          border-top: @border;
           margin-top: 0.53333rem;
         }
         .list {
           .item {
             width: 100%;
-            height: 1.6rem;
+            // height: 1.6rem;
             border-radius: 4px;
-            border: #cccccc solid thin;
+            border: #ebebeb solid thin;
             margin-bottom: 0.26666rem;
-            padding: 0.15rem 0.4rem;
+            padding: 0.346666rem 0.4rem;
             position: relative;
-            color: #666666;
+            color: #333333;
+            line-height: 1;
             .up {
-              font-size: 0.4rem;
-              height: 0.6rem;
+              font-size: 0.373333rem;
+              height: 0.373333rem;
               display: flex;
               align-items: center;
               .vr {
                 margin: 0 0.13333rem;
               }
               .tag {
-                display: inline-block;
+                display: flex;
+                align-items: center;
                 border: @red solid thin;
                 color: @red;
                 font-size: 0.26666rem;
                 height: 0.6rem;
-                line-height: 0.6rem;
                 border-radius: 4px;
                 padding: 0 0.1rem;
-                vertical-align: bottom;
                 margin-left: 0.26666rem;
+                transform: scale(0.8);
               }
               .ltitle {
                 display: inline-block;
@@ -474,7 +476,8 @@ export default {
             }
             .down {
               font-size: 0.293333rem;
-              margin-top: 0.3rem;
+              margin-top: 0.4rem;
+              color: #cccccc;
               span {
                 margin-right: 0.4rem;
               }
@@ -517,7 +520,7 @@ export default {
           background: #ffffff;
           height: 2.13333rem;
           border-radius: 4px;
-          border: #cccccc solid thin;
+          border: #ebebeb solid thin;
           padding: 0.15rem 0.4rem;
           position: relative;
           color: #999999;
@@ -568,7 +571,7 @@ export default {
         color: #333333;
         font-size: 0.4rem;
         background: white;
-        border-top: #cccccc solid thin;
+        border-top: #ebebeb solid thin;
       }
       .buy {
         color: white;

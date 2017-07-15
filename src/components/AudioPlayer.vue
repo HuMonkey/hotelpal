@@ -1,14 +1,14 @@
 <template>
   <div class="audio-player">
-    <audio :src="source" controls="controls" preload="preload"></audio>
+    <audio :src="source" controls="controls" preload="load"></audio>
     <div class="top" v-if="audio">
       <div class="progress">
         <div class="current">{{ current }}</div>
         <div class="bar" @touchmove="moveDrag" @touchend="endDrag">
           <div class="duration">
-            <div class="inner" :style="{ width: audio.currentTime / audio.duration * 100 + '%' }"></div>
+            <div class="inner" :style="{ width: audio.currentTime / audioLen * 100 + '%' }"></div>
           </div>
-          <div class="dot" :style="{ left: audio.currentTime / audio.duration * 94 + '%' }" @touchstart="startDrag"></div>
+          <div class="dot" :style="{ left: audio.currentTime / audioLen * 94 + '%' }" @touchstart="startDrag"></div>
         </div>
         <div class="left">{{ left || songLong }}</div>
       </div>
@@ -43,7 +43,7 @@
   let dragging = false;
 
   export default {
-    props: ['source', 'nextId', 'preId', 'songLong', 'type'],
+    props: ['source', 'nextId', 'preId', 'songLong', 'type', 'listenLen', 'audioLen'],
     data() {
       return {
         goOn: false,
@@ -52,11 +52,17 @@
         left: null,
         audio: null,
         playing: false,
+        record: false,
+        saveInterval: null,
       }
     },
     mounted() {
-      window.onbeforeunload = this.saveProgress;
       this.audio = document.querySelector('.audio-player audio');
+      console.log(this.listenLen)
+      if (this.listenLen && this.listenLen < this.audioLen) {
+        this.audio.currentTime = this.listenLen;
+        this.updateTime();
+      }
       if (util.getParam('goon') == 1) {
         this.goOn = true;
         setTimeout(this.playOrPause, 2000);
@@ -72,22 +78,28 @@
       },
       updateTime () {
         const audio = this.audio;
-        if (audio.ended && this.goOn) {
-          if (!this.nextId) {
-            return false;
-          }
-          if (this.type == 1) {
-            location.href = '/?goon=1&id=' + this.nextId + '#/jdbsitem';
-            return false;
-          }
-          const cid = util.getParam('cid');
-          location.href = '/?goon=1&cid=' + cid + '&lid=' + this.nextId + '#/lesson'
-        }
         this.current = formatTime(audio.currentTime || 0, true);
         if (!audio.duration) {
           this.left = this.songLong;
         } else {
           this.left = formatTime(audio.duration - audio.currentTime, false);
+        }
+        if (audio.ended) {
+          this.current = formatTime(0, true);
+          this.left = this.songLong;
+          this.audio.currentTime = 0;
+          this.playOrPause();
+          if (this.goOn) {
+            if (!this.nextId) {
+              return false;
+            }
+            if (this.type == 1) {
+              location.href = '/?goon=1&id=' + this.nextId + '#/jdbsitem';
+              return false;
+            }
+            const cid = util.getParam('cid');
+            location.href = '/?goon=1&cid=' + cid + '&lid=' + this.nextId + '#/lesson'
+          }
         }
       },
       clickProgress (ev) {
@@ -98,16 +110,25 @@
       },
       playOrPause () {
         const audio = this.audio;
-        // if (!audio.duration) {
-        //   alert(audio.error)
-        //   return false;
-        // }
+        const lid = util.getParam('lid');
         if (this.playing) {
           audio.pause();
+          this.saveInterval && clearInterval(this.saveInterval);
           this.interval && clearInterval(this.interval);
         } else {
+          if (!this.record) {
+            this.record = true;
+            util.recordListenTime(lid, (json) => {
+              if (json.code === 0) {
+                console.log('记录已听时长成功！')
+              } else {
+                console.warn('记录已听时长出错。')
+              }
+            })
+          }
           audio.play();
           this.updateTime();
+          this.setInterval();
           this.interval = setInterval(this.updateTime, 1000)
         }
         this.playing = !this.playing;
@@ -177,16 +198,22 @@
         const cid = util.getParam('cid');
         location.href = '/?cid=' + cid + '&lid=' + this.nextId + '#/lesson';
       },
-      saveProgress () {
-        const current = Math.ceil(this.audio.currentTime);
-        const lid = util.getParam('lid');
-        util.recordListenTime(lid, current, current, function (json) {
-          if (json.code === 0) {
-            sessionStorage.onbeforeunload = json;
-          } else {
-            console.warn('保存进度错误')
+      setInterval () {
+        this.saveInterval && clearInterval(this.saveInterval);
+        this.saveInterval = setInterval(() => {
+          let current = Math.ceil(this.audio.currentTime);
+          if (current > this.audio.duration) {
+            current = Math.ceil(this.audio.duration);
           }
-        })
+          const lid = util.getParam('lid');
+          util.recordListenPos(lid, current, (json) => {
+            if (json.code === 0) {
+              console.log(json)
+            } else {
+              console.warn('记录听的位置出错！');
+            }
+          })
+        }, 1000)
       }
     },
     destroyed() {

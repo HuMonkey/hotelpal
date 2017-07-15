@@ -25,8 +25,10 @@ export default {
           const { appid, noncestr, sign, timeStamp } = json.data;
           util.configWechat(appid, timeStamp, noncestr, sign, () => {
             const code = util.getParam('code');
-            const wxLogin = sessionStorage.wxLogin;
-            if (wxLogin == 1) {
+            const isLogin = util.getCookie('isLogin');
+            const wxLogin = util.getCookie('wxLogin');
+            const sessionId = util.getCookie('sessionId');
+            if (sessionId && wxLogin == 1) {
               this.beginRender = true;
               return false;
             }
@@ -35,8 +37,8 @@ export default {
             } else {
               util.receiveRedirect(code, (json1) => {
                 if (json1.code === 0) {
-                  sessionStorage.sessionId = json1.data.sessionId;
-                  sessionStorage.wxLogin = 1;
+                  util.setCookie('sessionId', json1.data.sessionId, '12d');
+                  util.setCookie('wxLogin', 1, '12d');
                   this.beginRender = true;
                 } else {
                   console.warn('verify fail');

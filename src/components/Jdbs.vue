@@ -12,16 +12,19 @@
       <div class="sort" @click="reOrder"><div class="icon"></div>倒序</div>
     </div>
     <ul class="list">
-      <li class="item" :class="{disable: !l.isPublish}" @click="GotoJdbsItem(l.id)" v-for="l in lessonList">
+      <li class="item" :class="{disable: !l.isPublish}" @click="GotoJdbsItem(l)" v-for="l in lessonList">
         <div class="name">
           <div class="arrow"></div>
           <span>{{ l.title }}</span>
         </div>
-        <div class="infos">
+        <div class="infos" v-if="l.isPublish">
           <span>{{ l.publishTime }}</span>
           <span>{{ l.resourceSize }}</span>
           <span>{{ l.audioLen }}</span>
           <span class="left" v-if="l.listenLen">已播{{ parseInt(l.listenLen / l.audioLen * 100) }}%</span>
+        </div>
+        <div class="infos" v-if="!l.isPublish">
+          <span>尚未发布</span>
         </div>
         <div class="arrow-right"></div>
       </li>
@@ -87,8 +90,11 @@ export default {
     gotoHome: function () {
       location.href = '/#/';
     },
-    GotoJdbsItem: function (id) {
-      location.href = '/?id=' + id + '#/jdbsitem'
+    GotoJdbsItem: function (lesson) {
+      if (!lesson.isPublish) {
+        return false;
+      }
+      location.href = '/?id=' + lesson.id + '#/jdbsitem'
     },
     reOrder: function () {
       this.start = 0;
@@ -120,7 +126,7 @@ export default {
   .jdbs-container {
     width: 100%;
     min-height: 100%;
-    padding: 0 0 1.26666rem 0;
+    padding: 0 0 1.2rem 0;
     line-height: 1;
     background: white;
     .header {
@@ -174,7 +180,7 @@ export default {
       font-size: 0.346666rem;
       color: #999999;
       padding: 0 0.4rem;
-      border-bottom: #ebebeb solid thin;
+      border-bottom: @border;
       .tips {
         float: left;
       }
@@ -202,7 +208,7 @@ export default {
         width: 100%;
         position: relative;
         height: 2rem;
-        border-bottom: #ebebeb solid thin;
+        border-bottom: @border;
         padding: 0.4rem;
         .name {
           font-size: 0.4rem;
