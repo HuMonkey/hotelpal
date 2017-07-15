@@ -9,6 +9,7 @@ import Profile from '@/components/Profile'
 import Jdbs from '@/components/Jdbs'
 import JdbsItem from '@/components/JdbsItem'
 import Hongbao from '@/components/Hongbao'
+import CourseDetail from '@/components/CourseDetail'
 
 Vue.use(Router)
 
@@ -53,6 +54,11 @@ export default new Router({
       path: '/jdbsitem',
       name: 'jdbsitem',
       component: JdbsItem
+    },
+    {
+      path: '/cousedetail',
+      name: 'cousedetail',
+      component: CourseDetail
     }
   ]
 })

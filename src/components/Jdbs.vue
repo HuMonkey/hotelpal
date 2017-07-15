@@ -8,8 +8,8 @@
       </div>
     </div>
     <div class="toolbar">
-      <div class="tips">已更新21条</div>
-      <div class="sort"><div class="icon"></div>倒序</div>
+      <div class="tips">已更新{{ total }}条</div>
+      <div class="sort" @click="reOrder"><div class="icon"></div>倒序</div>
     </div>
     <ul class="list">
       <li class="item" :class="{disable: !l.isPublish}" @click="GotoJdbsItem(l.id)" v-for="l in lessonList">
@@ -54,6 +54,8 @@ export default {
       start: 0, 
       number: 10,
       distance: 20,
+      order: 'desc',
+      total: 0,
     }
   },
   created() {
@@ -62,8 +64,9 @@ export default {
   mounted() {},
   methods: {
     onInfinite: function () {
-      util.getInternalLessonList(this.start, this.number, (json) => {
+      util.getInternalLessonList(this.start, this.number, this.order, (json) => {
         if (json.code === 0) {
+          this.total = json.data.total;
           this.start = this.start + this.number;
           if (json.data.hasMore) {
             this.$refs.infiniteLoading.$emit('$InfiniteLoading:loaded');
@@ -86,6 +89,16 @@ export default {
     },
     GotoJdbsItem: function (id) {
       location.href = '/?id=' + id + '#/jdbsitem'
+    },
+    reOrder: function () {
+      this.start = 0;
+      if (this.order === 'desc') {
+        this.order = 'asc';
+      } else {
+        this.order = 'desc';
+      }
+      this.lessonList = [];
+      this.onInfinite();
     }
   },
   computed: {

@@ -6,16 +6,28 @@
     </div>
     <div class="header">
       <img :src="course.bannerImg && course.bannerImg[0]">
-      <div class="desc">
+      <div class="desc" v-if="!course.purchased">
         <div class="title">{{ course.title }}</div>
         <div class="sub-title">{{ course.subtitle }}</div>
         <div class="tags">
           <div class="item" v-for="t in course.tag">{{ t.name }}</div>
         </div>
       </div>
+      <div class="desc" v-if="course.purchased">
+        <div class="title">{{ course.userName }}</div>
+        <div class="sub-title">{{ course.userTitle }}</div>
+      </div>
     </div>
     <div class="content">
-      <div class="block teacher">
+      <div class="gotoDetail" v-if="course.purchased" @click="gotoDetail">
+        <div class="title">{{ course.title }}</div>
+        <div class="sub-title">{{ course.subtitle }}</div>
+        <div class="tags" v-if="course.tag && course.tag.length > 0">
+          <div class="item" v-for="t in course.tag">{{ t.name }}</div>
+        </div>
+        <div class="arrow"></div>
+      </div>
+      <div class="block teacher" v-if="!course.purchased">
         <div class="label">主讲人</div>
         <div class="name">
           <span class="userName">{{ course.userName }}</span>
@@ -24,13 +36,13 @@
         <div class="intro" v-if="course.speakerDescribe" v-html="course.speakerDescribe || '暂无介绍'"></div>
         <div class="hr"></div>
       </div>
-      <div class="block course-intro">
+      <div class="block course-intro" v-if="!course.purchased">
         <div class="label">课程介绍</div>
         <div class="intro" :class="{overflow: isIntroOverflow && introOverflow}" v-html="course.introduce || '暂无'"></div>
         <div class="open" v-if="isIntroOverflow" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
         <div class="hr"></div>
       </div>
-      <div class="block who">
+      <div class="block who" v-if="!course.purchased">
         <div class="label">适宜人群</div>
         <div class="intro">
           <div v-html="course.crowd || '暂无'"></div>
@@ -38,12 +50,12 @@
         </div>
         <div class="hr"></div>
       </div>
-      <div class="block getting">
+      <div class="block getting" v-if="!course.purchased">
         <div class="label">你将收获</div>
         <div class="intro" v-html="course.gain || '暂无'"></div>
         <div class="hr"></div>
       </div>
-      <div class="block care">
+      <div class="block care" v-if="!course.purchased">
         <div class="label">订阅须知</div>
         <div class="intro" v-html="course.subscribe || '暂无'"></div>
         <div class="hr"></div>
@@ -106,7 +118,7 @@ export default {
       isIntroOverflow: false,
       introOverflow: true,
       error: null,
-      course: {}
+      course: {},
     }
   },
   created() {
@@ -212,6 +224,10 @@ export default {
         return false;
       }
       document.body.scrollTop = document.querySelector('#lesson-' + lesson.id).getBoundingClientRect().top + document.body.scrollTop;
+    },
+    gotoDetail: function () {
+      const cid = util.getParam('cid');
+      location.href = '/?cid=' + cid + '#/cousedetail'
     }
   },
   destroyed() {},
@@ -241,6 +257,7 @@ export default {
     width: 100%;
     padding: 0 0 1.26666rem 0;
     background: white;
+    line-height: 1;
     .error-tips {
       position: fixed;
       z-index: 99;
@@ -270,14 +287,14 @@ export default {
         color: white;
         position: absolute;
         left: 0.4rem;
-        bottom: 0.26666rem;
+        bottom: 0.4rem;
         font-weight: 100;
         .title {
           font-weight: 600;
           font-size: 0.56rem;
         }
         .sub-title {
-          margin-top: 0.16666rem;
+          margin-top: 0.26666rem;
           font-size: 0.426666rem;
         }
         .tags {
@@ -298,6 +315,54 @@ export default {
     .content {
       width: 100%;
       position: relative;
+      .course-detail {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: black;
+        z-index: 101;
+      }
+      .gotoDetail {
+        padding: 0.53333rem 0;
+        margin: 0 0.4rem;
+        border-bottom: @border;
+        position: relative;
+        .title {
+          font-size: 0.48rem;
+          color: #333333;
+        }
+        .sub-title {
+          margin-top: 0.26666rem;
+          font-size: 0.4rem;
+          color: #999999;
+        }
+        .tags {
+          display: flex;
+          margin-top: 0.4rem;
+          .item {
+            height: 0.46666rem;
+            padding: 0 0.1rem;
+            font-size: 0.26666rem;
+            line-height: 0.44rem;
+            border: thin solid white;
+            border-radius: 2px;
+            margin-right: 0.26666rem;
+          }
+        }
+        .arrow {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 0.2rem;
+          height: 100%;
+          background-image: url('/static/arrow-right.svg');
+          background-size: 0.2rem auto;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
+      }
       .label {
         width: 100%;
         font-size: 0.48rem;

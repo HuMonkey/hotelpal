@@ -286,10 +286,10 @@ util.saveUserProp = function (headImg, nickname, company, title, callback) {
 /**
  * 获取自主课程
  */
-util.getInternalLessonList = function (start, number, callback) {
+util.getInternalLessonList = function (start, number, order, callback) {
   let url = util.config.host + api.getInternalLessonList;
   if (start !== null && number !== null) {
-    url += '?start=' + start + '&n=' + number;
+    url += '?start=' + start + '&n=' + number + '&order=' + order;
   }
   fetch(util.getUrl(url))
     .then(function(response) {

@@ -60,6 +60,7 @@ export default {
             updateDate: formatDate(temp[0], temp[1], temp[2]),
           }
         });
+        this.courses = [];
       } else {
         console.warn('获取已购课程出错');
       }

@@ -350,7 +350,7 @@ export default {
       .content {
         line-height: 1.8;
         font-size: 0.4rem;
-        color: #999999;
+        color: #666666;
         .summary {
           padding-bottom: 1rem;
         }

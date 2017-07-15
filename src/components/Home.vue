@@ -34,7 +34,9 @@
       <div class="list">
         <div class="item" @click="gotoCourse(c.id)" v-for="c in courseList">
           <div class="avater">
-            <div class="state" :class="{ coming: c.isPublish === 0, isnew: c.isPublish === 1 }">{{ c.isPublish ? '上新' : '预告' }}</div>
+            <div class="state" :class="{ coming: c.status == 0, isnew: c.isNew }" v-if="c.status == 0 || c.isNew">
+              {{ c.status == 0 ? '预告' : '上新' }}
+            </div>
             <img :src="c.headImg">
           </div>
           <div class="desc">
@@ -87,9 +89,17 @@ export default {
     util.getCourseList((json) => {
       if (json.code === 0) {
         this.courseList = json.data.courseList.map((c) => {
+          const publishTime = c.publishTime;
+          const date = new Date(publishTime.replace(/\-/g, "/"));
+          const now = new Date();
+          const diff = now.getTime() - date.getTime();
+          const M_DAY = 24 * 60 * 60 * 1000;
+          const days = Math.floor(diff / M_DAY)
+          const isNew = days < 14;
           return {
             ...c,
-            tag: c.tag ? c.tag.slice(0, 2) : []
+            tag: c.tag ? c.tag.slice(0, 2) : [],
+            isNew
           }
         });
       } else {

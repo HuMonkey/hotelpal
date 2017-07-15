@@ -4,6 +4,7 @@
     <Hongbao v-if="isHongbao === 1"></Hongbao>
     <div v-if="isHongbao === 0">
       <div class="paid" v-if="purchased || freeListen">
+        <img class="zshb_banner" src="/static/zshb_banner.png" v-if="fromHongbao == 1">
         <div class="player">
           <audio-player :source="song" :loop="false" :nextId="lesson.nextLessonId" :preId="lesson.previousLessonId" :songLong="songLong"></audio-player>
         </div>
@@ -131,7 +132,7 @@
           <div class="pen"></div>
           <input type="text" name="comment" placeholder="输入你的评论" @click="gotoComment">
           <div class="hongbao" v-if="lesson.redPacketRemained > 0" @click="showHongbaoTips(true)">
-            <img src="/static/hongbao.gif">
+            <img src="/static/hongbao2.gif">
           </div>
           <!-- <div class="btn">发送</div> -->
         </div>
@@ -231,6 +232,8 @@ export default {
     const cid = util.getParam('cid');
     this.isHongbao = +util.getParam('isHongbao') || 0;
     this.fromHongbao = +util.getParam('fromHongbao') || 0;
+
+    console.log(this.fromHongbao)
 
     if (this.isHongbao === 1) {
       return false;
@@ -441,6 +444,9 @@ export default {
     background: #f5f5f5;
     .paid {
       padding-top: 3.226666rem;
+      .zshb_banner {
+        width: 100%;
+      }
       .hongbaoTips {
         position: fixed;
         width: 100%;
