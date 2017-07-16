@@ -1,8 +1,7 @@
 <template>
   <div class="course-container">
-    <div class="error-tips" v-if="error">
-      {{ error }}
-      <img src="/static/cross.png" @click="closeErrorTips">
+    <div class="free-course-tips" v-if="course && !course.purchased && userinfo">
+      你还有{{ userinfo.freeCourseRemained }}次免费购买课程的机会！
     </div>
     <div v-if="course">
       <div class="header">
@@ -119,8 +118,8 @@ export default {
     return {
       isIntroOverflow: false,
       introOverflow: true,
-      error: null,
       course: null,
+      userinfo: null
     }
   },
   created() {
@@ -171,13 +170,17 @@ export default {
         console.warn('获取课程信息失败！')
       }
     })
+    util.getUserInfo((json) => {
+      if (json.code === 0) {
+        this.userinfo = json.data;
+      } else {
+        console.warn('获取用户信息失败')
+      }
+    })
   },
   methods: {
     switchOverflow: function() {
       this.introOverflow = !this.introOverflow;
-    },
-    closeErrorTips: function() {
-      this.error = null;
     },
     updateShare: function () {
       const course = this.course;
@@ -202,6 +205,17 @@ export default {
     gotoPay: function () {
       util.checkLogin();
       const cid = util.getParam('cid');
+      if (this.userinfo.freeCourseRemained > 0) {
+        util.getFreeCourse(cid, (json) => {
+          if (json.code === 0) {
+            this.userinfo.freeCourseRemained--;
+            this.course.purchased = true;
+          } else {
+            console.warn('获取免费课程出现了点问题')
+          }
+        })
+        return false;
+      }
       util.createPayOrder(cid, (json) => {
         if (json.code === 0) {
           const { appId, nonceStr, paySign, timeStamp, tradeNo } = json.data;
@@ -226,7 +240,6 @@ export default {
         } else {
           console.warn('支付出现了点问题')
         }
-        
       })
     },
     gotoFree: function () {
@@ -277,7 +290,7 @@ export default {
     padding: 0 0 1.26666rem 0;
     background: white;
     line-height: 1;
-    .error-tips {
+    .free-course-tips {
       position: fixed;
       z-index: 99;
       background: @red;
@@ -286,7 +299,8 @@ export default {
       height: 0.8rem;
       width: 100%;
       font-size: 0.4rem;
-      line-height: 0.8rem;
+      display: flex;
+      align-items: center;
       img {
         height: 0.4rem;
         position: absolute;

@@ -116,7 +116,7 @@
       },
       playOrPause () {
         const audio = this.audio;
-        const lid = util.getParam('lid');
+        const lid = util.getParam('lid') || util.getParam('id');
         if (this.playing) {
           audio.pause();
           this.saveInterval && clearInterval(this.saveInterval);
@@ -211,7 +211,7 @@
           if (current > this.audio.duration) {
             current = Math.ceil(this.audio.duration);
           }
-          const lid = util.getParam('lid');
+          const lid = util.getParam('lid') || util.getParam('id');
           util.recordListenPos(lid, current, (json) => {
             if (json.code === 0) {
               console.log(json)

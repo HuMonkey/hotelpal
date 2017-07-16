@@ -13,6 +13,8 @@ const api = {
   getPaidCourseList: '/hotelpal/user/getPaidCourseList',
   createPayOrder: '/hotelpal/user/createPayOrder',
   saveUserProp: '/hotelpal/user/saveUserProp',
+  newInvitedUser: '/hotelpal/user/newInvitedUser',
+  getFreeCourse: '/hotelpal/user/getFreeCourse',
 
   getLesson: '/hotelpal/lesson/getLesson',
   getInternalLessonList: '/hotelpal/lesson/getInternalLessonList',
@@ -154,6 +156,30 @@ util.getUserInfo = function (callback) {
  */
 util.getUserStatistics = function (callback) {
   fetch(util.getUrl(util.config.host + api.getUserStatistics))
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 邀请注册
+ */
+util.newInvitedUser = function (callback) {
+  fetch(util.getUrl(util.config.host + api.newInvitedUser))
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取免费课程
+ */
+util.getFreeCourse = function (cid, callback) {
+  fetch(util.getUrl(util.config.host + api.getFreeCourse + '?courseId=' + cid))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {

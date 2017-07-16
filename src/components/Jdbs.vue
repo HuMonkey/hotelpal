@@ -12,7 +12,7 @@
       <div class="sort" @click="reOrder"><div class="icon"></div>倒序</div>
     </div>
     <ul class="list">
-      <li class="item" :class="{disable: !l.isPublish}" @click="GotoJdbsItem(l)" v-for="l in lessonList">
+      <li class="item" :class="{disable: !l.isPublish, finished: l.listenLen && l.listenLen >= l.audioLen}" @click="GotoJdbsItem(l)" v-for="l in lessonList" :id="'lesson-' + l.id">
         <div class="name">
           <div class="arrow"></div>
           <span>{{ l.title }}</span>
@@ -20,8 +20,9 @@
         <div class="infos" v-if="l.isPublish">
           <span>{{ l.publishTime }}</span>
           <span>{{ l.resourceSize }}</span>
-          <span>{{ l.audioLen }}</span>
-          <span class="left" v-if="l.listenLen">已播{{ parseInt(l.listenLen / l.audioLen * 100) }}%</span>
+          <span>{{ l.audioLenStr }}</span>
+          <span class="over" v-if="l.listenLen && l.listenLen >= l.audioLen">已播完</span>
+          <span class="ing" v-if="l.listenLen && l.listenLen < l.audioLen">已播{{ parseInt(l.listenLen / l.audioLen * 100) }}%</span>
         </div>
         <div class="infos" v-if="!l.isPublish">
           <span>尚未发布</span>
@@ -38,7 +39,7 @@
     </ul>
     <div class="btns">
       <div class="item home" @click="gotoHome"><div class="icon"></div><span>首页</span></div>
-      <div class="item left"><div class="icon"></div>{{ notListenNum }}条未听</div>
+      <div class="item left" @click="gotoNew"><div class="icon"></div>{{ notListenNum }}条未听</div>
     </div>
   </div>
 </template>
@@ -79,7 +80,7 @@ export default {
           this.lessonList = this.lessonList.concat(json.data.lessonResponseList.map((d) => {
             return {
               ...d,
-              audioLen: moment(d.audioLen * 1000).format('mm:ss')
+              audioLenStr: moment(d.audioLen * 1000).format('mm:ss')
             }
           }));
         } else {
@@ -89,6 +90,12 @@ export default {
     },
     gotoHome: function () {
       location.href = '/#/';
+    },
+    gotoNew: function () {
+      if (!this.notListenLesson) {
+        return false;
+      }
+      document.body.scrollTop = document.querySelector('#lesson-' + this.notListenLesson.id).getBoundingClientRect().top + document.body.scrollTop;
     },
     GotoJdbsItem: function (lesson) {
       if (!lesson.isPublish) {
@@ -117,7 +124,11 @@ export default {
   },
   computed: {
     notListenNum: function () {
-      return this.lessonList.filter((d) => d.listenLen === null).length;
+      return this.lessonList.filter((d) => d.listenLen === null || d.listenLen === 0).length;
+    },
+    notListenLesson: function () {
+      const lessons = this.lessonList.filter((d) => d.listenLen === null || d.listenLen === 0);
+      return lessons.length > 0 ? lessons[0] : null;
     }
   },
   destroyed() {},
@@ -218,14 +229,14 @@ export default {
         height: 2rem;
         border-bottom: @border;
         padding: 0.4rem;
+        color: #333333;
         .name {
           font-size: 0.4rem;
-          color: #666666;
           display: flex;
           align-items: center;
           .arrow {
             display: inline-block;
-            border: 0.12rem solid #ffffff;
+            border: 0.13333rem solid #ffffff;
             border-left-color: #666666;
             width: 0;
             height: 0;
@@ -237,7 +248,7 @@ export default {
         }
         .infos {
           font-size: 0.32rem;
-          color: #999999;
+          color: #cccccc;
           margin-top: 0.48rem;
           padding-left: 0.3rem;
           span {
@@ -245,6 +256,9 @@ export default {
           }
           span:last-child {
             margin-right: 0;
+          }
+          .ing {
+            color: @red;
           }
           .left {
             color: @red;
@@ -262,11 +276,11 @@ export default {
           background-repeat: no-repeat;
         }
       }
-      .item.disable {
+      .item.disable, .item.finished {
         .name {
-          color: #999999;
+          color: #cccccc;
           .arrow {
-            border-left-color: #999999;
+            border-left-color: #cccccc;
           }
         }
       }

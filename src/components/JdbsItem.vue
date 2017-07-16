@@ -1,18 +1,20 @@
 <template>
   <div class="jdbsitem-container">
     <Error :error="error" v-if="error"></Error>
-    <div class="goback" @click="goback">
-      <img src="/static/jiudianbang.png">
-      <span>酒店邦说</span>
-      <div class="arrow-right"></div>
-    </div>
-    <div class="banner" v-if="lesson">
-      <img :src="lesson.coverImg">
-    </div>
-    <div v-if="lesson">
+    <div class="top-wrap" v-if="lesson" :class="{fixed: scrollDown}">
+      <div class="goback" @click="goback" v-if="lesson && !scrollDown">
+        <img src="/static/jiudianbang.png">
+        <span>酒店邦说</span>
+        <div class="arrow-right"></div>
+      </div>
       <div class="player">
+        <div class="banner" v-if="lesson && !scrollDown">
+          <img :src="lesson.coverImg">
+        </div>
         <audio-player :source="song" :loop="false" :nextId="lesson.nextLessonId" type="1" :preId="lesson.previousLessonId" :songLong="songLong" :audioLen="lesson.audioLen" :listenLen="lesson.listenLen"></audio-player>
       </div>
+    </div>
+    <div v-if="lesson">
       <div class="main">
         <div class="course-title">{{ lesson.title }}</div>
         <div class="infos">
@@ -24,17 +26,6 @@
           </div>
         </div>
         <div class="content">
-          <!-- <div class="summary">
-            一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆
-          </div>
-          <div class="points">
-            <div class="title">知识点</div>
-            <ul>
-              <li>知识点1</li>
-              <li>知识点2</li>
-              <li>知识点3</li>
-            </ul>
-          </div> -->
           <div class="article" :class="{overflow: isIntroOverflow && introOverflow}" v-html="lesson.content">
           </div>
           <div class="open" v-if="isIntroOverflow" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
@@ -127,6 +118,13 @@
           <textarea v-model="myComment" v-focus="focusStatus" :placeholder="replyId ? `回复${replyName}` : '一起来参与讨论吧！'"></textarea>
         </div>
       </div>
+      <div class="comment-finish" v-if="commentFinish">
+        <div class="cover"></div>
+        <div class="box">
+          <div class="icon"></div>
+          <div class="text">{{commentFinish === 2 ? '回复' : '评论'}}成功</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -163,15 +161,33 @@ export default {
 
       errorTimeout: null,
       error: null,
+
+      commentFinish: false,
+
+      scrollDown: false,
     }
   },
-  created() {
-    document.title = '酒店邦说';
-  },
+  created() {},
   mounted() {
     this.updateLesson();
+    document.body.onscroll = () => {
+      const width = document.body.offsetWidth;
+      const scrollTop = document.body.scrollTop;
+      console.log(scrollTop, width / 10 * (1.173333 + 5.46666))
+      if (scrollTop >= width / 10 * (1.173333 + 5.46666)) {
+        this.scrollDown = true;
+      } else {
+        this.scrollDown = false;
+      }
+    }
   },
   methods: {
+    showCommentFinish () {
+      this.commentFinish = this.replyId ? 2 : 1;
+      setTimeout(() => {
+        this.commentFinish = false;
+      }, 2000);
+    },
     updateLesson: function () {
       const id = util.getParam('id')
       util.getLesson(id, (json) => {
@@ -208,7 +224,7 @@ export default {
         title: lesson.title,
         link: location.href,
         imgUrl: lesson.coverImg,
-        desc: '酒店帮自主课程',
+        desc: '酒店邦自主课程',
       })
     },
     gotoComment () {
@@ -240,16 +256,21 @@ export default {
         return false;
       }
       util.newComment(id, this.myComment, this.replyId, (json) => {
-        this.myComment = null;
-        this.cancelReply();
-        this.updateLesson();
+        if (json.code === 0) {
+          this.showCommentFinish();
+          this.myComment = null;
+          this.cancelReply();
+          this.updateLesson();
+        } else {
+          console.warn('评论错误！')
+        }
       });
     },
     doLike (comment) {
       if (comment.liked) {
         return false;
       }
-      const lid = util.getParam('lid');
+      const lid = util.getParam('id');
       util.addZan(lid, comment.id, (json) => {
         if (json.code === 0) {
           comment.liked = true;
@@ -279,49 +300,61 @@ export default {
 
   .jdbsitem-container {
     background: #f5f5f5;
-    .goback {
+    padding-top: 9.93333rem;
+    .top-wrap {
       width: 100%;
-      height: 1.173333rem;
-      background: white;
-      padding: 0.186666rem 0.4rem;
-      display: flex;
-      align-items: center;
-      position: relative;
-      img {
-        width: 0.8rem;
-        height: 0.8rem;
-        border-radius: 4px;
-      }
-      span {
-        font-size: 0.4rem;
-        color: #333333;
-        margin-left: 0.26666rem;
-      }
-      .arrow-right {
-        position: absolute;
-        top: 0;
-        right: 0.4rem;
-        width: 0.2rem;
-        height: 100%;
-        background-image: url('/static/arrow-right.svg');
-        background-size: 0.2rem auto;
-        background-position: center;
-        background-repeat: no-repeat;
-      }
-    }
-    .banner {
-      width: 100%;
-      height: 5.46666rem;
-      img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+      .goback {
         width: 100%;
-        height: 100%;
+        height: 1.173333rem;
+        background: white;
+        padding: 0.186666rem 0.4rem;
+        display: flex;
+        align-items: center;
+        position: relative;
+        img {
+          width: 0.8rem;
+          height: 0.8rem;
+          border-radius: 4px;
+        }
+        span {
+          font-size: 0.4rem;
+          color: #333333;
+          margin-left: 0.26666rem;
+        }
+        .arrow-right {
+          position: absolute;
+          top: 0;
+          right: 0.4rem;
+          width: 0.2rem;
+          height: 100%;
+          background-image: url('/static/arrow-right.svg');
+          background-size: 0.2rem auto;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
+      }
+      .player {
+        width: 100%;
+        margin: 0;
+        background: white;
+        padding-bottom: 0.4rem;
+        .banner {
+          width: 100%;
+          height: 5.46666rem;
+          img {
+            width: 100%;
+            height: 100%;
+          }
+        }
       }
     }
-    .player {
-      width: 100%;
-      height: 3.06666rem;
-      margin: 0;
-      background: white;
+    .top-wrap.fixed {
+      position: fixed;
+      box-shadow: 0px 1px 10px #cccccc;
     }
     .main {
       background: white;
@@ -474,6 +507,7 @@ export default {
           font-size: 0.4rem;
           line-height: 1.8;
           color: #333333;
+          word-break: break-all;
         }
         .quote {
           border-radius: 8px;
@@ -489,6 +523,7 @@ export default {
           justify-content: space-between;
           font-size: 0.32rem;
           color: #999999;
+          margin-top: 0.1.3333rem;
           .box {
             display: flex;
             align-items: center;
@@ -627,6 +662,51 @@ export default {
       :-ms-input-placeholder { /* Internet Explorer 10+ */ 
         color: #cccccc; 
       } 
+    }
+    .comment-finish {
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      top: 0;
+      left: 0;
+      .cover {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: black;
+        opacity: 0.6;
+      }
+      .box {
+        border-radius: 10px;
+        width: 3.12rem;
+        height: 2.293333rem;
+        background: white;
+        position: relative;
+        z-index: 1;
+        .icon {
+          width: 1rem;
+          height: 1rem;
+          margin: auto;
+          margin-top: 0.4rem;
+          background-image: url('/static/finish-arrow.svg');
+          background-size: 1rem 1rem;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
+        .text {
+          font-size: 0.4rem;
+          color: #999999;
+          width: 100%;
+          text-align: center;
+          margin-top: 0.13333rem;
+        }
+      }
     }
   }
 </style>

@@ -4,8 +4,8 @@
     <Hongbao v-if="isHongbao === 1"></Hongbao>
     <div v-if="isHongbao === 0">
       <div class="paid" :class="{fromHongbao: fromHongbao == 1}" v-if="purchased || freeListen">
-        <div class="player" v-if="lesson">
-          <img class="zshb_banner" src="/static/zshb_banner.png" v-if="fromHongbao == 1">
+        <div class="player" :class="{absolute: fromHongbao == 1 && !scrollDown}" v-if="lesson">
+          <img class="zshb_banner" src="/static/zshb_banner.png" v-if="fromHongbao == 1 && !scrollDown">
           <audio-player :source="song" :loop="false" :listenLen="lesson.listenLen" :nextId="lesson.nextLessonId" :preId="lesson.previousLessonId" :songLong="songLong" :audioLen="lesson.audioLen"></audio-player>
         </div>
         <div class="main" v-if="lesson">
@@ -150,6 +150,13 @@
           <div class="cover"></div>
           <img src="/static/hongbao-tips.png">
         </div>
+        <div class="comment-finish" v-if="commentFinish">
+          <div class="cover"></div>
+          <div class="box">
+            <div class="icon"></div>
+            <div class="text">{{commentFinish === 2 ? '回复' : '评论'}}成功</div>
+          </div>
+        </div>
       </div>
       <div class="not-paid" v-if="!purchased && !freeListen">
         <div class="box">
@@ -222,13 +229,24 @@ export default {
       fromHongbao: 0,
 
       userInfo: {},
+
+      commentFinish: false,
+
+      scrollDown: false,
     }
   },
   created() {
-    // document.title = '加载课时...';
+    document.body.onscroll = () => {
+      const width = document.body.offsetWidth;
+      const scrollTop = document.body.scrollTop;
+      if (scrollTop >= width / 750 * 254) {
+        this.scrollDown = true;
+      } else {
+        this.scrollDown = false;
+      }
+    }
   },
   mounted() {
-    // this.songs = ['/static/test.mp3'];
     const lid = util.getParam('lid');
     const cid = util.getParam('cid');
     this.isHongbao = +util.getParam('isHongbao') || 0;
@@ -316,8 +334,9 @@ export default {
                 cid, lid, isHongbao, userName, userHeader, lessonTitle, redPacketNonce, redPacketRemained
               }, true)
             } else {
+              const fromHongbao = util.getParam('fromHongbao');
               util.changeURL({
-                cid, lid
+                cid, lid, fromHongbao
               }, true)
             }
           }
@@ -335,7 +354,6 @@ export default {
     },
     updateShare: function () {
       const lesson = this.lesson;
-      alert(location.href);
       util.updateWechatShare({
         title: lesson.title,
         link: location.href,
@@ -358,6 +376,12 @@ export default {
       this.commenting = false;
       this.focusStatus = false;
     },
+    showCommentFinish () {
+      this.commentFinish = this.replyId ? 2 : 1;
+      setTimeout(() => {
+        this.commentFinish = false;
+      }, 2000);
+    },
     submitReply () {
       const lid = util.getParam('lid');
       if (!this.myComment || this.myComment.length < 20) {
@@ -365,9 +389,14 @@ export default {
         return false;
       }
       util.newComment(lid, this.myComment, this.replyId, (json) => {
-        this.myComment = null;
-        this.cancelReply();
-        this.updateLesson();
+        if (json.code === 0) {
+          this.showCommentFinish();
+          this.myComment = null;
+          this.cancelReply();
+          this.updateLesson();
+        } else {
+          console.warn('评论错误！')
+        }
       });
     },
     gotoLesson (lid) {
@@ -476,6 +505,51 @@ export default {
     background: #f5f5f5;
     .paid {
       padding-top: 3.226666rem;
+      .comment-finish {
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        .cover {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          background: black;
+          opacity: 0.6;
+        }
+        .box {
+          border-radius: 10px;
+          width: 3.12rem;
+          height: 2.293333rem;
+          background: white;
+          position: relative;
+          z-index: 1;
+          .icon {
+            width: 1rem;
+            height: 1rem;
+            margin: auto;
+            margin-top: 0.4rem;
+            background-image: url('/static/finish-arrow.svg');
+            background-size: 1rem 1rem;
+            background-position: center;
+            background-repeat: no-repeat;
+          }
+          .text {
+            font-size: 0.4rem;
+            color: #999999;
+            width: 100%;
+            text-align: center;
+            margin-top: 0.13333rem;
+          }
+        }
+      }
       .zshb_banner {
         width: 100%;
       }
@@ -512,6 +586,9 @@ export default {
         background: white;
         box-shadow: 0px 1px 10px #cccccc;
         padding-bottom: 0.4rem;
+      }
+      .player.absolute {
+        position: absolute;
       }
       .main {
         background: white;
@@ -748,6 +825,7 @@ export default {
             font-size: 0.4rem;
             line-height: 1.8;
             color: #333333;
+            word-break: break-all;
           }
           .quote {
             border-radius: 8px;
@@ -763,6 +841,7 @@ export default {
             justify-content: space-between;
             font-size: 0.32rem;
             color: #999999;
+            margin-top: 0.13333rem;
             .box {
               display: flex;
               align-items: center;

@@ -67,19 +67,14 @@ export default {
     util.getCourse(cid, (json) => {
       if (json.code === 0) {
         this.course = json.data;
+        // 用户如果已经购买过，直接跳转课时页面
+        if (this.course.purchased) {
+          location.href = '/?cid=' + cid + '&lid=' + lid + '#/lesson'
+        }
       } else {
         console.warn('获取课程信息失败！')
       }
     })
-
-    // util.getLesson(lid, (json) => {
-    //   if (json.code === 0) {
-    //     this.lesson = json.data;
-    //     this.number = json.data.redPacketRemained;
-    //   } else {
-    //     console.warn('获取课时失败！')
-    //   }
-    // });
   },
   methods: {
     gotoHome: function () {

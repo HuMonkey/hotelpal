@@ -122,9 +122,17 @@ export default {
       util.verifyPhone(this.phone, this.code, (json) => {
         if (json.code === 0) {
           util.setCookie('isLogin', '1', '12d');
+          // 邀请注册
           if (util.getParam('invited') == 1) {
-            // TODO 邀请注册
+            util.newInvitedUser((json1) => {
+              if (json.code === 0) {
+                console.log(json1)
+              } else {
+                console.warn('获取用户信息失败')
+              }
+            })
           }
+          // 新用户
           if (json.data.newPhone) {
             util.getUserInfo((json) => {
               if (json.code === 0) {
