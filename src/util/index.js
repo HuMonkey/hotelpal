@@ -62,6 +62,7 @@ util.config = {
   // host: 'http://116.62.247.1:8080', // 测试
   // host: 'http://192.168.0.14:8082', // 测试
   host: 'http://hotelpal.cn', // 线上
+  appId: 'wxfe666ebbf0e42897'
 }
 
 /**
@@ -348,6 +349,29 @@ util.getParam = function(name) {
   return null;
 }
 
+util.removeParam = function (key) {
+  var sourceURL = location.href.split('#')[0];
+  var hash = location.href.split('#')[1];
+  var rtn = sourceURL.split("?")[0],
+    param,
+    params_arr = [],
+    queryString = (sourceURL.indexOf("?") !== -1) ? sourceURL.split("?")[1] : "";
+  if (queryString !== "") {
+    params_arr = queryString.split("&");
+    for (var i = params_arr.length - 1; i >= 0; i -= 1) {
+      param = params_arr[i].split("=")[0];
+      if (param === key) {
+        params_arr.splice(i, 1);
+      }
+    }
+    rtn = rtn + "?" + params_arr.join("&");
+  }
+  if (hash) {
+    rtn = rtn + "#" + hash;
+  }
+  history['replaceState']({}, '', rtn)
+}
+
 /**
  * 修改URL
  */
@@ -357,26 +381,10 @@ util.changeURL = function(options, replaceMode, hash) {
   var arr2 = arr1[0].split('?')
   var prefix = arr2[0];
 
-  var params = {}
-  if (arr2[1]) {
-    var temp = arr2[1].split('&')
-    temp.forEach((item) => {
-      var kv = item.split('=');
-      if (kv[0]) {
-        params[kv[0]] = kv[1] ? decodeURIComponent(kv[1]) : ''
-      }
-    })
-  }
-  options = options || {};
-
-  Object.keys(options).forEach((i) => {
-    params[i] = options[i]
-  })
-
   var paramsArr = [];
   Object.keys(options).forEach((j) => {
     if (options[j] != null) {
-      paramsArr.push(j + '=' + encodeURIComponent(params[j]))
+      paramsArr.push(j + '=' + encodeURIComponent(options[j]))
     }
   })
   var paramsString = paramsArr.join('&')
@@ -387,12 +395,8 @@ util.changeURL = function(options, replaceMode, hash) {
   }
 
   var fragment = arr1.slice(1).join('#')
-  if (hash) {
-    result += '#' + hash;
-  } else {
-    if (fragment) {
-      result += '#' + fragment;
-    }
+  if (fragment) {
+    result += '#' + fragment;
   }
 
   var method = replaceMode ? 'replaceState' : 'pushState'
@@ -431,37 +435,6 @@ util.getCookie = function(key) {
 }
 
 /**
- * 设置微信分享信息
- */
-util.updateWechatShare = function(wxShareDict) {
-  wx.onMenuShareTimeline({
-    title: wxShareDict.title, // 分享标题
-    link: wxShareDict.link, // 分享链接，该链接域名需在JS安全域名中进行登记
-    imgUrl: wxShareDict.imgUrl, // 分享图标
-    success: function () { 
-      // 用户确认分享后执行的回调函数
-    },
-    cancel: function () { 
-      // 用户取消分享后执行的回调函数
-    }
-  });
-  wx.onMenuShareAppMessage({
-    title: wxShareDict.title, // 分享标题
-    desc: wxShareDict.desc, // 分享描述
-    link: wxShareDict.link, // 分享链接，该链接域名需在JS安全域名中进行登记
-    imgUrl: wxShareDict.imgUrl, // 分享图标
-    type: 'link', // 分享类型,music、video或link，不填默认为link
-    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
-    success: function () {
-      // 用户确认分享后执行的回调函数
-    },
-    cancel: function () { 
-      // 用户取消分享后执行的回调函数
-    }
-  });
-}
-
-/**
  * 计算一段文字的长度
  */
 util.textLength = function(para, fontSize) {
@@ -496,6 +469,7 @@ util.configWechat = function(appId, timestamp, nonceStr, signature, callback) {
     if (!util.ua.wechat) {
       return;
     }
+    console.log(appId, timestamp, nonceStr, signature)
     wx.config({
       appId, timestamp, nonceStr, signature,
       jsApiList: [
@@ -566,7 +540,7 @@ util.formatTime = function (time) {
 }
 
 util.getUrl = function (url) {
-  const sessionId = util.getCookie('sessionId');
+  const sessionId = sessionStorage.sessionId;
   if (!sessionId) {
     return url;
   }
@@ -585,6 +559,74 @@ util.processDateStr = function (date) {
     }
   }
   return temp.join('-');
+}
+
+util.getWechatSign = function () {
+  // 如果是html的静态页面在前端通过ajax将url传到后台签名，前端需要用js获取当前页面除去'#'hash部分的链接（可用location.href.split('#')[0]获取,而且需要encodeURIComponent），因为页面一旦分享，微信客户端会在你的链接末尾加入其它参数，如果不是动态获取当前链接，将导致分享后的页面签名失败。
+  util.getSign(encodeURIComponent(location.href.split('#')[0]), (json) => {
+    if (json.code === 0) {
+      const { appid, noncestr, sign, timestamp } = json.data;
+      util.configWechat(appid, timestamp, noncestr, sign, () => {
+        console.log('微信sdk初始化成功！')
+      })
+    } else {
+      console.warn('获取微信签名失败');
+    }
+  })
+}
+
+util.verifyWechat = function (app) {
+  const code = util.getParam('code');
+  const sessionId = sessionStorage.sessionId;
+  if (sessionId) {
+    app.beginRender = true;
+    return false;
+  }
+  if (!code || !sessionStorage.gotoVerify) {
+    sessionStorage.gotoVerify = true;
+    location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + util.config.appId + '&redirect_uri=' + encodeURIComponent(document.URL) +'&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect';
+  } else {
+    util.receiveRedirect(code, (json1) => {
+      if (json1.code === 0) {
+        sessionStorage.sessionId = json1.data.sessionId;
+        app.beginRender = true;
+      } else {
+        console.warn('verify fail');
+      }
+    })
+  }
+}
+
+/**
+ * 设置微信分享信息
+ */
+util.updateWechatShare = function(wxShareDict) {
+  util.getWechatSign();
+  wx.onMenuShareTimeline({
+    title: wxShareDict.title, // 分享标题
+    link: wxShareDict.link, // 分享链接，该链接域名需在JS安全域名中进行登记
+    imgUrl: wxShareDict.imgUrl, // 分享图标
+    success: function () { 
+      // 用户确认分享后执行的回调函数
+    },
+    cancel: function () { 
+      // 用户取消分享后执行的回调函数
+    }
+  });
+  wx.onMenuShareAppMessage({
+    title: wxShareDict.title, // 分享标题
+    desc: wxShareDict.desc, // 分享描述
+    link: wxShareDict.link, // 分享链接，该链接域名需在JS安全域名中进行登记
+    imgUrl: wxShareDict.imgUrl, // 分享图标
+    type: 'link', // 分享类型,music、video或link，不填默认为link
+    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+    success: function () {
+      // 用户确认分享后执行的回调函数
+    },
+    cancel: function () { 
+      // 用户取消分享后执行的回调函数
+    }
+  });
 }
 
 export default util;

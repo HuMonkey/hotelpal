@@ -71,8 +71,8 @@ export default {
     document.title = '登录';
   },
   mounted() {
-    if ( util.getCookie('isLogin') == 1) {
-      location.href = '/#/';
+    if (util.getCookie('isLogin') == 1) {
+      location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
     }
   },
   methods: {
@@ -122,6 +122,9 @@ export default {
       util.verifyPhone(this.phone, this.code, (json) => {
         if (json.code === 0) {
           util.setCookie('isLogin', '1', '12d');
+          if (util.getParam('invited') == 1) {
+            // TODO 邀请注册
+          }
           if (json.data.newPhone) {
             util.getUserInfo((json) => {
               if (json.code === 0) {

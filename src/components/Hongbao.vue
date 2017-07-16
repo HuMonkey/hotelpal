@@ -1,15 +1,15 @@
 <template>
   <div class="hongbao-container">
-    <div v-if="number > 0">
+    <div v-if="redPacketRemained > 0">
       <div class="aavater">
         <div class="img"><img :src="userHeader"></div>
       </div>
       <div class="name">{{ userName + '请你学知识' }}</div>
     </div>
-    <div class="over-tips" v-if="number === 0">
+    <div class="over-tips" v-if="redPacketRemained === 0">
       知识红包已抢完，<span @click="gotoHome">去查看更多课程</span><div class="icon"></div>    
     </div>
-    <div class="hongbao" v-if="number !== null">
+    <div class="hongbao" v-if="redPacketRemained !== null">
       <img class="hongbao-bg" src="/static/hongbao.png">
       <div class="box">
         <div class="avater">
@@ -17,13 +17,13 @@
         </div>
         <div class="desc">
           <div class="title">{{ course.title }}</div>
-          <div class="title">{{ lesson.title }}</div>
+          <div class="title">{{ lessonTitle }}</div>
           <div class="who">{{ course.userName }}<br />{{ course.company }}</div>
         </div>
       </div>
-      <div class="btn" :class="{over: number == 0}" @click="openRedPacket">{{ number > 0 ? '抢' : '抢完了' }}</div>
-      <div class="tips" v-if="number > 0">限量三个名额，快来领取</div>
-      <div class="tips" v-if="number === 0">名额已抢完</div>
+      <div class="btn" :class="{over: number == 0}" @click="openRedPacket">{{ redPacketRemained > 0 ? '抢' : '抢完了' }}</div>
+      <div class="tips" v-if="redPacketRemained > 0">限量三个名额，快来领取</div>
+      <div class="tips" v-if="redPacketRemained === 0">名额已抢完</div>
     </div>
   </div>
 </template>
@@ -42,6 +42,10 @@ export default {
 
       userName: '',
       userHeader: '',
+      lessonTitle: '',
+      redPacketNonce: '',
+      redPacketRemained: '',
+      
     }
   },
   created() {},
@@ -50,9 +54,15 @@ export default {
     const cid = util.getParam('cid');
     const userName = util.getParam('userName');
     const userHeader = util.getParam('userHeader');
+    const lessonTitle = util.getParam('lessonTitle');
+    const redPacketNonce = util.getParam('redPacketNonce');
+    const redPacketRemained = util.getParam('redPacketRemained');
 
     this.userName = decodeURIComponent(userName);
     this.userHeader = decodeURIComponent(userHeader);
+    this.lessonTitle = decodeURIComponent(lessonTitle);
+    this.redPacketNonce = decodeURIComponent(redPacketNonce);
+    this.redPacketRemained = decodeURIComponent(redPacketRemained);
 
     util.getCourse(cid, (json) => {
       if (json.code === 0) {
@@ -62,14 +72,14 @@ export default {
       }
     })
 
-    util.getLesson(lid, (json) => {
-      if (json.code === 0) {
-        this.lesson = json.data;
-        this.number = json.data.redPacketRemained;
-      } else {
-        console.warn('获取课时失败！')
-      }
-    });
+    // util.getLesson(lid, (json) => {
+    //   if (json.code === 0) {
+    //     this.lesson = json.data;
+    //     this.number = json.data.redPacketRemained;
+    //   } else {
+    //     console.warn('获取课时失败！')
+    //   }
+    // });
   },
   methods: {
     gotoHome: function () {
@@ -79,8 +89,8 @@ export default {
       if (this.number == 0) {
         return false;
       }
-      util.openRedPacket(this.lesson.redPacketNonce, (json) => {
-        if (json.code === 0) {
+      util.openRedPacket(this.redPacketNonce, (json) => {
+        if (json.code === 0 || json.code === 40001) {
           console.log(json);
           const lid = util.getParam('lid');
           const cid = util.getParam('cid');

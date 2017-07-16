@@ -105,7 +105,15 @@ export default {
       }
       this.lessonList = [];
       this.onInfinite();
-    }
+    },
+    updateShare: function () {
+      util.updateWechatShare({
+        title: '酒店邦说',
+        link: location.href,
+        imgUrl: 'http://hotelpal.cn/static/jiudianbang.png',
+        desc: '酒店邦自主内容酒店邦自主内容酒店邦自主内容酒店邦自主内容',
+      })
+    },
   },
   computed: {
     notListenNum: function () {

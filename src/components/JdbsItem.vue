@@ -1,5 +1,6 @@
 <template>
   <div class="jdbsitem-container">
+    <Error :error="error" v-if="error"></Error>
     <div class="goback" @click="goback">
       <img src="/static/jiudianbang.png">
       <span>酒店邦说</span>
@@ -135,6 +136,7 @@ import moment from 'moment';
 
 import util from '../util/index'
 import AudioPlayer from './AudioPlayer.vue'
+import Error from './Error.vue'
 
 export default {
   name: 'jdbsitem',
@@ -157,7 +159,10 @@ export default {
       interval: null,
 
       songLong: '00:00',
-      myComment: ''
+      myComment: '',
+
+      errorTimeout: null,
+      error: null,
     }
   },
   created() {
@@ -188,6 +193,7 @@ export default {
           if (length > 9.2 * rem * 2) {
             this.isIntroOverflow = true;
           }
+          this.updateShare();
         } else {
           console.warn('获取课时失败！')
         }
@@ -195,6 +201,15 @@ export default {
     },
     switchOverflow: function() {
       this.introOverflow = !this.introOverflow;
+    },
+    updateShare: function () {
+      const lesson = this.lesson;
+      util.updateWechatShare({
+        title: lesson.title,
+        link: location.href,
+        imgUrl: lesson.coverImg,
+        desc: '酒店帮自主课程',
+      })
     },
     gotoComment () {
       this.commenting = true;
@@ -211,8 +226,19 @@ export default {
       this.commenting = false;
       this.focusStatus = false;
     },
+    setError: function (error) {
+      this.error = error;
+      this.errorTimeout && clearTimeout(this.errorTimeout)
+      this.errorTimeout = setTimeout(() => {
+        this.error = null;
+      }, 4000);
+    },
     submitReply () {
       const id = util.getParam('id');
+      if (!this.myComment || this.myComment.length < 20) {
+        this.setError('回复至少20字以上');
+        return false;
+      }
       util.newComment(id, this.myComment, this.replyId, (json) => {
         this.myComment = null;
         this.cancelReply();
@@ -243,7 +269,7 @@ export default {
   destroyed() {},
   watch: {},
   components: {
-    AudioPlayer
+    AudioPlayer, Error
   }
 }
 </script>

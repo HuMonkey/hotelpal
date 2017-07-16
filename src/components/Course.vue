@@ -120,17 +120,18 @@ export default {
       isIntroOverflow: false,
       introOverflow: true,
       error: null,
-      course: {},
+      course: null,
     }
   },
   created() {
-    document.title = '加载课程...';
+    // document.title = '加载课程...';
   },
   mounted() {
     const courseId = util.getParam('cid');
     util.getCourse(courseId, (json) => {
       if (json.code === 0) {
         const course = json.data;
+        console.log('hwq')
         document.title = course.title;
         this.course = {
           ...course,
@@ -159,6 +160,13 @@ export default {
         if (length > 9.2 * rem * 2) {
           this.isIntroOverflow = true;
         }
+        if (util.getParam('code')) {
+          const cid = util.getParam('cid')
+          util.changeURL({
+            cid
+          }, true)
+        }
+        this.updateShare();
       } else {
         console.warn('获取课程信息失败！')
       }
@@ -170,6 +178,15 @@ export default {
     },
     closeErrorTips: function() {
       this.error = null;
+    },
+    updateShare: function () {
+      const course = this.course;
+      util.updateWechatShare({
+        title: course.title,
+        link: location.href,
+        imgUrl: course.headImg,
+        desc: course.subtitle,
+      })
     },
     gotoLesson: function (lesson) {
       if (!lesson.isPublish) {

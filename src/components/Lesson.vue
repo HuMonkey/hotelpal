@@ -1,14 +1,14 @@
 <template>
   <div class="lesson-container">
     <Error :error="error" v-if="error"></Error>
-    <Hongbao v-if="lesson && isHongbao === 1"></Hongbao>
-    <div v-if="lesson && isHongbao === 0">
-      <div class="paid" v-if="purchased || freeListen">
-        <img class="zshb_banner" src="/static/zshb_banner.png" v-if="fromHongbao == 1">
-        <div class="player">
+    <Hongbao v-if="isHongbao === 1"></Hongbao>
+    <div v-if="isHongbao === 0">
+      <div class="paid" :class="{fromHongbao: fromHongbao == 1}" v-if="purchased || freeListen">
+        <div class="player" v-if="lesson">
+          <img class="zshb_banner" src="/static/zshb_banner.png" v-if="fromHongbao == 1">
           <audio-player :source="song" :loop="false" :listenLen="lesson.listenLen" :nextId="lesson.nextLessonId" :preId="lesson.previousLessonId" :songLong="songLong" :audioLen="lesson.audioLen"></audio-player>
         </div>
-        <div class="main">
+        <div class="main" v-if="lesson">
           <div class="course-title">{{ lesson.lessonOrder }} | {{ lesson.title }}</div>
           <div class="infos">
             <div class="time">{{ lesson.publishTimeStr }}发布</div>
@@ -56,7 +56,7 @@
             </div>
           </div>
         </div>
-        <div class="discuss">
+        <div class="discuss" v-if="lesson">
             <div class="good" v-if="lesson.eliteCommentList && lesson.eliteCommentList.commentList.length > 0">
               <div class="title">
                 讨论
@@ -147,7 +147,8 @@
           </div>
         </div>
         <div class="hongbaoTips" v-if="hongbaoTips && lesson.redPacketRemained > 0" @click="showHongbaoTips(false)">
-          <img src="/static/hongbaotips.png">
+          <div class="cover"></div>
+          <img src="/static/hongbao-tips.png">
         </div>
       </div>
       <div class="not-paid" v-if="!purchased && !freeListen">
@@ -224,7 +225,7 @@ export default {
     }
   },
   created() {
-    document.title = '加载课时...';
+    // document.title = '加载课时...';
   },
   mounted() {
     // this.songs = ['/static/test.mp3'];
@@ -232,11 +233,9 @@ export default {
     const cid = util.getParam('cid');
     this.isHongbao = +util.getParam('isHongbao') || 0;
     this.fromHongbao = +util.getParam('fromHongbao') || 0;
-
-    if (this.isHongbao === 1) {
+    if (this.isHongbao == 1) {
       return false;
     }
-
     this.updateLesson();
     util.getCourse(cid, (json) => {
       if (json.code === 0) {
@@ -248,7 +247,9 @@ export default {
         const former = lessonList.indexOf(lessonList.find((d) => d.id == lid));
         const offsetLeft = (former * 320) / 75 * (document.body.clientWidth / 10);
         setTimeout(function () {
-          document.querySelector('.lessons').scrollLeft = offsetLeft;
+          if (document.querySelector('.lessons')) {
+            document.querySelector('.lessons').scrollLeft = offsetLeft;
+          }
         }, 500)
       } else {
         console.warn('获取课程信息失败！')
@@ -301,6 +302,26 @@ export default {
           if (length > 9.2 * rem * 2) {
             this.isIntroOverflow = true;
           }
+          if (util.getParam('code')) {
+            const cid = util.getParam('cid')
+            const lid = util.getParam('lid')
+            if (util.getParam('isHongbao') == 1) {
+              const isHongbao = 1;
+              const userName = this.userInfo.nickname;
+              const userHeader = this.userInfo.headImg;
+              const lessonTitle = this.lesson.title;
+              const redPacketNonce = this.lesson.redPacketNonce;
+              const redPacketRemained = this.lesson.redPacketRemained;
+              util.changeURL({
+                cid, lid, isHongbao, userName, userHeader, lessonTitle, redPacketNonce, redPacketRemained
+              }, true)
+            } else {
+              util.changeURL({
+                cid, lid
+              }, true)
+            }
+          }
+          this.updateShare()
         } else if (json.code === 40301) {
           this.purchased = false;
           this.freeListen = false;
@@ -311,6 +332,16 @@ export default {
     },
     switchOverflow: function() {
       this.introOverflow = !this.introOverflow;
+    },
+    updateShare: function () {
+      const lesson = this.lesson;
+      alert(location.href);
+      util.updateWechatShare({
+        title: lesson.title,
+        link: location.href,
+        imgUrl: lesson.coverImg,
+        desc: lesson.content,
+      })
     },
     gotoComment () {
       this.commenting = true;
@@ -403,13 +434,18 @@ export default {
         const isHongbao = 1;
         const userName = this.userInfo.nickname;
         const userHeader = this.userInfo.headImg;
+        const lessonTitle = this.lesson.title;
+        const redPacketNonce = this.lesson.redPacketNonce;
+        const redPacketRemained = this.lesson.redPacketRemained;
         util.changeURL({
-          cid, lid, isHongbao, userName, userHeader
+          cid, lid, isHongbao, userName, userHeader, lessonTitle, redPacketNonce, redPacketRemained
         }, true)
+        this.updateShare();
       } else {
         util.changeURL({
           cid, lid
         }, true)
+        this.updateShare();
       }
     }
   },
@@ -450,14 +486,24 @@ export default {
         left: 0;
         top: 0;
         z-index: 9999;
-        img {
+        .cover {
           width: 100%;
           height: 100%;
+          background: black;
+          opacity: 0.8;
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+        img {
+          width: 92%;
+          position: absolute;
+          left: 4%;
+          z-index: 1;
         }
       }
       .player {
         width: 100%;
-        height: 3.06666rem;
         position: fixed;
         top: 0;
         left: 0;
@@ -465,6 +511,7 @@ export default {
         margin: 0;
         background: white;
         box-shadow: 0px 1px 10px #cccccc;
+        padding-bottom: 0.4rem;
       }
       .main {
         background: white;
@@ -578,7 +625,8 @@ export default {
                 .img {
                   width: 1.3333rem;
                   height: 1.3333rem;
-                  display: block;
+                  display: flex;
+                  justify-content: center;
                   float: left;
                   overflow: hidden;
                   border-radius: 1.3333rem;
@@ -852,6 +900,9 @@ export default {
           color: #cccccc; 
         } 
       }
+    }
+    .paid.fromHongbao {
+      padding-top: 6.22rem;
     }
     .not-paid {
       padding: 0.4rem;

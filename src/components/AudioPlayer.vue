@@ -20,7 +20,12 @@
         15
       </div>
       <div class="previous" @click="preLesson" :class="{empty: !preId}"></div>
-      <div class="switch" :class="{playing: playing}" @click="playOrPause"></div>
+      <div class="loading" v-if="loading">
+        <div class="border"></div>
+      </div>
+      <div class="switch" v-if="!loading" :class="{playing: playing}" @click="playOrPause">
+        <div class="border-solid"></div>
+      </div>
       <div class="next" @click="nextLesson" :class="{empty: !nextId}"></div>
       <div class="next-15" @click="next15">
         <div class="bg"></div>
@@ -54,6 +59,7 @@
         playing: false,
         record: false,
         saveInterval: null,
+        loading: false,
       }
     },
     mounted() {
@@ -71,7 +77,7 @@
     methods: {
       setGoOn () {
         if (!this.nextId) {
-          alert('已经是最后一个课时啦！');
+          // alert('已经是最后一个课时啦！');
           return false;
         }
         this.goOn = !this.goOn;
@@ -352,14 +358,55 @@
       .switch {
         width: 1.28rem;
         height: 1.28rem;
-        background-image: url('/static/play.svg');
-        background-size: 1.2rem 1.2rem;
-        background-position: center;
+        background-image: url('/static/loading-play.svg');
+        background-size: auto 0.53333rem;
+        background-position: 0.5rem center;
         background-repeat: no-repeat;
+        .border-solid {
+          width: 1.28rem;
+          height: 1.28rem;
+          background-image: url('/static/play-border.svg');
+          background-size: 1.2rem 1.2rem;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
       }
       .switch.playing {
-        background-image: url('/static/stop.svg');
+        background-image: url('/static/pause.svg');
+        background-position: center;
+      }
+      .loading {
+        width: 1.28rem;
+        height: 1.28rem;
+        background-image: url('/static/loading-play.svg');
+        background-size: auto 0.53333rem;
+        background-position: center;
+        background-repeat: no-repeat;
+        .border {
+          width: 1.28rem;
+          height: 1.28rem;
+          background-image: url('/static/loading.png');
+          background-size: 1.2rem 1.2rem;
+          background-position: center;
+          background-repeat: no-repeat;
+          animation: transform 5s infinite linear;
+          margin-left: -0.075rem;
+        }
       }
     }
+  }
+  @keyframes transform {
+    from {
+      transform: rotate(0);
+    }
+
+    50% {
+      transform: rotate(180deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+
   }
 </style>
