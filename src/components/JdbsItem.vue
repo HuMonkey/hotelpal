@@ -341,7 +341,6 @@ export default {
         width: 100%;
         margin: 0;
         background: white;
-        padding-bottom: 0.4rem;
         .banner {
           width: 100%;
           height: 5.46666rem;

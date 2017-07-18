@@ -514,14 +514,14 @@ util.configWechat = function(appId, timestamp, nonceStr, signature, callback) {
 /**
  * 检查是否登录
  */
-util.checkLogin = function () {
-  const isLogin = util.getCookie('isLogin');
-  if (isLogin == '1') {
-    return false;
-  }
-  const redirect = encodeURIComponent('/' + location.search + location.hash);
-  location.href = '/?redirect=' + redirect + '#/login';
-}
+// util.checkLogin = function () {
+//   const isLogin = util.getCookie('isLogin');
+//   if (isLogin == '1') {
+//     return false;
+//   }
+//   const redirect = encodeURIComponent('/' + location.search + location.hash);
+//   location.href = '/?redirect=' + redirect + '#/login';
+// }
 
 /**
  * 数字前面补0
@@ -566,13 +566,13 @@ util.formatTime = function (time) {
 }
 
 util.getUrl = function (url) {
-  const sessionId = sessionStorage.sessionId;
-  if (!sessionId) {
+  const token = util.getCookie('token');
+  if (!token) {
     return url;
   }
-  let result = url.split('?')[0] + ';jsessionid=' + sessionId
+  let result = url.split('?')[0] + '?token=' + token;
   if (url.split('?')[1]) {
-    result += '?' + url.split('?')[1]
+    result += '&' + url.split('?')[1]
   }
   return result;
 }
@@ -603,8 +603,8 @@ util.getWechatSign = function () {
 
 util.verifyWechat = function (app) {
   const code = util.getParam('code');
-  const sessionId = sessionStorage.sessionId;
-  if (sessionId) {
+  const token = util.getCookie('token');
+  if (token) {
     app.beginRender = true;
     return false;
   }
@@ -614,7 +614,7 @@ util.verifyWechat = function (app) {
   } else {
     util.receiveRedirect(code, (json1) => {
       if (json1.code === 0) {
-        sessionStorage.sessionId = json1.data.sessionId;
+        util.setCookie('token', json1.data.token, '12d');
         app.beginRender = true;
       } else {
         console.warn('verify fail');

@@ -14,7 +14,7 @@
           <div class="img"><img :src="c.headImg"></div>
           <div class="main">
             <div class="title">{{ c.title }}</div>
-            <div class="tips">{{ c.msg || '暂无' }}</div>
+            <div class="tips" :title="c.msg">{{ c.msg || '暂无' }}</div>
             <div class="time">{{c.updateDate}}更新 | 已发布 {{c.publishedLessonCount}}/{{c.lessonCount}}</div>
           </div>
         </div>
@@ -196,6 +196,9 @@ export default {
               margin-top: 0.48rem;
               font-size: 0.32rem;
               color: #666666;
+              white-space: nowrap; 
+              overflow: hidden;
+              text-overflow: ellipsis;
             }
             .time {
               font-size: 0.293333rem;

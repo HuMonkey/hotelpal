@@ -148,7 +148,7 @@
         </div>
         <div class="hongbaoTips" v-if="hongbaoTips && lesson.redPacketRemained > 0" @click="showHongbaoTips(false)">
           <div class="cover"></div>
-          <img src="/static/hongbao-tips.png">
+          <img src="/static/hongbaotips.png">
         </div>
         <div class="comment-finish" v-if="commentFinish">
           <div class="cover"></div>
@@ -428,7 +428,11 @@ export default {
       return util.formatTime(time);
     },
     gotoPay: function () {
-      util.checkLogin();
+      if (!this.userinfo.phone) {
+        const redirect = encodeURIComponent('/' + location.search + location.hash);
+        location.href = '/?redirect=' + redirect + '#/login';
+        return false;
+      }
       const cid = util.getParam('cid');
       util.createPayOrder(cid, (json) => {
         if (json.code === 0) {
@@ -584,8 +588,6 @@ export default {
         z-index: 100;
         margin: 0;
         background: white;
-        box-shadow: 0px 1px 10px #cccccc;
-        padding-bottom: 0.4rem;
       }
       .player.absolute {
         position: absolute;

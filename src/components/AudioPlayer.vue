@@ -1,36 +1,43 @@
 <template>
   <div class="audio-player">
-    <audio :src="source" controls="controls" preload="load"></audio>
-    <div class="top" v-if="audio">
-      <div class="progress">
-        <div class="current">{{ current }}</div>
-        <div class="bar" @touchmove="moveDrag" @touchend="endDrag">
-          <div class="duration">
-            <div class="inner" :style="{ width: audio.currentTime / audioLen * 100 + '%' }"></div>
+    <div class="wrapper">
+      <audio :src="source" controls="controls" preload="load"></audio>
+      <div class="top" v-if="audio">
+        <div class="progress">
+          <div class="current">{{ current }}</div>
+          <div class="bar" @touchmove="moveDrag" @touchend="endDrag">
+            <div class="duration">
+              <div class="inner" :style="{ width: audio.currentTime / audioLen * 100 + '%' }"></div>
+            </div>
+            <div class="dot" :style="{ left: audio.currentTime / audioLen * 94 + '%' }" @touchstart="startDrag"><div class="dot-inner"></div></div>
           </div>
-          <div class="dot" :style="{ left: audio.currentTime / audioLen * 94 + '%' }" @touchstart="startDrag"></div>
+          <div class="left">{{ left || songLong }}</div>
         </div>
-        <div class="left">{{ left || songLong }}</div>
+        <div @click="setGoOn" class="go-on" :class="{clicked: goOn}">连续听</div>
       </div>
-      <div @click="setGoOn" class="go-on" :class="{clicked: goOn}">连续听</div>
+      <div class="bottom" v-if="audio">
+        <div class="previous-15" @click="previous15">
+          <div class="bg"></div>
+          15
+        </div>
+        <div class="previous" @click="preLesson" :class="{empty: !preId}"></div>
+        <div class="loading" v-if="loading">
+          <div class="border"></div>
+        </div>
+        <div class="switch" v-if="!loading" :class="{playing: playing}" @click="playOrPause">
+          <div class="border-solid"></div>
+        </div>
+        <div class="next" @click="nextLesson" :class="{empty: !nextId}"></div>
+        <div class="next-15" @click="next15">
+          <div class="bg"></div>
+          15
+        </div>
+      </div>
     </div>
-    <div class="bottom" v-if="audio">
-      <div class="previous-15" @click="previous15">
-        <div class="bg"></div>
-        15
-      </div>
-      <div class="previous" @click="preLesson" :class="{empty: !preId}"></div>
-      <div class="loading" v-if="loading">
-        <div class="border"></div>
-      </div>
-      <div class="switch" v-if="!loading" :class="{playing: playing}" @click="playOrPause">
-        <div class="border-solid"></div>
-      </div>
-      <div class="next" @click="nextLesson" :class="{empty: !nextId}"></div>
-      <div class="next-15" @click="next15">
-        <div class="bg"></div>
-        15
-      </div>
+    <div class="countdown" v-if="playing && goOn && countingDown">
+      <div class="tips">{{ countingDown }}s后将自动为你播放</div>
+      <div class="lesson-title">{{ nextLessonTitle }}</div>
+      <div class="btn" @click="cancelGoOn">取消自动播放</div>
     </div>
   </div>
 </template>
@@ -60,11 +67,12 @@
         record: false,
         saveInterval: null,
         loading: false,
+        countingDown: null,
+        nextLessonTitle: null,
       }
     },
     mounted() {
       this.audio = document.querySelector('.audio-player audio');
-      console.log(this.listenLen)
       if (this.listenLen && this.listenLen < this.audioLen) {
         this.audio.currentTime = this.listenLen;
         this.updateTime();
@@ -73,6 +81,13 @@
         this.goOn = true;
         setTimeout(this.playOrPause, 2000);
       }
+      this.nextId && util.getLesson(this.nextId, (json) => {
+        if (json.code === 0) {
+          this.nextLessonTitle = json.data.title;
+        } else {
+          console.warn('获取课程信息失败！')
+        }
+      })
     },
     methods: {
       setGoOn () {
@@ -82,6 +97,9 @@
         }
         this.goOn = !this.goOn;
       },
+      cancelGoOn () {
+        this.goOn = false;
+      },
       updateTime () {
         const audio = this.audio;
         this.current = formatTime(audio.currentTime || 0, true);
@@ -89,6 +107,9 @@
           this.left = this.songLong;
         } else {
           this.left = formatTime(audio.duration - audio.currentTime, false);
+          if (audio.duration - audio.currentTime < 16) {
+            this.countingDown = parseInt(audio.duration - audio.currentTime);
+          }
         }
         if (audio.ended) {
           this.current = formatTime(0, true);
@@ -142,11 +163,13 @@
       startDrag (ev) {
         dragging = true;
         this.audio.muted = true;
+        !this.playing && this.playOrPause();
         this.interval && clearInterval(this.interval);
       },
       moveDrag (ev) {
         const audio = this.audio;
-        if (!dragging || !this.playing) {
+        // if (!dragging || !this.playing) {
+        if (!dragging) {
           return false;
         }
         const total = this.$el.querySelector(".bar").offsetWidth;
@@ -233,165 +256,204 @@
   @import '../variable.less';
 
   .audio-player {
-    audio {
-      display: none;
-    }
-    .top {
-      width: 100%;
-      padding: 0.4rem 0.4rem;
-      color: #999999;
-      font-size: 0.26666rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      .progress {
-        width: 7.5rem;
+    .wrapper {
+      position: relative;
+      padding-bottom: 0.4rem;
+      box-shadow: 0px 1px 10px #cccccc;
+      audio {
+        display: none;
+      }
+      .top {
+        width: 100%;
+        padding: 0.4rem 0.4rem;
+        color: #999999;
+        font-size: 0.26666rem;
         display: flex;
-        justify-content: space-between; 
+        justify-content: space-between;
         align-items: center;
-        .current, .left {
-          height: 0.4rem;
-          width: 0.8rem;
-          text-align: center;
+        .progress {
+          width: 7.5rem;
           display: flex;
+          justify-content: space-between; 
           align-items: center;
-        }
-        .bar {
-          width: 5.6rem;
-          height: 0.4rem;
-          position: relative;
-          display: flex;
-          align-items: center;
-          .duration {
-            width: 100%;
-            height: 3px;
-            background: #cccccc;
-            .inner {
-              width: 0;
-              height: 100%;
-              background: @red;
+          .current, .left {
+            height: 0.4rem;
+            width: 0.8rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+          }
+          .bar {
+            width: 5.6rem;
+            height: 0.4rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+            .duration {
+              width: 100%;
+              height: 3px;
+              background: #cccccc;
+              .inner {
+                width: 0;
+                height: 100%;
+                background: @red;
+              }
+            }
+            .dot {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 0.4rem;
+              height: 0.4rem;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              .dot-inner {
+                width: 0.4rem;
+                height: 0.4rem;
+                border-radius: 0.4rem;
+                background: @red;
+              }
             }
           }
-          .dot {
+        }
+        .go-on {
+          width: 1.4rem;
+          height: 0.8rem;
+          background-image: url('/static/goon-grey.svg');
+          background-size: 1.4rem 0.8rem;
+          transform: scale(0.8);
+          display: flex;
+          justify-content: center;
+          line-height: 0.7rem;
+        }
+        .go-on.clicked {
+          color: @red;
+          background-image: url('/static/goon-red.svg');
+        }
+      }
+      .bottom {
+        width: 100%;
+        height: 1.28rem;
+        padding: 0 0.4rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #999999;
+        .previous-15, .next-15 {
+          width: 0.8rem;
+          height: 0.8rem;
+          position: relative;
+          font-size: 0.32rem;
+          text-align: center;
+          line-height: 0.8rem;
+          transform: scale(0.8);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          .bg {
             position: absolute;
-            top: 0;
             left: 0;
-            width: 0.4rem;
-            height: 0.4rem;
-            border-radius: 0.4rem;
-            background: @red;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/static/15.svg');
+            background-size: 0.75rem 0.75rem;
+            background-position: center;
+            background-repeat: no-repeat;
+          }
+        }
+        .previous-15 {
+          padding-left: 0.1rem;
+          .bg {
+            -moz-transform:scaleX(-1);
+            -webkit-transform:scaleX(-1);
+            -o-transform:scaleX(-1);
+            transform:scaleX(-1);
+          } 
+        }
+        .next-15 {
+          padding-right: 0.1rem;
+        }
+        .previous, .next {
+          width: 0.53333rem;
+          height: 0.53333rem;
+          background-image: url('/static/previous.svg');
+          background-size: 0.52333rem 0.52333rem;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
+        .next {
+          background-image: url('/static/next.svg');
+        }
+        .previous.empty, .next.empty {
+          background: none;
+        }
+        .switch {
+          width: 1.28rem;
+          height: 1.28rem;
+          background-image: url('/static/loading-play.svg');
+          background-size: auto 0.53333rem;
+          background-position: 0.5rem center;
+          background-repeat: no-repeat;
+          .border-solid {
+            width: 1.28rem;
+            height: 1.28rem;
+            background-image: url('/static/play-border.svg');
+            background-size: 1.2rem 1.2rem;
+            background-position: center;
+            background-repeat: no-repeat;
+          }
+        }
+        .switch.playing {
+          background-image: url('/static/pause.svg');
+          background-position: center;
+        }
+        .loading {
+          width: 1.28rem;
+          height: 1.28rem;
+          background-image: url('/static/loading-play.svg');
+          background-size: auto 0.53333rem;
+          background-position: center;
+          background-repeat: no-repeat;
+          .border {
+            width: 1.28rem;
+            height: 1.28rem;
+            background-image: url('/static/loading.png');
+            background-size: 1.2rem 1.2rem;
+            background-position: center;
+            background-repeat: no-repeat;
+            animation: transform 5s infinite linear;
+            margin-left: -0.075rem;
           }
         }
       }
-      .go-on {
-        width: 1.4rem;
-        height: 0.8rem;
-        background-image: url('/static/goon-grey.svg');
-        background-size: 1.4rem 0.8rem;
-        transform: scale(0.8);
-        display: flex;
-        justify-content: center;
-        line-height: 0.7rem;
-      }
-      .go-on.clicked {
-        color: @red;
-        background-image: url('/static/goon-red.svg');
-      }
     }
-    .bottom {
+    .countdown {
       width: 100%;
-      height: 1.28rem;
-      padding: 0 0.4rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: #999999;
-      .previous-15, .next-15 {
-        width: 0.8rem;
-        height: 0.8rem;
-        position: relative;
-        font-size: 0.32rem;
-        text-align: center;
-        line-height: 0.8rem;
-        transform: scale(0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        .bg {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 100%;
-          height: 100%;
-          background-image: url('/static/15.svg');
-          background-size: 0.75rem 0.75rem;
-          background-position: center;
-          background-repeat: no-repeat;
-        }
+      height: 1.3333rem;
+      background: @red;
+      color: white;
+      position: absolute;
+      bottom: -1.3333rem;
+      left: 0;
+      font-size: 0.32rem;
+      padding: 0.26666rem 0.53333rem;
+      line-height: 1;
+      .tips {
+        font-size: 0.37rem;
       }
-      .previous-15 {
-        padding-left: 0.1rem;
-        .bg {
-          -moz-transform:scaleX(-1);
-          -webkit-transform:scaleX(-1);
-          -o-transform:scaleX(-1);
-          transform:scaleX(-1);
-        } 
+      .lesson-title {
+        margin-top: 0.13333rem;
       }
-      .next-15 {
-        padding-right: 0.1rem;
-      }
-      .previous, .next {
-        width: 0.53333rem;
-        height: 0.53333rem;
-        background-image: url('/static/previous.svg');
-        background-size: 0.52333rem 0.52333rem;
-        background-position: center;
-        background-repeat: no-repeat;
-      }
-      .next {
-        background-image: url('/static/next.svg');
-      }
-      .previous.empty, .next.empty {
-        background: none;
-      }
-      .switch {
-        width: 1.28rem;
-        height: 1.28rem;
-        background-image: url('/static/loading-play.svg');
-        background-size: auto 0.53333rem;
-        background-position: 0.5rem center;
-        background-repeat: no-repeat;
-        .border-solid {
-          width: 1.28rem;
-          height: 1.28rem;
-          background-image: url('/static/play-border.svg');
-          background-size: 1.2rem 1.2rem;
-          background-position: center;
-          background-repeat: no-repeat;
-        }
-      }
-      .switch.playing {
-        background-image: url('/static/pause.svg');
-        background-position: center;
-      }
-      .loading {
-        width: 1.28rem;
-        height: 1.28rem;
-        background-image: url('/static/loading-play.svg');
-        background-size: auto 0.53333rem;
-        background-position: center;
-        background-repeat: no-repeat;
-        .border {
-          width: 1.28rem;
-          height: 1.28rem;
-          background-image: url('/static/loading.png');
-          background-size: 1.2rem 1.2rem;
-          background-position: center;
-          background-repeat: no-repeat;
-          animation: transform 5s infinite linear;
-          margin-left: -0.075rem;
-        }
+      .btn {
+        display: inline-block;
+        border: white solid thin;
+        padding: 0.1rem;
+        border-radius: 4px;
+        position: absolute;
+        right: 0.26666rem;
+        top: 0.4rem;
       }
     }
   }
@@ -407,6 +469,5 @@
     to {
       transform: rotate(360deg);
     }
-
   }
 </style>

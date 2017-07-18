@@ -24,23 +24,33 @@ export default {
   name: 'bottomer',
   props: ['tag'],
   data () {
-    return {}
+    return {
+      userinfo: {}
+    }
   },
   created() {},
-  mounted() {},
+  mounted() {
+    util.getUserInfo((json) => {
+      if (json.code === 0) {
+        this.userinfo = json.data;
+      } else {
+        console.warn('获取用户信息失败')
+      }
+    })
+  },
   methods: {
     gotoHome: function () {
       location.href = '/#/';
     },
     gotoBought: function () {
-      if (util.getCookie('isLogin') != 1) {
+      if (!this.userinfo.phone) {
         location.href = '/?redirect=' + encodeURIComponent('/#/bought') + '#/login';
         return false;
       }
       location.href = '/#/bought';
     },
     gotoProfile: function () {
-      if (util.getCookie('isLogin') != 1) {
+      if (!this.userinfo.phone) {
         location.href = '/?redirect=' + encodeURIComponent('/#/profile') + '#/login';
         return false;
       }

@@ -14,6 +14,8 @@ Vue.directive('focus', {
   }
 })
 
+document.body.onselectstart = new Function("return false");
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

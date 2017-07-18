@@ -203,7 +203,11 @@ export default {
       location.href = '/#/';
     },
     gotoPay: function () {
-      util.checkLogin();
+      if (!this.userinfo.phone) {
+        const redirect = encodeURIComponent('/' + location.search + location.hash);
+        location.href = '/?redirect=' + redirect + '#/login';
+        return false;
+      }
       const cid = util.getParam('cid');
       if (this.userinfo.freeCourseRemained > 0) {
         util.getFreeCourse(cid, (json) => {
