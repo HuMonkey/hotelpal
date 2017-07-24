@@ -1,45 +1,48 @@
 <template>
   <div class="login-container">
-    <Error :error="error" v-if="error"></Error>
-    <div class="step first" v-if="step === 1">
-      <div class="logo">
-        <img src="/static/jiudianbang.png">
+    <div class="wrapper" v-if="render">
+      <Error :error="error" v-if="error"></Error>
+      <div class="step first" v-if="step === 1">
+        <div class="logo">
+          <img src="/static/jiudianbang.png">
+        </div>
+        <div class="phone">
+          <input type="number" name="phone" placeholder="请输入11位手机号" v-model="phone">
+        </div>
+        <div class="verify">
+          <input type="number" name="verify" placeholder="请输入验证码" v-model="code">
+          <div class="btn" :class="{disabled: disabled}" @click="getVerifyCode">{{ btnText }}</div>
+        </div>
+        <div class="login" @click="verifyPhone">登录</div>
+        <div class="tips">点击 [登录] 代表您已阅读并同意《酒店邦成长营会员条款》</div>
       </div>
-      <div class="phone">
-        <input type="number" name="phone" placeholder="请输入11位手机号" v-model="phone">
+      <div class="step second" v-if="step === 2">
+        <div class="welcome">欢迎加入酒店营成长邦！</div>
+        <div class="avater">
+          <img :src="userinfo.headImg" @click="changeHeader">
+        </div>
+        <input class="avater-upload" type="file" @change="uploadAvater"></input>
+        <div class="wechat-name">{{ userinfo.nickname }}</div>
+        <div class="row name">
+          <div class="label">姓名</div>
+          <div class="vr"></div>
+          <input type="text" name="name" placeholder="请输入您的姓名" v-model="userinfo.nickname">
+        </div>
+        <div class="row company">
+          <div class="label">公司</div>
+          <div class="vr"></div>
+          <input type="text" name="company" placeholder="请输入您的公司（选填）" v-model="userinfo.company">
+        </div>
+        <div class="row position">
+          <div class="label">职位</div>
+          <div class="vr"></div>
+          <input type="text" name="position" placeholder="请输入您的职位（选填）" v-model="userinfo.title">
+        </div>
+        <div class="confirm" @click="submitChange">确认</div>
+        <div class="skip" @click="skip">跳过</div>
       </div>
-      <div class="verify">
-        <input type="number" name="verify" placeholder="请输入验证码" v-model="code">
-        <div class="btn" :class="{disabled: disabled}" @click="getVerifyCode">{{ btnText }}</div>
-      </div>
-      <div class="login" @click="verifyPhone">登录</div>
-      <div class="tips">点击 [登录] 代表您已阅读并同意《酒店邦成长营会员条款》</div>
     </div>
-    <div class="step second" v-if="step === 2">
-      <div class="welcome">欢迎加入酒店营成长邦！</div>
-      <div class="avater">
-        <img :src="userinfo.headImg" @click="changeHeader">
-      </div>
-      <input class="avater-upload" type="file" @change="uploadAvater"></input>
-      <div class="wechat-name">{{ userinfo.nickname }}</div>
-      <div class="row name">
-        <div class="label">姓名</div>
-        <div class="vr"></div>
-        <input type="text" name="name" placeholder="请输入您的姓名" v-model="userinfo.nickname">
-      </div>
-      <div class="row company">
-        <div class="label">公司</div>
-        <div class="vr"></div>
-        <input type="text" name="company" placeholder="请输入您的公司（选填）" v-model="userinfo.company">
-      </div>
-      <div class="row position">
-        <div class="label">职位</div>
-        <div class="vr"></div>
-        <input type="text" name="position" placeholder="请输入您的职位（选填）" v-model="userinfo.title">
-      </div>
-      <div class="confirm" @click="submitChange">确认</div>
-      <div class="skip" @click="skip">跳过</div>
-    </div>
+    
   </div>
 </template>
 
@@ -65,15 +68,32 @@ export default {
       userinfo: {},
 
       errorTimeout: null,
+
+      render: false,
     }
   },
   created() {
     document.title = '登录';
   },
   mounted() {
-    if (util.getCookie('isLogin') == 1) {
-      location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
+    const force = util.getParam('force')
+    if (force == 1) {
+      this.render = true;
+      return false;
     }
+    util.getUserInfo((json) => {
+      if (json.code === 0) {
+        // 绑定过手机，就不用绑定了
+        this.userinfo = json.data;
+        if (json.data.phone) {
+          location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
+        } else {
+          this.render = true;
+        }
+      } else {
+        console.warn('获取用户信息失败')
+      }
+    })
   },
   methods: {
     setError: function (error) {
@@ -93,10 +113,10 @@ export default {
       }
       this.disabled = true;
       let time = 60;
-      this.btnText = time + '秒后获取';
+      this.btnText = time + '秒';
       let inter = setInterval(() => {
         time--;
-        this.btnText = time === 0 ? '重新获取' : time + '秒后获取';
+        this.btnText = time === 0 ? '重新获取' : time + '秒';
         if (time === 0) {
           clearInterval(inter);
           this.disabled = false;
@@ -112,7 +132,7 @@ export default {
     },
     verifyPhone: function () {
       if (!isMobilePhone(this.phone, 'zh-CN')) {
-        this.setError('请填写手机号码！');
+        this.setError('请填写正确的手机号码！');
         return false;
       }
       if (!this.code) {
@@ -121,34 +141,25 @@ export default {
       }
       util.verifyPhone(this.phone, this.code, (json) => {
         if (json.code === 0) {
-          util.setCookie('isLogin', '1', '12d');
-          // 邀请注册
-          if (util.getParam('invited') == 1) {
-            util.newInvitedUser((json1) => {
-              if (json.code === 0) {
-                console.log(json1)
-              } else {
-                console.warn('获取用户信息失败')
-              }
-            })
-          }
+          // util.setCookie('isLogin', '1', '12d');
           // 新用户
           if (json.data.newPhone) {
-            util.getUserInfo((json) => {
-              if (json.code === 0) {
-                json.data.company = json.data.company || '';
-                json.data.title = json.data.title || '';
-                this.userinfo = json.data;
-                this.step = 2;
-              } else {
-                console.warn('获取用户信息失败')
-              }
-            })
+            // 邀请注册
+            if (util.getParam('invited') == 1) {
+              util.newInvitedUser((json1) => {
+                if (json.code === 0) {
+                  console.log(json1)
+                } else {
+                  console.warn('获取用户信息失败')
+                }
+              })
+            }
+            this.step = 2;
           } else {
             location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
           }
         } else {
-          console.warn('验证失败，请重试');
+          this.setError('验证码错误!');
         }
       })
     },
@@ -217,10 +228,16 @@ export default {
     } 
     :-ms-input-placeholder { /* Internet Explorer 10+ */ 
       color: #cccccc; 
-    } 
+    }
+    .wrapper {
+      width: 100%;
+      height: 100%;
+    }
     .first {
       background: white;
       padding-top: 0.8rem;
+      width: 100%;
+      height: 100%;
       .logo {
         text-align: center;
         img {

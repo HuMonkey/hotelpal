@@ -24,6 +24,7 @@ const api = {
   recordListenPos: '/hotelpal/user/recordListenPos',
   pay: '/hotelpal/user/pay',
   openRedPacket: '/hotelpal/user/openRedPacket',
+  getRedPacketRemained: '/hotelpal/user/getRedPacketRemained',
 
   receiveRedirect: '/hotelpal/WeChat/receiveRedirect',
 
@@ -168,6 +169,15 @@ util.getUserStatistics = function (callback) {
  */
 util.newInvitedUser = function (callback) {
   fetch(util.getUrl(util.config.host + api.newInvitedUser))
+    .then(function(response) {
+      return response.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+util.getRedPacketRemained = function (redPacketNonce, callback) {
+  fetch(util.getUrl(util.config.host + api.getRedPacketRemained + '?nonce=' + redPacketNonce))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -512,18 +522,6 @@ util.configWechat = function(appId, timestamp, nonceStr, signature, callback) {
 }
 
 /**
- * 检查是否登录
- */
-// util.checkLogin = function () {
-//   const isLogin = util.getCookie('isLogin');
-//   if (isLogin == '1') {
-//     return false;
-//   }
-//   const redirect = encodeURIComponent('/' + location.search + location.hash);
-//   location.href = '/?redirect=' + redirect + '#/login';
-// }
-
-/**
  * 数字前面补0
  */
 util.formatNum = function (num) {
@@ -604,14 +602,18 @@ util.getWechatSign = function () {
 util.verifyWechat = function (app) {
   const code = util.getParam('code');
   const token = util.getCookie('token');
-  if (token) {
+  if (token != '') {
     app.beginRender = true;
     return false;
   }
-  if (!code || !sessionStorage.gotoVerify) {
+  if (!code) {
     sessionStorage.gotoVerify = true;
     location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + util.config.appId + '&redirect_uri=' + encodeURIComponent(document.URL) +'&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect';
   } else {
+    if (!sessionStorage.gotoVerify) {
+      sessionStorage.gotoVerify = true;
+      location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + util.config.appId + '&redirect_uri=' + encodeURIComponent(document.URL) +'&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect';
+    }
     util.receiveRedirect(code, (json1) => {
       if (json1.code === 0) {
         util.setCookie('token', json1.data.token, '12d');
@@ -627,7 +629,6 @@ util.verifyWechat = function (app) {
  * 设置微信分享信息
  */
 util.updateWechatShare = function(wxShareDict) {
-  util.getWechatSign();
   wx.onMenuShareTimeline({
     title: wxShareDict.title, // 分享标题
     link: wxShareDict.link, // 分享链接，该链接域名需在JS安全域名中进行登记
@@ -653,6 +654,19 @@ util.updateWechatShare = function(wxShareDict) {
       // 用户取消分享后执行的回调函数
     }
   });
+}
+
+util.isLongImg = function (imgUrl, radio, callback) {
+  var img = new Image(); 
+  img.src = imgUrl;
+  img.onload = function () {
+    console.log(img.width, img.height);
+    callback(img.width / img.height < radio);
+  };
+}
+
+util.getHtmlContent = function (str) {
+  return str.replace(/<[^>]*>/g, "");
 }
 
 export default util;

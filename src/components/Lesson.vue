@@ -3,7 +3,7 @@
     <Error :error="error" v-if="error"></Error>
     <Hongbao v-if="isHongbao === 1"></Hongbao>
     <div v-if="isHongbao === 0">
-      <div class="paid" :class="{fromHongbao: fromHongbao == 1}" v-if="purchased || freeListen">
+      <div class="paid" :class="{fromHongbao: fromHongbao == 1}" v-if="purchased || freeListen || fromHongbao == 1">
         <div class="player" :class="{absolute: fromHongbao == 1 && !scrollDown}" v-if="lesson">
           <img class="zshb_banner" src="/static/zshb_banner.png" v-if="fromHongbao == 1 && !scrollDown">
           <audio-player :source="song" :loop="false" :listenLen="lesson.listenLen" :nextId="lesson.nextLessonId" :preId="lesson.previousLessonId" :songLong="songLong" :audioLen="lesson.audioLen"></audio-player>
@@ -19,17 +19,6 @@
             </div>
           </div>
           <div class="content">
-            <!-- <div class="summary">
-              一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆一大堆
-            </div>
-            <div class="points">
-              <div class="title">知识点</div>
-              <ul>
-                <li>知识点1</li>
-                <li>知识点2</li>
-                <li>知识点3</li>
-              </ul>
-            </div> -->
             <div class="article" :class="{overflow: isIntroOverflow && introOverflow}" v-html="lesson.content">
             </div>
             <div class="open" v-if="isIntroOverflow" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
@@ -39,7 +28,7 @@
                 <div class="box" @click="gotoCourse">
                   <div class="img"><img :src="course.headImg"></div>
                   <div class="title">{{ course.title }}</div>
-                  <div class="desc">{{course.userName}} · {{ course.userTitle }}</div>
+                  <div class="desc">{{course.userName}} · {{ course.company + ' ' + course.userTitle }}</div>
                   <div class="arrow"></div>
                 </div>
               </div>
@@ -131,7 +120,7 @@
         <div class="comment-box" v-if="!commenting">
           <div class="pen"></div>
           <input type="text" name="comment" placeholder="输入你的评论" @click="gotoComment">
-          <div class="hongbao" v-if="!freeListen && lesson.redPacketRemained > 0" @click="showHongbaoTips(true)">
+          <div class="hongbao" v-if="!freeListen && !fromHongbao && lesson.redPacketRemained > 0" @click="showHongbaoTips(true)">
             <img src="/static/hongbao2.gif">
           </div>
           <!-- <div class="btn">发送</div> -->
@@ -158,7 +147,14 @@
           </div>
         </div>
       </div>
-      <div class="not-paid" v-if="!purchased && !freeListen">
+      <div class="not-paid" v-if="!purchased && !freeListen && fromHongbao != 1">
+        <div class="pay-finish" v-if="payFinish">
+          <div class="cover"></div>
+          <div class="box">
+            <div class="icon"></div>
+            <div class="text">支付成功</div>
+          </div>
+        </div>
         <div class="box">
           <div class="top">
             <div class="text">你需要先购买课程<br> <span class="price">¥ {{ course.charge ? course.charge / 100 : 0 }} / {{ course.lessonCount }}课时</span></div>
@@ -170,13 +166,13 @@
           </div>
           <div class="bottom">
             <div class="name">{{ course.userName }}</div>
-            <div class="who">{{ course.userTitle }}</div>
+            <div class="who">{{ course.company + ' ' + course.userTitle }}</div>
             <div class="course">{{ course.title }}</div>
             <div class="desc">{{ course.subtitle }}</div>
             <div class="btn" @click="gotoPay">购买课程  获取知识</div>
           </div>
         </div>
-        <div class="log">你已经购买？点此 <span @click="gotoLogin">登录</span></div>
+        <div class="log">你已经购买？<span @click="gotoLogin">绑定其他账号</span></div>
       </div>
     </div>
   </div>
@@ -233,6 +229,8 @@ export default {
       commentFinish: false,
 
       scrollDown: false,
+
+      payFinish: false,
     }
   },
   created() {
@@ -250,11 +248,9 @@ export default {
     const lid = util.getParam('lid');
     const cid = util.getParam('cid');
     this.isHongbao = +util.getParam('isHongbao') || 0;
-    this.fromHongbao = +util.getParam('fromHongbao') || 0;
     if (this.isHongbao == 1) {
       return false;
     }
-    this.updateLesson();
     util.getCourse(cid, (json) => {
       if (json.code === 0) {
         this.course = json.data;
@@ -269,6 +265,7 @@ export default {
             document.querySelector('.lessons').scrollLeft = offsetLeft;
           }
         }, 500)
+        this.updateLesson();
       } else {
         console.warn('获取课程信息失败！')
       }
@@ -291,7 +288,7 @@ export default {
       }, 4000);
     },
     gotoLogin: function () {
-      location.href = '/?redirect=' + encodeURIComponent(location.href) + '#/login'
+      location.href = '/?force=1&redirect=' + encodeURIComponent(location.href) + '#/login'
     },
     updateLesson: function () {
       const lid = util.getParam('lid');
@@ -320,27 +317,19 @@ export default {
           if (length > 9.2 * rem * 2) {
             this.isIntroOverflow = true;
           }
-          if (util.getParam('code')) {
-            const cid = util.getParam('cid')
-            const lid = util.getParam('lid')
-            if (util.getParam('isHongbao') == 1) {
-              const isHongbao = 1;
-              const userName = this.userInfo.nickname;
-              const userHeader = this.userInfo.headImg;
-              const lessonTitle = this.lesson.title;
-              const redPacketNonce = this.lesson.redPacketNonce;
-              const redPacketRemained = this.lesson.redPacketRemained;
-              util.changeURL({
-                cid, lid, isHongbao, userName, userHeader, lessonTitle, redPacketNonce, redPacketRemained
-              }, true)
-            } else {
-              const fromHongbao = util.getParam('fromHongbao');
-              util.changeURL({
-                cid, lid, fromHongbao
-              }, true)
-            }
+          const fromHongbao = util.getParam('fromHongbao');
+          this.fromHongbao = fromHongbao;
+          if (fromHongbao == 1) {
+            const redPacketNonce = this.redPacketNonce = util.getParam('redPacketNonce');
+            util.changeURL({
+              lid, cid,
+              isHongbao: 1,
+              redPacketNonce 
+            }, true);
+            this.updateShare(true);
+          } else {
+            this.updateShare(false);
           }
-          this.updateShare()
         } else if (json.code === 40301) {
           this.purchased = false;
           this.freeListen = false;
@@ -352,20 +341,34 @@ export default {
     switchOverflow: function() {
       this.introOverflow = !this.introOverflow;
     },
-    updateShare: function () {
+    updateShare: function (isHongbao) {
       const lesson = this.lesson;
-      util.updateWechatShare({
-        title: lesson.title,
-        link: location.href,
-        imgUrl: lesson.coverImg,
-        desc: lesson.content,
-      })
+      const course = this.course;
+      let dict;
+      if (isHongbao) {
+        dict = {
+          title: course.userName + '：' + lesson.title + '「红包分享」',
+          link: location.href,
+          imgUrl: course.headImg,
+          desc: util.getHtmlContent(lesson.content),
+        }
+      } else {
+        dict = {
+          title: course.userName + '：' + lesson.title,
+          link: location.href,
+          imgUrl: course.headImg,
+          desc: util.getHtmlContent(lesson.content),
+        }
+      }
+      util.updateWechatShare(dict)
     },
     gotoComment () {
+      this.checkPhone();
       this.commenting = true;
       this.focusStatus = true;
     },
     gotoReply (id, name) {
+      this.checkPhone();
       this.replyId = id;
       this.replyName = name;
       this.focusStatus = true;
@@ -380,6 +383,12 @@ export default {
       this.commentFinish = this.replyId ? 2 : 1;
       setTimeout(() => {
         this.commentFinish = false;
+      }, 2000);
+    },
+    showPayFinish () {
+      this.payFinish = this.replyId ? 2 : 1;
+      setTimeout(() => {
+        this.payFinish = false;
       }, 2000);
     },
     submitReply () {
@@ -411,6 +420,7 @@ export default {
       if (comment.liked) {
         return false;
       }
+      this.checkPhone();
       const lid = util.getParam('lid');
       util.addZan(lid, comment.id, (json) => {
         if (json.code === 0) {
@@ -427,13 +437,32 @@ export default {
     formatTime (time) {
       return util.formatTime(time);
     },
-    gotoPay: function () {
-      if (!this.userinfo.phone) {
+    checkPhone () {
+      if (!this.userInfo.phone) {
         const redirect = encodeURIComponent('/' + location.search + location.hash);
         location.href = '/?redirect=' + redirect + '#/login';
+      }
+    },
+    gotoPay: function () {
+      this.checkPhone();
+      const cid = util.getParam('cid');
+      if (this.userInfo.freeCourseRemained > 0) {
+        const useFree = confirm('将使用一次免费获取课程的机会，确认兑换？')
+        if (!useFree) {
+          return false;
+        }
+        util.getFreeCourse(cid, (json) => {
+          if (json.code === 0) {
+            this.showPayFinish();
+            setTimeout(() => {
+              location.reload();
+            }, 2000);
+          } else {
+            console.warn('获取免费课程出现了点问题')
+          }
+        })
         return false;
       }
-      const cid = util.getParam('cid');
       util.createPayOrder(cid, (json) => {
         if (json.code === 0) {
           const { appId, nonceStr, paySign, timeStamp, tradeNo } = json.data;
@@ -447,7 +476,10 @@ export default {
             success: (res) => {
               // 支付成功后的回调函数
               util.pay(cid, tradeNo, function (json) {
-                location.reload();
+                this.showPayFinish();
+                setTimeout(() => {
+                  location.reload();
+                }, 2000);
               });
             },
             error: () => {
@@ -465,20 +497,16 @@ export default {
       const lid = util.getParam('lid');
       if (b) {
         const isHongbao = 1;
-        const userName = this.userInfo.nickname;
-        const userHeader = this.userInfo.headImg;
-        const lessonTitle = this.lesson.title;
         const redPacketNonce = this.lesson.redPacketNonce;
-        const redPacketRemained = this.lesson.redPacketRemained;
         util.changeURL({
-          cid, lid, isHongbao, userName, userHeader, lessonTitle, redPacketNonce, redPacketRemained
+          cid, lid, isHongbao, redPacketNonce
         }, true)
-        this.updateShare();
+        this.updateShare(true);
       } else {
         util.changeURL({
           cid, lid
         }, true)
-        this.updateShare();
+        this.updateShare(false);
       }
     }
   },
@@ -595,6 +623,7 @@ export default {
       .main {
         background: white;
         padding: 1.3333rem 0.4rem 0 0.4rem;
+        -webkit-user-select: none;
         .course-title {
           font-size: 0.66666rem;
           color: #333333;
@@ -837,6 +866,7 @@ export default {
             font-size: 0.4rem;
             line-height: 1.8;
             margin: 0.23333rem 0;
+            word-break: break-all;
           }
           .bottom {
             display: flex;
@@ -987,6 +1017,51 @@ export default {
     }
     .not-paid {
       padding: 0.4rem;
+      .pay-finish {
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        .cover {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          background: black;
+          opacity: 0.6;
+        }
+        .box {
+          border-radius: 10px;
+          width: 3.12rem;
+          height: 2.293333rem;
+          background: white;
+          position: relative;
+          z-index: 1;
+          .icon {
+            width: 1rem;
+            height: 1rem;
+            margin: auto;
+            margin-top: 0.4rem;
+            background-image: url('/static/finish-arrow.svg');
+            background-size: 1rem 1rem;
+            background-position: center;
+            background-repeat: no-repeat;
+          }
+          .text {
+            font-size: 0.4rem;
+            color: #999999;
+            width: 100%;
+            text-align: center;
+            margin-top: 0.13333rem;
+          }
+        }
+      }
       .box {
         border-radius: 4px;
         background: white;

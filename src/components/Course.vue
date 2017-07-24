@@ -1,7 +1,8 @@
 <template>
   <div class="course-container">
-    <div class="free-course-tips" v-if="course && !course.purchased && userinfo">
-      你还有{{ userinfo.freeCourseRemained }}次免费购买课程的机会！
+    <div class="free-course-tips" v-if="course && !course.purchased && userinfo && userinfo.freeCourseRemained > 0 && freeTips">
+      亲爱的内邀用户，你{{ userinfo.freeCourseRemained < 3 ? '还' : '' }}有{{ userinfo.freeCourseRemained }}次免费学习课程的机会
+      <img src="/static/cross.png" @click="closeTips">
     </div>
     <div v-if="course">
       <div class="header">
@@ -9,13 +10,13 @@
         <div class="desc" v-if="!course.purchased">
           <div class="title">{{ course.title }}</div>
           <div class="sub-title">{{ course.subtitle }}</div>
-          <div class="tags">
+          <div class="tags" v-if="false">
             <div class="item" v-for="t in course.tag">{{ t.name }}</div>
           </div>
         </div>
         <div class="desc" v-if="course.purchased">
           <div class="title">{{ course.userName }}</div>
-          <div class="sub-title">{{ course.userTitle }}</div>
+          <div class="sub-title">{{ course.company + ' ' + course.userTitle }}</div>
         </div>
       </div>
       <div class="content">
@@ -66,13 +67,15 @@
             <div class="item" :class="{free: l.freeListen, future: !l.isPublish, finished: l.listenLen && l.listenLen >= l.audioLen}" @click="gotoLesson(l)" v-for="(l, index) in course.lessonList" :id="'lesson-' + l.id">
               <div class="up">
                 <span>{{ l.lessonOrder }}</span><span class="vr">|</span><span class="ltitle">{{ l.title }}</span>
-                <span class="tag" v-if="l.freeListen">免费试听</span>
+                <span class="tag" v-if="l.freeListen">
+                  <span>免费试听</span>
+                </span>
               </div> 
               <div class="down">
                 <p v-if="l.isPublish">
-                  <span>{{ l.publishTime }}</span>
-                  <span>{{ l.resourceSize || '10.23MB' }}</span>
-                  <span>{{ l.lenStr }}</span>
+                  <span v-if="l.publishTime">{{ l.publishTime }}</span>
+                  <span v-if="l.resourceSize">{{ l.resourceSize }}</span>
+                  <span v-if="l.lenStr">{{ l.lenStr }}</span>
                   <span class="over" v-if="l.listenLen && l.listenLen >= l.audioLen">已播完</span>
                   <span class="ing" v-if="l.listenLen && l.listenLen < l.audioLen">已播{{ parseInt(l.listenLen / l.audioLen * 100) }}%</span>
                 </p>
@@ -98,6 +101,13 @@
         <div class="item free" v-if="hasFree" @click="gotoFree">免费试读</div>
         <div class="item buy" @click="gotoPay">订阅：¥ {{ course.charge / 100 }} / {{ course.lessonCount }}课时</div>
       </div>
+      <div class="pay-finish" v-if="payFinish">
+        <div class="cover"></div>
+        <div class="box">
+          <div class="icon"></div>
+          <div class="text">支付成功</div>
+        </div>
+      </div>
     </div>  
   </div>
 </template>
@@ -119,7 +129,9 @@ export default {
       isIntroOverflow: false,
       introOverflow: true,
       course: null,
-      userinfo: null
+      userinfo: null,
+      payFinish: false,
+      freeTips: true,
     }
   },
   created() {
@@ -130,7 +142,6 @@ export default {
     util.getCourse(courseId, (json) => {
       if (json.code === 0) {
         const course = json.data;
-        console.log('hwq')
         document.title = course.title;
         this.course = {
           ...course,
@@ -179,16 +190,19 @@ export default {
     })
   },
   methods: {
+    closeTips: function () {
+      this.freeTips = false;
+    },
     switchOverflow: function() {
       this.introOverflow = !this.introOverflow;
     },
     updateShare: function () {
       const course = this.course;
       util.updateWechatShare({
-        title: course.title,
+        title: course.userName + '：' + course.title,
         link: location.href,
         imgUrl: course.headImg,
-        desc: course.subtitle,
+        desc: util.getHtmlContent(course.introduce),
       })
     },
     gotoLesson: function (lesson) {
@@ -202,6 +216,12 @@ export default {
     gotoHome: function () {
       location.href = '/#/';
     },
+    showPayFinish () {
+      this.payFinish = this.replyId ? 2 : 1;
+      setTimeout(() => {
+        this.payFinish = false;
+      }, 2000);
+    },
     gotoPay: function () {
       if (!this.userinfo.phone) {
         const redirect = encodeURIComponent('/' + location.search + location.hash);
@@ -210,8 +230,13 @@ export default {
       }
       const cid = util.getParam('cid');
       if (this.userinfo.freeCourseRemained > 0) {
+        const useFree = confirm('将使用一次免费获取课程的机会，确认兑换？')
+        if (!useFree) {
+          return false;
+        }
         util.getFreeCourse(cid, (json) => {
           if (json.code === 0) {
+            this.showPayFinish();
             this.userinfo.freeCourseRemained--;
             this.course.purchased = true;
           } else {
@@ -294,6 +319,52 @@ export default {
     padding: 0 0 1.26666rem 0;
     background: white;
     line-height: 1;
+    -webkit-user-select: none;
+    .pay-finish {
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      top: 0;
+      left: 0;
+      .cover {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: black;
+        opacity: 0.6;
+      }
+      .box {
+        border-radius: 10px;
+        width: 3.12rem;
+        height: 2.293333rem;
+        background: white;
+        position: relative;
+        z-index: 1;
+        .icon {
+          width: 1rem;
+          height: 1rem;
+          margin: auto;
+          margin-top: 0.4rem;
+          background-image: url('/static/finish-arrow.svg');
+          background-size: 1rem 1rem;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
+        .text {
+          font-size: 0.4rem;
+          color: #999999;
+          width: 100%;
+          text-align: center;
+          margin-top: 0.13333rem;
+        }
+      }
+    }
     .free-course-tips {
       position: fixed;
       z-index: 99;
@@ -302,14 +373,14 @@ export default {
       padding: 0 0.4rem;
       height: 0.8rem;
       width: 100%;
-      font-size: 0.4rem;
+      font-size: 0.32rem;
       display: flex;
       align-items: center;
       img {
-        height: 0.4rem;
+        height: 0.32rem;
         position: absolute;
-        top: 0.2rem;
-        right: 0.4rem;
+        top: 0.24rem;
+        right: 0.32rem;
       }
     }
     .header {
@@ -494,25 +565,33 @@ export default {
                 align-items: center;
                 border: @red solid thin;
                 color: @red;
-                font-size: 0.26666rem;
+                font-size: 0.32rem;
                 height: 0.6rem;
                 border-radius: 4px;
-                padding: 0 0.1rem;
+                padding: 0 0.16rem;
                 margin-left: 0.26666rem;
-                transform: scale(0.8);
+                height: 0.48rem;
+                span {
+                  display: inline-block;
+                  height: 0.48rem;
+                  line-height: 0.48rem;
+                  transform: scale(0.916666);
+                }
               }
               .ltitle {
                 display: inline-block;
                 max-width: 7rem;
                 white-space:nowrap; 
                 overflow:hidden;
-                text-overflow:ellipsis
+                text-overflow:ellipsis;
+                height: 0.6rem;
+                line-height: 0.6rem;
               }
             }
             .down {
               font-size: 0.293333rem;
-              margin-top: 0.4rem;
-              color: #cccccc;
+              margin-top: 0.26666rem;
+              color: #bbbbbb;
               span {
                 margin-right: 0.4rem;
               }

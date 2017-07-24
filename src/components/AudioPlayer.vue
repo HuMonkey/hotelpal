@@ -1,7 +1,7 @@
 <template>
   <div class="audio-player">
     <div class="wrapper">
-      <audio :src="source" controls="controls" preload="load"></audio>
+      <audio :src="source" controls="controls" :autoplay="goOn ? '' : 'autoplay'"></audio>
       <div class="top" v-if="audio">
         <div class="progress">
           <div class="current">{{ current }}</div>
@@ -73,13 +73,13 @@
     },
     mounted() {
       this.audio = document.querySelector('.audio-player audio');
+      if (util.getParam('goon') == 1) {
+        this.goOn = true;
+        this.playOrPause();
+      }
       if (this.listenLen && this.listenLen < this.audioLen) {
         this.audio.currentTime = this.listenLen;
         this.updateTime();
-      }
-      if (util.getParam('goon') == 1) {
-        this.goOn = true;
-        setTimeout(this.playOrPause, 2000);
       }
       this.nextId && util.getLesson(this.nextId, (json) => {
         if (json.code === 0) {
@@ -156,7 +156,7 @@
           audio.play();
           this.updateTime();
           this.setInterval();
-          this.interval = setInterval(this.updateTime, 1000)
+          this.interval = setInterval(this.updateTime, 1000);
         }
         this.playing = !this.playing;
       },
@@ -248,7 +248,6 @@
     destroyed() {
       this.interval && clearInterval(this.interval);
     },
-    watch: {}
   }
 </script>
 
@@ -305,6 +304,8 @@
               left: 0;
               width: 0.4rem;
               height: 0.4rem;
+              border-radius: 0.4rem;
+              overflow: hidden;
               display: flex;
               justify-content: center;
               align-items: center;

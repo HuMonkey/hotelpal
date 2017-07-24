@@ -95,7 +95,8 @@ export default {
       if (!this.notListenLesson) {
         return false;
       }
-      document.body.scrollTop = document.querySelector('#lesson-' + this.notListenLesson.id).getBoundingClientRect().top + document.body.scrollTop;
+      location.href = '/?id=' + this.notListenLesson.id + '#/jdbsitem';
+      // document.body.scrollTop = document.querySelector('#lesson-' + this.notListenLesson.id).getBoundingClientRect().top + document.body.scrollTop;
     },
     GotoJdbsItem: function (lesson) {
       if (!lesson.isPublish) {
@@ -115,10 +116,10 @@ export default {
     },
     updateShare: function () {
       util.updateWechatShare({
-        title: '酒店邦说',
+        title: '酒店邦说自主内容',
         link: location.href,
         imgUrl: 'http://hotelpal.cn/static/jiudianbang.png',
-        desc: '酒店邦自主内容酒店邦自主内容酒店邦自主内容酒店邦自主内容',
+        desc: '酒店邦自主内容',
       })
     },
   },

@@ -40,7 +40,7 @@
             <div class="comments">
               <div class="item" v-for="comment in lesson.eliteCommentList.commentList">
                 <div class="avater">
-                  <img src="/static/header.png">
+                  <img :src="comment.userHeadImg">
                 </div>
                 <div class="name">
                   {{ comment.userName }}  {{ comment.userCompany + '·' + comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
@@ -76,7 +76,7 @@
             <div class="comments" v-if="lesson.commentList.commentList.length > 0">
               <div class="item" v-for="comment in lesson.commentList.commentList">
                 <div class="avater">
-                  <img src="/static/header.png">
+                  <img :src="comment.userHeadImg">
                 </div>
                 <div class="name">
                   {{ comment.userName }}  {{ comment.userCompany + '·' + comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
@@ -221,10 +221,10 @@ export default {
     updateShare: function () {
       const lesson = this.lesson;
       util.updateWechatShare({
-        title: lesson.title,
+        title: '酒店邦说：' + lesson.title,
         link: location.href,
         imgUrl: lesson.coverImg,
-        desc: '酒店邦自主课程',
+        desc: util.getHtmlContent(lesson.content),
       })
     },
     gotoComment () {
@@ -288,7 +288,17 @@ export default {
     }
   },
   destroyed() {},
-  watch: {},
+  watch: {
+    focusStatus() {
+      if (this.focusStatus) {
+        this.interval = setInterval(function() {
+          document.body.scrollTop = document.body.scrollHeight
+        }, 100) 
+      } else {
+        clearInterval(this.interval);
+      }
+    }
+  },
   components: {
     AudioPlayer, Error
   }
@@ -306,7 +316,7 @@ export default {
       position: absolute;
       top: 0;
       left: 0;
-      z-index: 9999;
+      z-index: 99;
       .goback {
         width: 100%;
         height: 1.173333rem;
@@ -409,6 +419,7 @@ export default {
         line-height: 1.8;
         font-size: 0.4rem;
         color: #666666;
+        -webkit-user-select: none;
         .summary {
           padding-bottom: 1rem;
         }
@@ -516,6 +527,7 @@ export default {
           font-size: 0.4rem;
           line-height: 1.8;
           margin: 0.23333rem 0;
+          word-break: break-all;
         }
         .bottom {
           display: flex;

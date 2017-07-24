@@ -27,18 +27,20 @@ export default {
 
   .error-container {
     position: fixed;
+    top: 0;
+    left: 0;
     z-index: 9999;
     background: @red;
     color: white;
     padding: 0 0.4rem;
     height: 0.8rem;
     width: 100%;
-    font-size: 0.4rem;
+    font-size: 0.32rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     img {
-      height: 0.4rem;
+      height: 0.32rem;
     }
   }
 </style>

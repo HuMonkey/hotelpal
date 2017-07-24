@@ -34,18 +34,18 @@
       <div class="list">
         <div class="item" @click="gotoCourse(c.id)" v-for="c in courseList">
           <div class="avater">
-            <div class="state" :class="{ coming: c.status == 0, isnew: c.isNew }" v-if="c.status == 0 || c.isNew">
+            <div class="state" :class="{ coming: c.status == 0, isnew: c.status == 2 }" v-if="c.status == 0 || c.status == 2">
               {{ c.status == 0 ? '预告' : '上新' }}
             </div>
             <img :src="c.headImg">
           </div>
           <div class="desc">
             <div class="name">{{ c.title }}</div>
-            <div class="who">{{ c.userName }} · {{ c.userTitle }}</div>
+            <div class="who">{{ c.userName }} · {{ c.company + ' ' + c.userTitle }}</div>
             <div class="content">{{ c.subtitle || '暂无介绍' }}</div>
             <div class="row">
               <div class="tags">
-                <div class="tag" :title="tag.name" v-for="tag in c.tag">{{ tag.name }}</div>
+                <div class="tag" :title="tag.name" v-for="tag in c.tag"><span>{{ tag.name }}</span></div>
               </div>
               <div class="price">¥ {{ c.charge / 100 }} / {{ c.lessonCount }}课时</div>
             </div>
@@ -89,17 +89,9 @@ export default {
     util.getCourseList((json) => {
       if (json.code === 0) {
         this.courseList = json.data.courseList.map((c) => {
-          const publishTime = c.publishTime;
-          const date = new Date(publishTime.replace(/\-/g, "/"));
-          const now = new Date();
-          const diff = now.getTime() - date.getTime();
-          const M_DAY = 24 * 60 * 60 * 1000;
-          const days = Math.floor(diff / M_DAY)
-          const isNew = days < 14;
           return {
             ...c,
             tag: c.tag ? c.tag.slice(0, 2) : [],
-            isNew
           }
         });
       } else {
@@ -215,7 +207,7 @@ export default {
             width: 0.16rem;
             height: 100%;
             background-size: 0.16rem 0.26666rem;
-            background-position: center;
+            background-position: 0 0.36rem;
             background-image: url("/static/arrow-right.svg");
             background-repeat: no-repeat;
           }
@@ -256,6 +248,7 @@ export default {
           }
           .time {
             font-size: 0.293333rem;
+            color: #999999;
           }
         }
         .item:active {
@@ -284,6 +277,7 @@ export default {
             border-radius: 0.13333rem;
             overflow: hidden;
             display: flex;
+            align-items: center;
             justify-content: center;
             .state {
               width: 0.82rem;
@@ -323,7 +317,7 @@ export default {
             }
             .who {
               margin-top: 0.186666rem;
-              font-size: 0.346666rem;
+              font-size: 0.373333rem;
               color: #666666;
             }
             .content {
@@ -337,11 +331,10 @@ export default {
               justify-content: space-between;
               .tags {
                 flex: 2;
-                display: relative;
                 .tag {
-                  padding: 0 0.186666rem;
+                  padding: 0 0.16rem;
                   border: #cccccc solid thin;
-                  font-size: 0.293333rem;
+                  font-size: 0.32rem;
                   height: 0.48rem;
                   line-height: 0.453333rem;
                   border-radius: 2px;
@@ -349,13 +342,19 @@ export default {
                   float: left;
                   white-space: nowrap; 
                   max-width: 2rem;
-                  margin-right: 0.4rem;
+                  margin-right: 0.26666rem;
                   overflow: hidden;
                   text-overflow: ellipsis;
+                  span {
+                    display: inline-block;
+                    height: 0.48rem;
+                    transform: scale(0.916666);
+                  }
                 }
               }
               .price {
-                flex: 1;
+                // flex: 1;
+                width: 2.5rem;
                 color: @red;
                 font-size: 0.32rem;
                 text-align: right;

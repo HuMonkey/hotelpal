@@ -13,11 +13,12 @@ export default {
   name: 'app',
   data () {
     return {
-      isWechat: util.ua.wechat,
+      isWechat: false,
       beginRender: false,
     }
   },
   mounted () {
+    this.isWechat = util.ua.wechat;
     if (this.isWechat) {
       util.verifyWechat(this);
       util.getWechatSign();

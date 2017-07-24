@@ -9,7 +9,7 @@
           <div class="label">主讲人</div>
           <div class="user">
             <span class="userName">{{ course.userName }}</span>
-            <span class="userTitle">{{ course.userTitle }}</span>
+            <span class="userTitle">{{ course.company + ' ' + course.userTitle }}</span>
           </div>
         </div>
       </div>

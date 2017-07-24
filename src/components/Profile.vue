@@ -7,7 +7,9 @@
       </div>
       <div class="header">
         <div class="avater">
-          <img :src="userinfo.headImg">
+          <div class="img" @click="setMode(4)" :class="{long: userinfo.isLong, short: !userinfo.isLong}">
+            <img :src="userinfo.headImg">
+          </div>
         </div>
         <div class="name" @click="setMode(4)">
           {{ userinfo.nickname }}<div class="arrow-right"></div>
@@ -94,7 +96,9 @@
     <div class="page name-page" v-if="mode === 4">
       <!-- <div class="welcome">欢迎加入酒店营成长邦！</div> -->
       <div class="avater">
-        <img :src="userinfo.headImg" @click="changeHeader">
+        <div class="img" :class="{long: userinfo.isLong, short: !userinfo.isLong}">
+          <img :src="userinfo.headImg" @click="changeHeader">
+        </div>
       </div>
       <input class="avater-upload" type="file" @change="uploadAvater"></input>
       <div class="wechat-name">{{ userinfo.adminName }}</div>
@@ -114,7 +118,7 @@
       <!-- <div class="skip">跳过</div> -->
     </div>
     <div class="page gongzhonghao-page" v-if="mode === 5">
-      <iframe class='chahua1' src="/static/chahua1.svg" frameborder="0"></iframe>
+      <img class="chahua1" src="/static/chahua1.png">
       <div class="thing">
         <img src="/static/gongzhonghao.png" class="erweima">
         <div class="tips">长按二维码</div>
@@ -122,6 +126,13 @@
       </div>
     </div>
     <Bottomer :tag="3" v-if="mode === 1"></Bottomer>
+    <div class="change-finish" v-if="changeFinish">
+      <div class="cover"></div>
+      <div class="box">
+        <div class="icon"></div>
+        <div class="text">修改成功</div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -145,6 +156,7 @@ export default {
       courseList: null,
       error: null,
       errorTimeout: null,
+      changeFinish: false,
     }
   },
   created () {
@@ -209,13 +221,24 @@ export default {
         return response.json()
       }).then((json) => {
         if (json.code === 0) {
-          this.userinfo.headImg = json.data.imgurl;
+          const imgurl = json.data.imgurl;
+          this.userinfo.headImg = imgurl;
+          util.isLongImg(imgurl, 1, (isLong) => {
+            this.userinfo.isLong = isLong
+            this.$forceUpdate();
+          })
         } else {
           console.warn('上传图片失败');
         }
       }).catch(function(ex) {
         console.log('parsing failed', ex)
       })
+    },
+    showChangeFinish () {
+      this.changeFinish = true;
+      setTimeout(() => {
+        this.changeFinish = false;
+      }, 2000);
     },
     submitChange: function () {
       const { headImg, nickname, company, title } = this.userinfo;
@@ -225,12 +248,14 @@ export default {
       }
       util.saveUserProp(headImg, nickname, company, title, (json) => {
         if (json.code === 0) {
-          console.log(json);
+          this.showChangeFinish();
+          setTimeout(() => {
+            this.setMode(1)
+          }, 2000);
         } else {
           console.warn('修改用户信息成功！');
         }
       })
-      this.setMode(1)
     },
     getUser: function () {
       util.getUserStatistics((json) => {
@@ -247,6 +272,10 @@ export default {
       util.getUserInfo((json) => {
         if (json.code === 0) {
           this.userinfo = json.data;
+          util.isLongImg(this.userinfo.headImg, 1, (isLong) => {
+            this.userinfo.isLong = isLong
+            this.$forceUpdate();
+          })
         } else {
           console.warn('获取用户信息失败')
         }
@@ -277,6 +306,51 @@ export default {
     width: 100%;
     height: 100%;
     line-height: 1;
+    .change-finish {
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      top: 0;
+      left: 0;
+      .cover {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: black;
+        opacity: 0.6;
+      }
+      .box {
+        border-radius: 10px;
+        width: 3.12rem;
+        height: 2.293333rem;
+        background: white;
+        position: relative;
+        z-index: 1;
+        .icon {
+          width: 1rem;
+          height: 1rem;
+          margin: auto;
+          margin-top: 0.4rem;
+          background-image: url('/static/finish-arrow.svg');
+          background-size: 1rem 1rem;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
+        .text {
+          font-size: 0.4rem;
+          color: #999999;
+          width: 100%;
+          text-align: center;
+          margin-top: 0.13333rem;
+        }
+      }
+    }
     .error-tips {
       position: fixed;
       z-index: 99;
@@ -310,13 +384,26 @@ export default {
         .avater {
           width: 100%;
           display: flex;
+          align-items: center;
           justify-content: center;
           margin-top: -0.93333rem;
           height: 1.86666rem;
           overflow: hidden;
-          img {
+          .img {
+            width: 1.86666rem;
             height: 1.86666rem;
-            border-radius: 1.86666rem;
+            border-radius: 100%;
+            overflow: hidden;
+          }
+          .img.short {
+            img {
+              height: 100%;
+            }
+          }
+          .img.long {
+            img {
+              width: 100%;
+            }
           }
         }
         .name {
@@ -655,9 +742,21 @@ export default {
         justify-content: center;
         margin-top: 0.6666rem;
         overflow: hidden;
-        img {
-          height: 100%;
-          border-radius: 1.92rem;
+        .img {
+          width: 1.92rem;
+          height: 1.92rem;
+          border-radius: 100%;
+          overflow: hidden;
+        }
+        .img.short {
+          img {
+            height: 100%;
+          }
+        }
+        .img.long {
+          img {
+            width: 100%;
+          }
         }
       }
       .wechat-name {

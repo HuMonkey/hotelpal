@@ -11,7 +11,7 @@
     <div v-if="courses && courses.length > 0" class="wrap">
       <div class="list">
         <div class="item" v-for="c in courses" @click="gotoCourse(c.id)">
-          <div class="img"><img :src="c.headImg"></div>
+          <div class="img" :class="{long: c.isLong, short: !c.isLong}"><img :src="c.headImg"></div>
           <div class="main">
             <div class="title">{{ c.title }}</div>
             <div class="tips" :title="c.msg">{{ c.msg || '暂无' }}</div>
@@ -61,6 +61,12 @@ export default {
             // msg: 'ddd',
           }
         });
+        this.courses.forEach((d) => {
+          util.isLongImg(d.headImg, 10 / 3.3333, (isLong) => {
+            d.isLong = isLong;
+            this.$forceUpdate();
+          });
+        })
       } else {
         console.warn('获取已购课程出错');
       }
@@ -175,10 +181,17 @@ export default {
             height: 3.3333rem;
             overflow: hidden;
             display: flex;
+            align-items: center;
             justify-content: center;
+          }
+          .img.short {
             img {
-              // width: 100%;
               height: 100%;
+            }
+          }
+          .img.long {
+            img {
+              width: 100%;
             }
           }
           .main {
@@ -186,6 +199,7 @@ export default {
             padding: 0.26666rem;
             .title {
               font-size: 0.346666rem;
+              height: 0.346666rem;
               color: #333333;
               white-space: nowrap; 
               overflow: hidden; 
@@ -195,6 +209,7 @@ export default {
             .tips {
               margin-top: 0.48rem;
               font-size: 0.32rem;
+              height: 0.32rem;
               color: #666666;
               white-space: nowrap; 
               overflow: hidden;
