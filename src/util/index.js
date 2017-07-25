@@ -585,13 +585,14 @@ util.processDateStr = function (date) {
   return temp.join('-');
 }
 
-util.getWechatSign = function () {
+util.getWechatSign = function (callback) {
   // 如果是html的静态页面在前端通过ajax将url传到后台签名，前端需要用js获取当前页面除去'#'hash部分的链接（可用location.href.split('#')[0]获取,而且需要encodeURIComponent），因为页面一旦分享，微信客户端会在你的链接末尾加入其它参数，如果不是动态获取当前链接，将导致分享后的页面签名失败。
   util.getSign(encodeURIComponent(location.href.split('#')[0]), (json) => {
     if (json.code === 0) {
       const { appid, noncestr, sign, timestamp } = json.data;
       util.configWechat(appid, timestamp, noncestr, sign, () => {
         console.log('微信sdk初始化成功！')
+        callback && callback();
       })
     } else {
       console.warn('获取微信签名失败');
@@ -660,7 +661,6 @@ util.isLongImg = function (imgUrl, radio, callback) {
   var img = new Image(); 
   img.src = imgUrl;
   img.onload = function () {
-    console.log(img.width, img.height);
     callback(img.width / img.height < radio);
   };
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="audio-player">
     <div class="wrapper">
-      <audio :src="source" controls="controls" :autoplay="goOn ? '' : 'autoplay'"></audio>
+      <audio id="my-audio" :src="source" :autoplay="goOn ? 'autoplay' : ''" controls="controls" preload="auto"></audio>
       <div class="top" v-if="audio">
         <div class="progress">
           <div class="current">{{ current }}</div>
@@ -24,7 +24,7 @@
         <div class="loading" v-if="loading">
           <div class="border"></div>
         </div>
-        <div class="switch" v-if="!loading" :class="{playing: playing}" @click="playOrPause">
+        <div class="switch playOrPause" v-if="!loading" :class="{playing: playing}" @click="playOrPause">
           <div class="border-solid"></div>
         </div>
         <div class="next" @click="nextLesson" :class="{empty: !nextId}"></div>
@@ -34,7 +34,7 @@
         </div>
       </div>
     </div>
-    <div class="countdown" v-if="playing && goOn && countingDown">
+    <div class="countdown" v-if="playing && goOn && countingDown && !dragging">
       <div class="tips">{{ countingDown }}s后将自动为你播放</div>
       <div class="lesson-title">{{ nextLessonTitle }}</div>
       <div class="btn" @click="cancelGoOn">取消自动播放</div>
@@ -52,8 +52,6 @@
     return (m > 9 ? m : '0' + m) + ':' + (s > 9 ? s : '0' + s)
   }
 
-  let dragging = false;
-
   export default {
     props: ['source', 'nextId', 'preId', 'songLong', 'type', 'listenLen', 'audioLen'],
     data() {
@@ -69,13 +67,20 @@
         loading: false,
         countingDown: null,
         nextLessonTitle: null,
+        dragging: false,
       }
     },
     mounted() {
       this.audio = document.querySelector('.audio-player audio');
       if (util.getParam('goon') == 1) {
         this.goOn = true;
-        this.playOrPause();
+        if (util.ua.iOS) {
+          util.getWechatSign(this.playOrPause); // ios需要在wx.ready中播放音频
+        } else {
+          this.playOrPause();
+        }
+      } else {
+        this.audio.removeAttribute('autoplay');
       }
       if (this.listenLen && this.listenLen < this.audioLen) {
         this.audio.currentTime = this.listenLen;
@@ -161,15 +166,14 @@
         this.playing = !this.playing;
       },
       startDrag (ev) {
-        dragging = true;
+        this.dragging = true;
         this.audio.muted = true;
         !this.playing && this.playOrPause();
         this.interval && clearInterval(this.interval);
       },
       moveDrag (ev) {
         const audio = this.audio;
-        // if (!dragging || !this.playing) {
-        if (!dragging) {
+        if (!this.dragging) {
           return false;
         }
         const total = this.$el.querySelector(".bar").offsetWidth;
@@ -185,7 +189,7 @@
         this.updateTime();
       },
       endDrag (ev) {
-        dragging = false;
+        this.dragging = false;
         this.audio.muted = false;
         this.interval = setInterval(this.updateTime, 1000);
       },
