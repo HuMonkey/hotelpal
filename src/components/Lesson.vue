@@ -121,7 +121,7 @@
           <div class="pen"></div>
           <input type="text" name="comment" placeholder="输入你的评论" @click="gotoComment">
           <div class="hongbao" v-if="!freeListen && !fromHongbao && lesson.redPacketRemained > 0" @click="showHongbaoTips(true)">
-            <img src="/static/hongbao2.gif">
+            <img src="/static/hongbao4.png">
           </div>
           <!-- <div class="btn">发送</div> -->
         </div>
@@ -137,7 +137,8 @@
         </div>
         <div class="hongbaoTips" v-if="hongbaoTips && lesson.redPacketRemained > 0" @click="showHongbaoTips(false)">
           <div class="cover"></div>
-          <img src="/static/hongbaotips.png">
+          <img class="text" src="/static/hongbaotips.png">
+          <img class="pointer" src="/static/pointer.png">
         </div>
         <div class="comment-finish" v-if="commentFinish">
           <div class="cover"></div>
@@ -257,7 +258,7 @@ export default {
         this.purchased = json.data.purchased;
         const lessonList = this.course.lessonList;
         const lessonsNum = lessonList.length;
-        this.swiperWidth = (lessonsNum * 300 + (lessonsNum - 1) * 20) / 75;
+        this.swiperWidth = (lessonsNum * 270 + (lessonsNum - 1) * 20) / 75;
         const former = lessonList.indexOf(lessonList.find((d) => d.id == lid));
         const offsetLeft = (former * 320) / 75 * (document.body.clientWidth / 10);
         setTimeout(function () {
@@ -474,13 +475,12 @@ export default {
             signType: 'MD5', // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
             paySign: paySign, // 支付签名
             success: (res) => {
+              this.showPayFinish();
+              setTimeout(() => {
+                location.reload();
+              }, 2000);
               // 支付成功后的回调函数
-              util.pay(cid, tradeNo, function (json) {
-                this.showPayFinish();
-                setTimeout(() => {
-                  location.reload();
-                }, 2000);
-              });
+              util.pay(cid, tradeNo, function (json) {});
             },
             error: () => {
               console.warn('支付失败')
@@ -601,11 +601,17 @@ export default {
           top: 0;
           left: 0;
         }
-        img {
-          width: 92%;
+        .text {
+          width: 80%;
           position: absolute;
-          left: 4%;
-          z-index: 1;
+          left: 10%;
+          top: 0.8rem;
+        }
+        .pointer {
+          position: absolute;
+          right: 0.4rem;
+          top: 0.4rem;
+          width: 30%;
         }
       }
       .player {
@@ -622,23 +628,23 @@ export default {
       }
       .main {
         background: white;
-        padding: 1.3333rem 0.4rem 0 0.4rem;
+        padding: 1.3333rem 0.6666rem 0 0.6666rem;
         -webkit-user-select: none;
         .course-title {
           font-size: 0.66666rem;
           color: #333333;
-          padding-bottom: 1.3333rem;
+          padding-bottom: 0.53333rem;
         }
         .infos {
           font-size: 0.26666rem;
-          color: #999999;
+          color: #bbbbbb;
           display: flex;
           justify-content: space-between;
           padding-bottom: 0.4rem;
           .other {
             display: flex;
             span {
-              margin-left: 0.4rem;
+              margin-left: 0.26666rem;
               display: flex;
               align-items: center;
               .text {
@@ -649,7 +655,7 @@ export default {
                 height: 0.32rem;
                 background-repeat: no-repeat;
                 background-size: 0.32rem 0.32rem;
-                margin-right: 0.13333rem;
+                margin-right: 0.08rem;
                 display: inline-block;
               }
               .icon.time {
@@ -673,7 +679,7 @@ export default {
         .content {
           line-height: 1.8;
           font-size: 0.4rem;
-          color: #666666;
+          color: #444444;
           .summary {
             padding-bottom: 1rem;
           }
@@ -777,7 +783,7 @@ export default {
                   color: white;
                   padding: 0.26666rem 0.4rem;
                   background: #f0944a;
-                  width: 4rem;
+                  width: 3.6rem;
                   height: 100%;
                   border-radius: 4px;
                   font-size: 0.32rem;
@@ -803,7 +809,7 @@ export default {
       .discuss {
         margin-top: 0.23333rem;
         background: white;
-        padding: 0.53333rem 0.4rem 1.3333rem 0.4rem;
+        padding: 0.53333rem 0.6666rem 1.3333rem 0.6666rem;
         .title {
           line-height: 0.48rem;
           font-size: 0.48rem;
@@ -913,7 +919,8 @@ export default {
         border-top: #ebebeb solid thin;
         display: flex;
         justify-content: space-between;
-        padding: 0.2rem 0.4rem;
+        padding: 0.2rem 0.6666rem;
+        padding-right: 2.53333rem;
         z-index: 101;
         ::-webkit-input-placeholder { /* WebKit browsers */ 
           color: #cccccc; 
@@ -928,13 +935,41 @@ export default {
           color: #cccccc; 
         } 
         .hongbao {
+          margin-left: 0.6666rem;
+          position: absolute;
+          right: 0.6666rem;
+          bottom: 0.2rem;
+          animation: rotate 1s 4 ease-in-out;
           img {
-            height: 1rem;
+            height: 1.653333rem;
+            width: 1.26666rem;
           }
+        }
+        @keyframes rotate {
+          from {
+            transform: rotate(0);
+          }
+
+          25% {
+            transform: rotate(-40deg);
+          }
+
+          50% {
+            transform: rotate(0);
+          }
+
+          75% {
+            transform: rotate(40deg);
+          }
+
+          to {
+            transform: rotate(0);
+          }
+
         }
         .pen {
           position: absolute;
-          left: 0.6666rem;
+          left: 0.93333rem;
           top: 0.4rem;
           width: 0.53333rem;
           height: 0.53333rem;

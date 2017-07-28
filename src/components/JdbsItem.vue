@@ -165,6 +165,8 @@ export default {
       commentFinish: false,
 
       scrollDown: false,
+
+      userInfo: null,
     }
   },
   created() {},
@@ -180,8 +182,21 @@ export default {
         this.scrollDown = false;
       }
     }
+    util.getUserInfo((json) => {
+      if (json.code === 0) {
+        this.userInfo = json.data;
+      } else {
+        console.warn('获取课程信息失败！')
+      }
+    })
   },
   methods: {
+    checkPhone () {
+      if (!this.userInfo.phone) {
+        const redirect = encodeURIComponent('/' + location.search + location.hash);
+        location.href = '/?redirect=' + redirect + '#/login';
+      }
+    },
     showCommentFinish () {
       this.commentFinish = this.replyId ? 2 : 1;
       setTimeout(() => {
@@ -228,10 +243,12 @@ export default {
       })
     },
     gotoComment () {
+      this.checkPhone();
       this.commenting = true;
       this.focusStatus = true;
     },
     gotoReply (id, name) {
+      this.checkPhone();
       this.replyId = id;
       this.replyName = name;
       this.focusStatus = true;
@@ -367,23 +384,23 @@ export default {
     }
     .main {
       background: white;
-      padding: 1.3333rem 0.4rem 0.4rem 0.4rem;
+      padding: 1.3333rem 0.6666rem 0.4rem 0.6666rem;
       margin-top: 0.26666rem;
       .course-title {
         font-size: 0.66666rem;
         color: #333333;
-        padding-bottom: 1.3333rem;
+        padding-bottom: 0.53333rem;
       }
       .infos {
         font-size: 0.26666rem;
-        color: #999999;
+        color: #bbbbbb;
         display: flex;
         justify-content: space-between;
         padding-bottom: 0.4rem;
         .other {
           display: flex;
           span {
-            margin-left: 0.4rem;
+            margin-left: 0.26666rem;
             display: flex;
             align-items: center;
             .text {
@@ -394,7 +411,7 @@ export default {
               height: 0.32rem;
               background-repeat: no-repeat;
               background-size: 0.32rem 0.32rem;
-              margin-right: 0.13333rem;
+              margin-right: 0.08rem;
               display: inline-block;
             }
             .icon.time {
@@ -418,7 +435,7 @@ export default {
       .content {
         line-height: 1.8;
         font-size: 0.4rem;
-        color: #666666;
+        color: #444444;
         -webkit-user-select: none;
         .summary {
           padding-bottom: 1rem;

@@ -1,11 +1,12 @@
 <template>
   <div class="jdbs-container">
     <div class="header">
-      <img src="/static/banner_1.jpg">
-      <div class="desc">
+      <img src="/static/jdbs-banner.png">
+      <!-- <div class="cover"></div> -->
+      <!-- <div class="desc">
         <div class="title"> <span>酒店邦说</span> <span class="tag">免费</span> </div>
         <div class="sub-title">[酒店邦说]是一档酒店邦自主生产内容的栏目</div>
-      </div>
+      </div> -->
     </div>
     <div class="toolbar">
       <div class="tips">已更新{{ total }}条</div>
@@ -39,7 +40,8 @@
     </ul>
     <div class="btns">
       <div class="item home" @click="gotoHome"><div class="icon"></div><span>首页</span></div>
-      <div class="item left" @click="gotoNew"><div class="icon"></div>{{ notListenNum }}条未听</div>
+      <div class="item left" @click="gotoNew" v-if="notListenNum > 0"><div class="icon"></div>{{ notListenNum }}条未听</div>
+      <div class="item left empty" v-if="notListenNum === 0">全部听完</div>
     </div>
   </div>
 </template>
@@ -153,6 +155,15 @@ export default {
       width: 100%;
       height: 3.3333rem;
       position: relative;
+      .cover {
+        width: 100%;
+        height: 100%;
+        background: black;
+        opacity: 0.1;
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
       img {
         width: 100%;
         height: 100%;
@@ -217,7 +228,7 @@ export default {
           background-size: 0.4rem 0.4rem;
           background-position: center;
           background-repeat: no-repeat;
-          margin-right: 0.2rem;
+          margin-right: 0.13333rem;
         }
       }
     }
@@ -227,7 +238,7 @@ export default {
       .item {
         width: 100%;
         position: relative;
-        height: 2rem;
+        height: 1.88rem;
         border-bottom: @border;
         padding: 0.4rem;
         color: #333333;
@@ -250,7 +261,7 @@ export default {
         .infos {
           font-size: 0.32rem;
           color: #cccccc;
-          margin-top: 0.48rem;
+          margin-top: 0.32rem;
           padding-left: 0.3rem;
           span {
             margin-right: 0.4rem;
@@ -333,12 +344,15 @@ export default {
           display: inline-block;
           width: 0.6rem;
           height: 0.6rem;
-          background-image: url('/static/play.svg');
+          background-image: url('/static/play-icon.svg');
           background-size: 0.5rem 0.5rem;
           background-position: center;
           background-repeat: no-repeat;
-          margin-right: 0.3rem;
+          margin-right: 0.26666rem;
         }
+      }
+      .left.empty {
+        color: #cccccc;
       }
     }
   }

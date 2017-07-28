@@ -8,7 +8,7 @@
         <div class="name">{{ data.userName + '请你学知识' }}</div>
       </div>
       <div class="over-tips" v-if="data.redPacketRemained === 0">
-        知识红包已抢完，<span @click="gotoHome">去查看更多课程</span><div class="icon"></div>    
+        知识红包已抢完，<span @click="gotoHome">还有知识干货等着你</span><div class="icon"></div>    
       </div>
       <div class="hr"></div>
       <div class="hongbao" v-if="data.redPacketRemained !== null">
@@ -69,6 +69,13 @@ export default {
         if (this.data.alreadyOpened) {
           location.href = '/?redPacketNonce=' + this.redPacketNonce + '&cid=' + cid + '&lid=' + lid + '&fromHongbao=1#/lesson';
         }
+        const dict = {
+          title: this.data.speakerName + '：' + this.data.lessonTitle + '「红包分享」',
+          link: location.href,
+          imgUrl: this.data.speakerHeadImg,
+          desc: this.data.userName + '请你学知识',
+        }
+        util.updateWechatShare(dict)
       } else {
         console.warn('获取红包报错');
       }

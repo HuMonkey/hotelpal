@@ -108,7 +108,7 @@ export default {
         return false;
       }
       if (!isMobilePhone(this.phone, 'zh-CN')) {
-        this.setError('请填写手机号码！');
+        this.setError('请输入正确的手机号码！');
         return false;
       }
       this.disabled = true;

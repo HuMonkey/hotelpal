@@ -706,6 +706,7 @@ export default {
         .erweima {
           display: block;
           margin: auto;
+          width: 2.4rem;
           // width: 3.73333rem;
         }
         .tips {

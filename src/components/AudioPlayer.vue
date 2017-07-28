@@ -34,7 +34,7 @@
         </div>
       </div>
     </div>
-    <div class="countdown" v-if="playing && goOn && countingDown && !dragging">
+    <div class="countdown" v-if="nextId && playing && goOn && countingDown && !dragging">
       <div class="tips">{{ countingDown }}s后将自动为你播放</div>
       <div class="lesson-title">{{ nextLessonTitle }}</div>
       <div class="btn" @click="cancelGoOn">取消自动播放</div>
@@ -96,10 +96,10 @@
     },
     methods: {
       setGoOn () {
-        if (!this.nextId) {
-          // alert('已经是最后一个课时啦！');
-          return false;
-        }
+        // if (!this.nextId) {
+        //   // alert('已经是最后一个课时啦！');
+        //   return false;
+        // }
         this.goOn = !this.goOn;
       },
       cancelGoOn () {
@@ -391,8 +391,11 @@
         .next {
           background-image: url('/static/next.svg');
         }
-        .previous.empty, .next.empty {
-          background: none;
+        .previous.empty {
+          background-image: url('/static/previous-grey.svg');
+        }
+        .next.empty {
+          background-image: url('/static/next-grey.svg');
         }
         .switch {
           width: 1.28rem;
