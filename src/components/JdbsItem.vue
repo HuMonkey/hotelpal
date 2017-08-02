@@ -66,15 +66,15 @@
               </div>
             </div>
           </div>
-          <div class="all" v-if="lesson.commentList">
+          <div class="all">
             <div class="title">
-              <span>全部（{{ lesson.commentList.commentList.length }}）</span>
+              <span>全部（{{ commentList.length }}）</span>
             </div>
-            <div class="no-comment" v-if="lesson.commentList.commentList.length === 0">
+            <div class="no-comment" v-if="commentList.length === 0">
               尚无讨论，说说你的看法吧！
             </div>
-            <div class="comments" v-if="lesson.commentList.commentList.length > 0">
-              <div class="item" v-for="comment in lesson.commentList.commentList">
+            <div class="comments" v-else>
+              <div class="item" v-for="comment in commentList">
                 <div class="avater">
                   <img :src="comment.userHeadImg">
                 </div>
@@ -101,6 +101,13 @@
                 </div>
               </div>
             </div>
+            <infinite-loading :on-infinite="onInfinite" :distance="distance" ref="infiniteLoading">
+              <span class="vue-loader weui-loadmore" slot="spinner">
+                <i class="weui-loading"></i>
+                <span class="weui-loadmore__tips">正在加载</span>
+              </span>
+              <span class="vue-loader" slot="no-results">没有更多信息了</span>
+            </infinite-loading>
           </div>
       </div>
       <div class="comment-box" v-if="!commenting">
@@ -131,6 +138,7 @@
 
 <script>
 import moment from 'moment';
+import InfiniteLoading from 'vue-infinite-loading';
 
 import util from '../util/index'
 import AudioPlayer from './AudioPlayer.vue'
@@ -167,6 +175,11 @@ export default {
       scrollDown: false,
 
       userInfo: null,
+
+      distance: 50,
+      start: 0, 
+      number: 10,
+      commentList: [],
     }
   },
   created() {},
@@ -175,7 +188,6 @@ export default {
     document.body.onscroll = () => {
       const width = document.body.offsetWidth;
       const scrollTop = document.body.scrollTop;
-      console.log(scrollTop, width / 10 * (1.173333 + 5.46666))
       if (scrollTop >= width / 10 * (1.173333 + 5.46666)) {
         this.scrollDown = true;
       } else {
@@ -191,6 +203,22 @@ export default {
     })
   },
   methods: {
+    onInfinite: function () {
+      const id = util.getParam('id');
+      util.getCommetnList(id, this.start, this.number, (json) => {
+        if (json.code === 0) {
+          this.start = this.start + this.number;
+          if (json.data.hasMore) {
+            this.$refs.infiniteLoading.$emit('$InfiniteLoading:loaded');
+          } else {
+            this.$refs.infiniteLoading.$emit('$InfiniteLoading:complete');
+          }
+          this.commentList = this.commentList.concat(json.data.commentList);
+        } else {
+          console.warn('获取自主课程列表出错！');
+        }
+      })
+    },
     checkPhone () {
       if (!this.userInfo.phone) {
         const redirect = encodeURIComponent('/' + location.search + location.hash);
@@ -203,10 +231,19 @@ export default {
         this.commentFinish = false;
       }, 2000);
     },
-    updateLesson: function () {
+    updateLesson: function (updateComment) {
       const id = util.getParam('id')
       util.getLesson(id, (json) => {
         if (json.code === 0) {
+          if (updateComment) {
+            this.commentList.unshift(json.data.commentList.commentList[0]);
+            this.start++;
+            return false;
+          } else {
+            this.commentList = json.data.commentList.commentList.slice(0);
+            this.start = this.commentList.length;
+          }
+
           document.title = json.data.title;
           this.song = json.data.audio;
           const publishTimeStr = json.data.publishTime && json.data.publishTime.split(' ')[0];
@@ -217,6 +254,7 @@ export default {
             publishTimeStr,
             lenStr: this.songLong,
           };
+
           let rem = document.body.clientWidth / 10;
           rem = rem > 75 ? 75 : rem;
           let fontSize = rem * 0.4;
@@ -277,7 +315,7 @@ export default {
           this.showCommentFinish();
           this.myComment = null;
           this.cancelReply();
-          this.updateLesson();
+          this.updateLesson(true);
         } else {
           console.warn('评论错误！')
         }
@@ -317,7 +355,7 @@ export default {
     }
   },
   components: {
-    AudioPlayer, Error
+    AudioPlayer, Error, InfiniteLoading
   }
 }
 </script>
@@ -451,6 +489,7 @@ export default {
           }
         }
         .article {
+          text-align: justify;
           img {
             width: 100%;
             margin: 0.53333rem 0;

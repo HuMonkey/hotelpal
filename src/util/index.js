@@ -25,6 +25,7 @@ const api = {
   pay: '/hotelpal/user/pay',
   openRedPacket: '/hotelpal/user/openRedPacket',
   getRedPacketRemained: '/hotelpal/user/getRedPacketRemained',
+  getCommentList: '/hotelpal/user/getCommentList',
 
   receiveRedirect: '/hotelpal/WeChat/receiveRedirect',
 
@@ -73,6 +74,18 @@ util.config = {
  */
 util.getCourseList = function (callback) {
   fetch(util.getUrl(util.config.host + api.getCourseList))
+    .then(function(res) {
+      return res.json()
+    }).then(callback).catch(function(ex) {
+      console.log('parsing failed', ex)
+    })
+}
+
+/**
+ * 获取评论列表
+ */
+util.getCommetnList = function (lid, start, num, callback) {
+  fetch(util.getUrl(util.config.host + api.getCommentList + '?lessonId=' + lid + '&start=' + start + '&limit=' + num))
     .then(function(res) {
       return res.json()
     }).then(callback).catch(function(ex) {
