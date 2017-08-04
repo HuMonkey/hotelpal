@@ -686,13 +686,15 @@ export default {
           color: #bbbbbb;
           display: flex;
           justify-content: space-between;
-          padding-bottom: 0.4rem;
+          padding-bottom: 1.06666rem;
           .other {
             display: flex;
             span {
               margin-left: 0.26666rem;
               display: flex;
               align-items: center;
+              line-height: 1;
+              height: 0.32rem;
               .text {
                 display: inline-block;
               }
@@ -751,10 +753,10 @@ export default {
           }
           .article.overflow {
             overflow: hidden;
-            height: 1.44rem;
+            height: 3rem;
             text-overflow: ellipsis;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
             img {
               display: none;

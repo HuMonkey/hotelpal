@@ -73,7 +73,7 @@ export default {
           title: this.data.speakerName + '：' + this.data.lessonTitle + '「红包分享」',
           link: location.href,
           imgUrl: this.data.speakerHeadImg,
-          desc: this.data.userName + '请你学知识',
+          desc: util.getHtmlContent(this.data.content),
         }
         util.updateWechatShare(dict)
       } else {

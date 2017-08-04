@@ -246,7 +246,7 @@ export default {
 
           document.title = json.data.title;
           this.song = json.data.audio;
-          const publishTimeStr = json.data.publishTime && json.data.publishTime.split(' ')[0];
+          const publishTimeStr = util.formatDate(json.data.publishTime && json.data.publishTime.split(' ')[0]);
           this.songLong = moment(json.data.audioLen * 1000).format('mm:ss');
           const content = json.data.content;
           this.lesson = {
@@ -434,13 +434,15 @@ export default {
         color: #bbbbbb;
         display: flex;
         justify-content: space-between;
-        padding-bottom: 0.4rem;
+        padding-bottom: 1.06666rem;
         .other {
           display: flex;
           span {
             margin-left: 0.26666rem;
             display: flex;
             align-items: center;
+            line-height: 1;
+            height: 0.32rem;
             .text {
               display: inline-block;
             }
@@ -500,10 +502,10 @@ export default {
         }
         .article.overflow {
           overflow: hidden;
-          height: 1.44rem;
+          height: 3rem;
           text-overflow: ellipsis;
           display: -webkit-box;
-          -webkit-line-clamp: 2;
+          -webkit-line-clamp: 4;
           -webkit-box-orient: vertical;
         }
         .open {

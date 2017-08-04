@@ -682,6 +682,19 @@ util.getHtmlContent = function (str) {
   return str.replace(/<[^>]*>/g, "");
 }
 
+/**
+ * 2017-09-08 -> 09-08 || 2016-09-08 -> 2016-09-08
+ * @return {[type]} [description]
+ */
+util.formatDate = function (string) {
+  const [y, m, d] = string && string.split('-');
+  if (y === undefined || m === undefined || d === undefined) {
+    return 'invalid date'
+  }
+  let year = y == (new Date()).getFullYear() ? '' : y + '-';
+  return year + (m.length > 1 ? m : '0' + m) + '-' + (d.length > 1 ? d : '0' + d)
+}
+
 export default util;
 
 
