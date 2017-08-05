@@ -86,7 +86,7 @@ export default {
         // 绑定过手机，就不用绑定了
         this.userinfo = json.data;
         if (json.data.phone) {
-          location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
+          // location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
         } else {
           this.render = true;
         }
@@ -190,6 +190,10 @@ export default {
     },
     submitChange: function () {
       const { headImg, nickname, company, title } = this.userinfo;
+      if (nickname.length === 0) {
+        this.setError('请输入你的昵称');
+        return false;
+      }
       util.saveUserProp(headImg, nickname, company, title, (json) => {
         if (json.code === 0) {
           location.href = decodeURIComponent(util.getParam('redirect') || '/#/');

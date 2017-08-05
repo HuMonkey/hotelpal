@@ -126,7 +126,7 @@ export default {
         color: @red;
       }
       .icon {
-        margin-left: 0.3rem;
+        margin-left: 0.16666rem;
         display: inline-block;
         width: 0.2rem;
         height: 0.4rem;
@@ -197,12 +197,12 @@ export default {
         }
         .desc {
           font-size: 0.32rem;
-          width: 2.53333rem;
+          width: 2.6666rem;
           height: 1.73333rem;
           padding: 0.1rem 0;
           color: #666666;
           text-align: left;
-          margin-left: 0.4rem;
+          margin-left: 0.26666rem;
           .title {
             width: 100%;
             overflow: hidden;
@@ -212,11 +212,10 @@ export default {
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
-            margin-bottom: 0.06666rem;
           }
           .name, .who {
             color: #999999;
-            margin-top: 0.1rem;
+            margin-top: 0.2rem;
             line-height: 1.2;
           }
         }

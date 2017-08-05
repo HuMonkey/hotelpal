@@ -18,14 +18,15 @@
           <div class="title">{{ course.userName }}</div>
           <div class="sub-title">{{ course.company + ' ' + course.userTitle }}</div>
         </div>
+        <div class="state coming" v-if="course.status === 0">预告</div>
       </div>
       <div class="content">
         <div class="gotoDetail" v-if="course.purchased" @click="gotoDetail">
           <div class="title">{{ course.title }}</div>
           <div class="sub-title">{{ course.subtitle }}</div>
-          <div class="tags" v-if="course.tag && course.tag.length > 0">
+          <!-- <div class="tags" v-if="course.tag && course.tag.length > 0">
             <div class="item" v-for="t in course.tag">{{ t.name }}</div>
-          </div>
+          </div> -->
           <div class="arrow"></div>
         </div>
         <div class="block teacher" v-if="!course.purchased">
@@ -62,7 +63,7 @@
           <div class="hr"></div>
         </div>
         <div class="block lessons">
-          <div class="label">课时</div>
+          <div class="label">课时内容</div>
           <div class="list">
             <div class="item" :class="{free: l.freeListen, future: !l.isPublish, finished: l.listenLen && l.listenLen >= l.audioLen}" @click="gotoLesson(l)" v-for="(l, index) in course.lessonList" :id="'lesson-' + l.id">
               <div class="up">
@@ -92,7 +93,7 @@
           <div class="box" @click="gotoHome">
             <img src="/static/jiudianbang.png">
             <div class="title">酒店邦成长营</div>
-            <div class="desc">发现更多酒店人的必修课</div>
+            <div class="desc">为你提供高效、省时的知识服务</div>
             <div class="arrow"></div>
           </div>
         </div>
@@ -132,6 +133,7 @@ export default {
       userinfo: null,
       payFinish: false,
       freeTips: true,
+      paying: false,
     }
   },
   created() {
@@ -167,7 +169,7 @@ export default {
         rem = rem > 75 ? 75 : rem;
         let fontSize = rem * 0.4;
         const length = util.textLength(this.course.introduce, fontSize);
-        if (length > 9.2 * rem * 2) {
+        if (length > 9.2 * rem * 8) {
           this.isIntroOverflow = true;
         }
         if (util.getParam('code')) {
@@ -228,24 +230,29 @@ export default {
         location.href = '/?redirect=' + redirect + '#/login';
         return false;
       }
+      if (this.paying) {
+        return false;
+      }
+      this.paying = true;
       const cid = util.getParam('cid');
       if (this.userinfo.freeCourseRemained > 0) {
         const useFree = confirm('将使用一次免费获取课程的机会，确认兑换？')
-        if (!useFree) {
+        if (useFree) {
+          util.getFreeCourse(cid, (json) => {
+            this.paying = false;
+            if (json.code === 0) {
+              this.showPayFinish();
+              this.userinfo.freeCourseRemained--;
+              this.course.purchased = true;
+            } else {
+              console.warn('获取免费课程出现了点问题')
+            }
+          })
           return false;
         }
-        util.getFreeCourse(cid, (json) => {
-          if (json.code === 0) {
-            this.showPayFinish();
-            this.userinfo.freeCourseRemained--;
-            this.course.purchased = true;
-          } else {
-            console.warn('获取免费课程出现了点问题')
-          }
-        })
-        return false;
       }
       util.createPayOrder(cid, (json) => {
+        this.paying = false;
         if (json.code === 0) {
           const { appId, nonceStr, paySign, timeStamp, tradeNo } = json.data;
           wx.chooseWXPay({
@@ -387,6 +394,22 @@ export default {
       width: 100%;
       height: 6.6666rem;
       position: relative;
+      .state.coming {
+        height: 0.426666rem;
+        border-radius: 4px;
+        padding-left: 0.1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        position: absolute;
+        top: 0.26666rem;
+        left: -0.1rem;
+        font-size: 0.4rem;
+        background: #f0944a;
+        width: 1.6rem;
+        height: 0.8rem;
+      }
       img {
         width: 100%;
         height: 100%;
@@ -526,10 +549,10 @@ export default {
       .course-intro {
         .intro.overflow {
           overflow: hidden;
-          height: 3rem;
+          height: 6.4rem;
           text-overflow: ellipsis;
           display: -webkit-box;
-          -webkit-line-clamp: 4;
+          -webkit-line-clamp: 8;
           -webkit-box-orient: vertical;
           img {
             display: none;
@@ -645,16 +668,16 @@ export default {
             float: left;
           }
           .title {
-            margin-left: 2.13333rem;
+            margin-left: 1.706666rem;
             font-size: 0.4rem;
             color: #666666;
-            margin-top: 0.1rem;
+            margin-top: 0.18rem;
           }
           .desc {
-            margin-left: 2.13333rem;
+            margin-left: 1.706666rem;
             font-size: 0.32rem;
             color: #999999;
-            margin-top: 0.2rem;
+            margin-top: 0.32rem;
           }
           .arrow {
             position: absolute;

@@ -7,9 +7,9 @@
           <div class="current">{{ current }}</div>
           <div class="bar" @touchmove="moveDrag" @touchend="endDrag">
             <div class="duration">
-              <div class="inner" :style="{ width: audio.currentTime / audioLen * 100 + '%' }"></div>
+              <div class="inner" :style="{ width: currentTime / audioLen * 100 + '%' }"></div>
             </div>
-            <div class="dot" :style="{ left: audio.currentTime / audioLen * 94 + '%' }" @touchstart="startDrag"><div class="dot-inner"></div></div>
+            <div class="dot" :style="{ left: currentTime / audioLen * 94 + '%' }" @touchstart="startDrag"><div class="dot-inner"></div></div>
           </div>
           <div class="left">{{ left || songLong }}</div>
         </div>
@@ -59,6 +59,7 @@
         goOn: false,
         interval: null,
         current: '00:00',
+        currentTime: 0,
         left: null,
         audio: null,
         playing: false,
@@ -83,6 +84,8 @@
         this.audio.removeAttribute('autoplay');
       }
       if (this.listenLen && this.listenLen < this.audioLen) {
+        this.currentTime = this.listenLen;
+        this.current = formatTime(this.currentTime || 0, true);
         this.audio.currentTime = this.listenLen;
         this.updateTime();
       }
@@ -107,17 +110,27 @@
       },
       updateTime () {
         const audio = this.audio;
-        this.current = formatTime(audio.currentTime || 0, true);
         if (!audio.duration) {
           this.left = this.songLong;
+          if (util.ua.iOS) {
+            audio.onloadeddata = () => {
+              if (this.listenLen < this.audioLen) {
+                audio.currentTime = this.listenLen || 0;
+              }
+            };
+          }
+          return false;
         } else {
           this.left = formatTime(audio.duration - audio.currentTime, false);
           if (audio.duration - audio.currentTime < 16) {
             this.countingDown = parseInt(audio.duration - audio.currentTime);
           }
         }
+        this.current = formatTime(this.currentTime || 0, true);
+        this.currentTime = Math.ceil(audio.currentTime);
         if (audio.ended) {
           this.current = formatTime(0, true);
+          this.currentTime = 0;
           this.left = this.songLong;
           this.audio.currentTime = 0;
           this.playOrPause();
@@ -185,7 +198,7 @@
         if (p > 1) {
           p = 1;
         }
-        audio.currentTime = p * audio.duration;
+        audio.currentTime = this.currentTime = parseInt(p * audio.duration);
         this.updateTime();
       },
       endDrag (ev) {
@@ -234,10 +247,7 @@
       setInterval () {
         this.saveInterval && clearInterval(this.saveInterval);
         this.saveInterval = setInterval(() => {
-          let current = Math.ceil(this.audio.currentTime);
-          if (current > this.audio.duration) {
-            current = Math.ceil(this.audio.duration);
-          }
+          let current = this.currentTime < this.audioLen ? this.currentTime : this.audioLen;
           const lid = util.getParam('lid') || util.getParam('id');
           util.recordListenPos(lid, current, (json) => {
             if (json.code === 0) {
@@ -259,9 +269,11 @@
   @import '../variable.less';
 
   .audio-player {
+    position: relative;
+    top: -4px;
     .wrapper {
       position: relative;
-      padding-bottom: 0.4rem;
+      padding-bottom: 0.53333rem;
       box-shadow: 0px 1px 10px #cccccc;
       audio {
         display: none;
@@ -457,7 +469,9 @@
       .btn {
         display: inline-block;
         border: white solid thin;
-        padding: 0.1rem;
+        padding: 0 0.186666rem;
+        height: 0.48rem;
+        line-height: 0.42rem;
         border-radius: 4px;
         position: absolute;
         right: 0.26666rem;

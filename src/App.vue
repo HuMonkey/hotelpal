@@ -19,9 +19,10 @@ export default {
   },
   mounted () {
     this.isWechat = util.ua.wechat;
+    const goon = util.getParam('goon');
     if (this.isWechat) {
       util.verifyWechat(this);
-      util.getWechatSign();
+      goon != 1 && util.getWechatSign();
     }
   }
 }

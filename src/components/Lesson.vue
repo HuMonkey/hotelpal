@@ -11,7 +11,7 @@
         <div class="main" v-if="lesson">
           <div class="course-title">{{ lesson.lessonOrder }} | {{ lesson.title }}</div>
           <div class="infos">
-            <div class="time">{{ lesson.publishTimeStr }}发布</div>
+            <div class="time">{{ lesson.publishTimeStr + ' ' }}发布</div>
             <div class="other">
               <span><div class="icon time"></div>{{ lesson.lenStr }}</span>
               <span><div class="icon download"></div>{{ lesson.resourceSize || '???MB' }}</span>
@@ -37,7 +37,7 @@
                 <div class="swiper" :style="{width: swiperWidth + 'rem'}">
                   <div class="item" :class="{current: l.id === lesson.id}" v-for="l in course.lessonList" @click="gotoLesson(l.id)">
                     <div class="inner">
-                      {{ l.lessonNo }} | {{ l.title }}
+                      {{ l.lessonOrder }} | {{ l.title }}
                     </div>
                   </div>
                 </div>
@@ -48,16 +48,17 @@
         <div class="discuss" v-if="lesson">
             <div class="good" v-if="lesson.eliteCommentList && lesson.eliteCommentList.commentList.length > 0">
               <div class="title">
-                讨论
-                <span>精选（{{ lesson.eliteCommentList.commentList.length }}）</span>
+                精选讨论
+                <!-- <span>精选（{{ lesson.eliteCommentList.commentList.length }}）</span> -->
               </div>
               <div class="comments">
                 <div class="item" v-for="comment in lesson.eliteCommentList.commentList">
                   <div class="avater">
-                    <img src="/static/header.png">
+                    <img :src="comment.userHeadImg">
                   </div>
                   <div class="name">
-                    {{ comment.userName }}  {{ comment.userCompany + '·' + comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
+                    {{ comment.userName }}  <span v-if="comment.userCompany || comment.userTitle">{{ comment.userCompany + ' ' + comment.userTitle }}</span>
+                    <span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
                   </div> 
                   <div class="content">
                     {{ comment.content }}
@@ -82,7 +83,8 @@
             </div>
             <div class="all">
               <div class="title">
-                <span>全部（{{ commentList.length }}）</span>
+                全部讨论
+                <!-- <span>全部（{{ commentList.length }}）</span> -->
               </div>
               <div class="no-comment" v-if="commentList.length === 0">
                 尚无讨论，说说你的看法吧！
@@ -90,10 +92,11 @@
               <div class="comments" v-else>
                 <div class="item" v-for="comment in commentList">
                   <div class="avater">
-                    <img src="/static/header.png">
+                    <img :src="comment.userHeadImg">
                   </div>
                   <div class="name">
-                    {{ comment.userName }}  {{ comment.userCompany + '·' + comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
+                    {{ comment.userName }}  <span v-if="comment.userCompany || comment.userTitle">{{ comment.userCompany + ' ' + comment.userTitle }}</span>
+                    <span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
                   </div> 
                   <div class="content">
                     {{ comment.content }}
@@ -245,6 +248,8 @@ export default {
       start: 0, 
       number: 10,
       commentList: [],
+
+      paying: false,
     }
   },
   created() {
@@ -269,11 +274,14 @@ export default {
       if (json.code === 0) {
         this.course = json.data;
         this.purchased = json.data.purchased;
-        const lessonList = this.course.lessonList;
+        let lessonList = this.course.lessonList;
+        lessonList.forEach((d) => {
+          d.lessonOrder = util.formatNum(d.lessonOrder);
+        });
         const lessonsNum = lessonList.length;
         this.swiperWidth = (lessonsNum * 270 + (lessonsNum - 1) * 20) / 75;
         const former = lessonList.indexOf(lessonList.find((d) => d.id == lid));
-        const offsetLeft = (former * 320) / 75 * (document.body.clientWidth / 10);
+        const offsetLeft = (former * 290) / 75 * (document.body.clientWidth / 10);
         setTimeout(function () {
           if (document.querySelector('.lessons')) {
             document.querySelector('.lessons').scrollLeft = offsetLeft;
@@ -358,9 +366,9 @@ export default {
           const content = json.data.content;
           let rem = document.body.clientWidth / 10;
           rem = rem > 75 ? 75 : rem;
-          let fontSize = rem * 0.4;
+          let fontSize = 16;
           const length = util.textLength(content, fontSize);
-          if (length > 9.2 * rem * 2) {
+          if (length > 9.2 * rem * 8) {
             this.isIntroOverflow = true;
           }
 
@@ -492,25 +500,30 @@ export default {
     },
     gotoPay: function () {
       this.checkPhone();
+      if (this.paying) {
+        return false;
+      }
+      this.paying = true;
       const cid = util.getParam('cid');
       if (this.userInfo.freeCourseRemained > 0) {
         const useFree = confirm('将使用一次免费获取课程的机会，确认兑换？')
-        if (!useFree) {
+        if (useFree) {
+          util.getFreeCourse(cid, (json) => {
+            this.paying = false;
+            if (json.code === 0) {
+              this.showPayFinish();
+              setTimeout(() => {
+                location.reload();
+              }, 2000);
+            } else {
+              console.warn('获取免费课程出现了点问题')
+            }
+          })
           return false;
         }
-        util.getFreeCourse(cid, (json) => {
-          if (json.code === 0) {
-            this.showPayFinish();
-            setTimeout(() => {
-              location.reload();
-            }, 2000);
-          } else {
-            console.warn('获取免费课程出现了点问题')
-          }
-        })
-        return false;
       }
       util.createPayOrder(cid, (json) => {
+        this.paying = false;
         if (json.code === 0) {
           const { appId, nonceStr, paySign, timeStamp, tradeNo } = json.data;
           wx.chooseWXPay({
@@ -682,7 +695,7 @@ export default {
           padding-bottom: 0.53333rem;
         }
         .infos {
-          font-size: 0.26666rem;
+          font-size: 0.293333rem;
           color: #bbbbbb;
           display: flex;
           justify-content: space-between;
@@ -726,7 +739,7 @@ export default {
         }
         .content {
           line-height: 1.8;
-          font-size: 0.4rem;
+          font-size: 16px;
           color: #444444;
           .summary {
             padding-bottom: 1rem;
@@ -753,10 +766,10 @@ export default {
           }
           .article.overflow {
             overflow: hidden;
-            height: 3rem;
+            height: 252px;
             text-overflow: ellipsis;
             display: -webkit-box;
-            -webkit-line-clamp: 4;
+            -webkit-line-clamp: 8;
             -webkit-box-orient: vertical;
             img {
               display: none;
@@ -894,7 +907,10 @@ export default {
             height: 0.8rem;
             line-height: 0.8rem;
             font-size: 0.4rem;
-            color: #999999;
+            color: #666666;
+            span {
+              color: #999999;
+            }
             .tag {
               margin-left: 0.2rem;
               padding: 0 0.1rem;
@@ -987,10 +1003,12 @@ export default {
           position: absolute;
           right: 0.6666rem;
           bottom: 0.2rem;
-          animation: rotate 1s 4 ease-in-out;
+          height: 1.3333rem;
+          width: 0.93333rem;
+          animation: shake 1s 2 ease-in-out;
           img {
-            height: 1.653333rem;
-            width: 1.26666rem;
+            height: 100%;
+            width: 100%;
           }
         }
         @keyframes rotate {
@@ -1015,6 +1033,23 @@ export default {
           }
 
         }
+        @keyframes shake {
+          10%, 90% {
+            transform: translate3d(-1px, 0, 0);
+          }
+          
+          20%, 80% {
+            transform: translate3d(2px, 0, 0);
+          }
+
+          30%, 50%, 70% {
+            transform: translate3d(-4px, 0, 0);
+          }
+
+          40%, 60% {
+            transform: translate3d(4px, 0, 0);
+          }
+        }
         .pen {
           position: absolute;
           left: 0.93333rem;
@@ -1037,7 +1072,7 @@ export default {
         }
       }
       .comment-box.hongbao {
-        padding-right: 2.53333rem;
+        padding-right: 2.23333rem;
       }
       .reply-box {
         height: 100%;

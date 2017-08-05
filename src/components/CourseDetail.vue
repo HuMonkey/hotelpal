@@ -84,6 +84,7 @@ export default {
     background: white;
     line-height: 1;
     padding: 0 0.4rem;
+    text-align: justify;
     .teacher {
       padding: 0.8rem 0 0.53333rem 0;
       display: flex;
@@ -111,6 +112,7 @@ export default {
         .user {
           display: flex;
           align-items: center;
+          margin-top: 0.1rem;
           .userName {
             color: #333333;
             font-size: 0.4rem;
@@ -140,7 +142,7 @@ export default {
     }
     .hr {
       border-top: @border;
-      margin-top: 0.4rem;
+      margin-top: 0.53333rem;
     }
     .block {
       padding: 0.53333rem 0 0 0;
@@ -161,6 +163,7 @@ export default {
           margin: 0 0.26666rem;
           color: black;
           font-size: 0.426666rem;
+          font-weight: 600;
         }
         .userTitle {
           vertical-align: bottom;

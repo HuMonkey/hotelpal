@@ -11,7 +11,7 @@
     <div v-if="courses && courses.length > 0" class="wrap">
       <div class="list">
         <div class="item" v-for="c in courses" @click="gotoCourse(c.id)">
-          <div class="img" :class="{long: c.isLong, short: !c.isLong}"><img :src="c.headImg"></div>
+          <div class="img"><img :src="c.bannerImg[0]"></div>
           <div class="main">
             <div class="title">{{ c.title }}</div>
             <div class="tips" :title="c.msg">{{ c.msg || '暂无' }}</div>
@@ -61,12 +61,7 @@ export default {
             // msg: 'ddd',
           }
         });
-        this.courses.forEach((d) => {
-          util.isLongImg(d.headImg, 10 / 3.3333, (isLong) => {
-            d.isLong = isLong;
-            this.$forceUpdate();
-          });
-        })
+        this.courses = [];
       } else {
         console.warn('获取已购课程出错');
       }
@@ -105,8 +100,8 @@ export default {
       .shopping-car {
         display: inline-block;
         width: 3.3333rem;
-        height: 2.6666rem;
-        background-size: 3.3333rem 2.6666rem;
+        height: 3.3333rem;
+        background-size: 3.3333rem 3.3333rem;
         background-image: url('/static/empty2.png')
       }
       p {
@@ -143,7 +138,7 @@ export default {
       padding-bottom: 0.53333rem;
       .more {
         text-align: center;
-        padding-bottom: 0.8rem;
+        padding-bottom: 1.6rem;
         .buy {
           border-radius: 4px;
           color: @red;
@@ -174,7 +169,7 @@ export default {
           background: white;
           width: 4.4rem;
           border-radius: 4px;
-          margin-bottom: 0.53333rem;
+          margin-bottom: 0.4rem;
           overflow: hidden;
           .img {
             width: 100%;
@@ -183,17 +178,10 @@ export default {
             display: flex;
             align-items: center;
             justify-content: center;
-          }
-          .img.short {
             img {
               height: 100%;
             }
-          }
-          .img.long {
-            img {
-              width: 100%;
-            }
-          }
+          }            
           .main {
             width: 100%;
             padding: 0.26666rem;

@@ -514,24 +514,20 @@ util.textLength = function(para, fontSize) {
  * 如果 URL 发生变动，则需要重新签名
  */
 util.configWechat = function(appId, timestamp, nonceStr, signature, callback) {
-  try {
-    if (!util.ua.wechat) {
-      return;
-    }
-    console.log(appId, timestamp, nonceStr, signature)
-    wx.config({
-      appId, timestamp, nonceStr, signature,
-      jsApiList: [
-        'onMenuShareTimeline',
-        'onMenuShareAppMessage',
-        'chooseImage',
-        'previewImage'
-      ]
-    });
-    wx.ready(callback)
-  } catch (e) {
-    alert(e);
-  } 
+  if (!util.ua.wechat) {
+    return;
+  }
+  console.log(appId, timestamp, nonceStr, signature)
+  wx.config({
+    appId, timestamp, nonceStr, signature,
+    jsApiList: [
+      'onMenuShareTimeline',
+      'onMenuShareAppMessage',
+      'chooseImage',
+      'previewImage'
+    ]
+  });
+  wx.ready(callback)
 }
 
 /**
@@ -577,7 +573,7 @@ util.formatTime = function (time) {
 }
 
 util.getUrl = function (url) {
-  const token = util.getCookie('token');
+  const token = util.getCookie('token1');
   if (!token) {
     return url;
   }
@@ -615,7 +611,7 @@ util.getWechatSign = function (callback) {
 
 util.verifyWechat = function (app) {
   const code = util.getParam('code');
-  const token = util.getCookie('token');
+  const token = util.getCookie('token1');
   if (token != '') {
     app.beginRender = true;
     return false;
@@ -630,7 +626,7 @@ util.verifyWechat = function (app) {
     }
     util.receiveRedirect(code, (json1) => {
       if (json1.code === 0) {
-        util.setCookie('token', json1.data.token, '12d');
+        util.setCookie('token1', json1.data.token, '12d');
         app.beginRender = true;
       } else {
         console.warn('verify fail');

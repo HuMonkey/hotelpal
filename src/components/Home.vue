@@ -9,7 +9,7 @@
     <!-- <div class="free" v-if="jdbsList.length > 0"> -->
     <div class="free">
       <div class="title">
-        <div class="name">酒店邦说 | 免费</div>
+        <div class="name">成长专栏 | 免费</div>
         <div class="all" @click="gotoJdbs">
           <div>查看全部</div>
           <div class="arrow-right"></div>
@@ -28,7 +28,7 @@
     </div>
     <div class="pay">
       <div class="title">
-        <div class="name">专家课堂 | 付费</div>
+        <div class="name">订阅专栏</div>
         <!-- <div class="all">查看全部</div> -->
       </div>
       <div class="list">
@@ -110,7 +110,7 @@ export default {
         this.lessonList = json.data.lessonResponseList.map((d) => {
           return {
             ...d,
-            publishTime: d.publishTime && util.processDateStr(d.publishTime)
+            publishTime: d.publishTime && util.formatDate(util.processDateStr(d.publishTime))
           }
         });
       } else {
@@ -205,9 +205,8 @@ export default {
           .arrow-right {
             margin-left: 0.13333rem;
             width: 0.16rem;
-            height: 100%;
+            height: 0.26666rem;
             background-size: 0.16rem 0.26666rem;
-            background-position: 0 0.36rem;
             background-image: url("/static/arrow-right.svg");
             background-repeat: no-repeat;
           }
@@ -277,7 +276,6 @@ export default {
             border-radius: 0.13333rem;
             overflow: hidden;
             display: flex;
-            align-items: center;
             justify-content: center;
             .state {
               width: 0.82rem;

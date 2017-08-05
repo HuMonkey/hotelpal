@@ -4,7 +4,7 @@
     <div class="top-wrap" v-if="lesson" :class="{fixed: scrollDown}">
       <div class="goback" @click="goback" v-if="lesson && !scrollDown">
         <img src="/static/jiudianbang.png">
-        <span>酒店邦说</span>
+        <span>成长专栏</span>
         <div class="arrow-right"></div>
       </div>
       <div class="player">
@@ -18,10 +18,10 @@
       <div class="main">
         <div class="course-title">{{ lesson.title }}</div>
         <div class="infos">
-          <div class="time">{{ lesson.publishTimeStr }}发布</div>
+          <div class="time">{{ lesson.publishTimeStr + ' ' }}发布</div>
           <div class="other">
             <span><div class="icon time"></div>{{ lesson.lenStr }}</span>
-            <span><div class="icon download"></div>{{ lesson.resourceSize || '???MB' }}</span>
+            <span><div class="icon download"></div>{{ lesson.resourceSize || '0MB' }}</span>
             <span><div class="icon read"></div>{{ lesson.commentCount || 0 }}</span>
           </div>
         </div>
@@ -34,8 +34,8 @@
       <div class="discuss">
           <div class="good" v-if="lesson.eliteCommentList && lesson.eliteCommentList.commentList.length > 0">
             <div class="title">
-              讨论
-              <span>精选（{{ lesson.eliteCommentList.commentList.length }}）</span>
+              精选讨论
+              <!-- <span>精选（{{ lesson.eliteCommentList.commentList.length }}）</span> -->
             </div>
             <div class="comments">
               <div class="item" v-for="comment in lesson.eliteCommentList.commentList">
@@ -43,7 +43,8 @@
                   <img :src="comment.userHeadImg">
                 </div>
                 <div class="name">
-                  {{ comment.userName }}  {{ comment.userCompany + '·' + comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
+                  {{ comment.userName }}  <span v-if="comment.userCompany || comment.userTitle">{{ comment.userCompany + ' ' + comment.userTitle }}</span>
+                  <span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
                 </div> 
                 <div class="content">
                   {{ comment.content }}
@@ -68,7 +69,8 @@
           </div>
           <div class="all">
             <div class="title">
-              <span>全部（{{ commentList.length }}）</span>
+              全部讨论
+              <!-- <span>全部（{{ commentList.length }}）</span> -->
             </div>
             <div class="no-comment" v-if="commentList.length === 0">
               尚无讨论，说说你的看法吧！
@@ -79,7 +81,8 @@
                   <img :src="comment.userHeadImg">
                 </div>
                 <div class="name">
-                  {{ comment.userName }}  {{ comment.userCompany + '·' + comment.userTitle }}<span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
+                  {{ comment.userName }}  <span v-if="comment.userCompany || comment.userTitle">{{ comment.userCompany + ' ' + comment.userTitle }}</span>
+                  <span class="tag" v-if="comment.isTheSpeaker === 1">主讲人</span>
                 </div> 
                 <div class="content">
                   {{ comment.content }}
@@ -257,9 +260,9 @@ export default {
 
           let rem = document.body.clientWidth / 10;
           rem = rem > 75 ? 75 : rem;
-          let fontSize = rem * 0.4;
+          let fontSize = 16;
           const length = util.textLength(content, fontSize);
-          if (length > 9.2 * rem * 2) {
+          if (length > 9.2 * rem * 8) {
             this.isIntroOverflow = true;
           }
           this.updateShare();
@@ -423,14 +426,14 @@ export default {
     .main {
       background: white;
       padding: 1.3333rem 0.6666rem 0.4rem 0.6666rem;
-      margin-top: 0.26666rem;
+      margin-top: 0.13333rem;
       .course-title {
         font-size: 0.66666rem;
         color: #333333;
         padding-bottom: 0.53333rem;
       }
       .infos {
-        font-size: 0.26666rem;
+        font-size: 0.293333rem;
         color: #bbbbbb;
         display: flex;
         justify-content: space-between;
@@ -474,7 +477,7 @@ export default {
       }
       .content {
         line-height: 1.8;
-        font-size: 0.4rem;
+        font-size: 16px;
         color: #444444;
         -webkit-user-select: none;
         .summary {
@@ -502,10 +505,10 @@ export default {
         }
         .article.overflow {
           overflow: hidden;
-          height: 3rem;
+          height: 252px;
           text-overflow: ellipsis;
           display: -webkit-box;
-          -webkit-line-clamp: 4;
+          -webkit-line-clamp: 8;
           -webkit-box-orient: vertical;
         }
         .open {
@@ -558,7 +561,10 @@ export default {
           height: 0.8rem;
           line-height: 0.8rem;
           font-size: 0.4rem;
-          color: #999999;
+          color: #666666;
+          span {
+            color: #999999;
+          }
           .tag {
             margin-left: 0.2rem;
             padding: 0 0.1rem;

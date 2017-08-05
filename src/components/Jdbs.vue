@@ -16,7 +16,7 @@
       <li class="item" :class="{disable: !l.isPublish, finished: l.listenLen && l.listenLen >= l.audioLen}" @click="GotoJdbsItem(l)" v-for="l in lessonList" :id="'lesson-' + l.id">
         <div class="name">
           <div class="arrow"></div>
-          <span>{{ l.title }}</span>
+          <span>{{ l.lessonOrder}}</span><span class="vr">|</span><span>{{l.title }}</span>
         </div>
         <div class="infos" v-if="l.isPublish">
           <span>{{ l.publishTime }}</span>
@@ -82,6 +82,7 @@ export default {
           this.lessonList = this.lessonList.concat(json.data.lessonResponseList.map((d) => {
             return {
               ...d,
+              lessonOrder: util.formatNum(d.lessonOrder),
               audioLenStr: moment(d.audioLen * 1000).format('mm:ss')
             }
           }));
@@ -238,7 +239,7 @@ export default {
       .item {
         width: 100%;
         position: relative;
-        height: 1.88rem;
+        height: 1.82rem;
         border-bottom: @border;
         padding: 0.4rem;
         color: #333333;
@@ -254,14 +255,15 @@ export default {
             height: 0;
             margin-right: 0.13333rem;
           }
-          span {
-            margin-left: -0.1rem;
+          .vr {
+            margin: 0 0.13333rem;
           }
         }
         .infos {
           font-size: 0.32rem;
           color: #cccccc;
-          margin-top: 0.32rem;
+          // margin-top: 0.32rem;
+          margin-top: 0.26666rem;
           padding-left: 0.3rem;
           span {
             margin-right: 0.4rem;

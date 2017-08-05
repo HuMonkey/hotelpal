@@ -57,9 +57,9 @@
       <div class="logo">
         <img src="/static/jiudianbang.png">
       </div>
-      <div class="slogon">酒店邦成长营，与你一起成长</div>
+      <div class="slogon">酒店邦成长营 与你一起成长</div>
       <div class="desc">
-        酒店邦成长营，为你提供高效、有价值的行业知识服务，帮助你拓宽认知思维与提升实战能力，以取得更好的职业发展。我们提倡酒店行业人成为终生学习者，酒店邦成长营愿与你一起成长。
+        酒店邦成长营，为你提供高效、有价值的行业知识服务，帮助你拓宽认知思维与提升实战能力，以取得更好的职业发展。<div></div>我们提倡酒店行业人成为终生学习者，酒店邦成长营愿与你一起成长。
       </div>
       <div class="item contact">
         联系客服
@@ -67,7 +67,7 @@
       </div>
       <div class="item coorperating">
         商务合作
-        <span>361926890@qq.com</span>
+        <span>3529653959@qq.com</span>
       </div>
     </div>
     <div class="page bought-page" v-if="mode === 3">
@@ -250,7 +250,8 @@ export default {
         if (json.code === 0) {
           this.showChangeFinish();
           setTimeout(() => {
-            this.setMode(1)
+            // this.setMode(1)
+            window.history.go(-1);
           }, 2000);
         } else {
           console.warn('修改用户信息成功！');
@@ -542,11 +543,11 @@ export default {
     }
     .page.about-page {
       background: #f1f1f1;
-      padding-top: 0.93333rem;
+      padding-top: 1.6rem;
       .logo {
         text-align: center;
         img {
-          height: 2.13333rem
+          height: 1.52rem
         }
       }
       .slogon {
@@ -555,16 +556,20 @@ export default {
         text-align: center;
         line-height: 1;
         width: 100%;
-        margin-top: 0.746666rem;
+        margin-top: 0.4rem;
         font-weight: 600;
       }
       .desc {
-        padding: 0 0.4rem;
+        text-align: justify;
+        padding: 0 0.6666rem;
         font-size: 0.4rem;
         color: #666666;
         line-height: 1.8;
-        margin-top: 0.48rem;
+        margin-top: 0.6666rem;
         margin-bottom: 0.8rem;
+        div {
+          margin: 0.3rem 0;
+        }
       }
       .item {
         width: 100%;
