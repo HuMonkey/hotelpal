@@ -612,7 +612,7 @@ util.getWechatSign = function (callback) {
 util.verifyWechat = function (app) {
   const code = util.getParam('code');
   const token = util.getCookie('token1');
-  if (token != '') {
+  if (token) {
     app.beginRender = true;
     return false;
   }

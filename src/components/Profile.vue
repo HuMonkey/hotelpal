@@ -55,19 +55,35 @@
     </div>
     <div class="page about-page" v-if="mode === 2">
       <div class="logo">
+        <div class="version">1.0</div>
         <img src="/static/jiudianbang.png">
       </div>
       <div class="slogon">酒店邦成长营 与你一起成长</div>
       <div class="desc">
         酒店邦成长营，为你提供高效、有价值的行业知识服务，帮助你拓宽认知思维与提升实战能力，以取得更好的职业发展。<div></div>我们提倡酒店行业人成为终生学习者，酒店邦成长营愿与你一起成长。
       </div>
-      <div class="item contact">
+      <div class="item contact" @click="setErweimaShow(true)">
         联系客服
+        <div class="erweima"></div>
         <div class="arrow-right"></div>
       </div>
       <div class="item coorperating">
         商务合作
         <span>3529653959@qq.com</span>
+      </div>
+      <div class="erweima-window" v-if="erweimaShow">
+        <div class="cover"></div>
+        <div class="box">
+          <div class="title">
+            <div class="text">为你服务</div>
+            <div class="time">[工作日 10:00 - 18:00]</div>
+          </div>
+          <div class="main">
+            <div class="erweima"></div>
+            <div class="tips">长按二维码联系客服</div>
+          </div>
+        </div>
+        <div class="close" @click="setErweimaShow(false)"></div>
       </div>
     </div>
     <div class="page bought-page" v-if="mode === 3">
@@ -157,6 +173,8 @@ export default {
       error: null,
       errorTimeout: null,
       changeFinish: false,
+
+      erweimaShow: false,
     }
   },
   created () {
@@ -172,6 +190,9 @@ export default {
     this.popstate();
   },
   methods: {
+    setErweimaShow: function (flag) {
+      this.erweimaShow = flag;
+    },
     gotoHome: function () {
       location.href = '/#/';
     },
@@ -543,9 +564,97 @@ export default {
     }
     .page.about-page {
       background: #f1f1f1;
-      padding-top: 1.6rem;
+      padding-top: 1rem;
+      .erweima-window {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        align-content: center;
+        .cover {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          background: black;
+          opacity: 0.8;
+          z-index: -1;
+        }
+        .close {
+          width: 100%;
+          height: 0.8rem;
+          background-size: 0.8rem 0.8rem;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-image: url("/static/close-circle.svg");
+          margin-top: 1.06666rem;
+        }
+        .box {
+          width: 7.86666rem;
+          height: auto;
+          overflow: hidden;
+          border-radius: 10px;
+          .title {
+            width: 100%;
+            background: @red;
+            color: white;
+            height: 1.86666rem;
+            text-align: center;
+            padding: 0.4rem 0;
+            .text {
+              font-size: 0.53333rem;
+            }
+            .time {
+              font-size: 0.23333rem;
+              margin-top: 0.15rem;
+            }
+          }
+          .main {
+            width: 100%;
+            height: 6.6666rem;
+            background: white;
+            padding: 1.06666rem;
+            .erweima {
+              width: 3.73333rem;
+              height: 3.73333rem;
+              background-size: 3.73333rem 3.73333rem;
+              background-position: center;
+              background-repeat: no-repeat;
+              background-image: url("/static/erweima.svg");
+              margin: auto;
+            }
+            .tips {
+              width: 100%;
+              margin-top: 0.26666rem;
+              font-size: 0.373333rem;
+              text-align: center;
+            }
+          }
+        }
+      }
       .logo {
         text-align: center;
+        .version {
+          width: 0.6666rem;
+          height: 0.6666rem;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-image: url("/static/bubble.svg");
+          line-height: 0.6666rem;
+          text-align: center;
+          color: white;
+          margin: auto;
+          position: relative;
+          top: -0.13333rem;
+          left: 1rem;
+        }
         img {
           height: 1.52rem
         }
@@ -581,6 +690,17 @@ export default {
         font-size: 0.4rem;
         color: #666666;
         margin-top: 0.26666rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .erweima {
+          width: 0.48rem;
+          height: 0.48rem;
+          background-size: 0.48rem 0.48rem;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-image: url("/static/erweima.svg");
+        }
         .arrow-right {
           position: absolute;
           right: 0.4rem;
@@ -596,6 +716,9 @@ export default {
           float: right;
           color: @red;
         }
+      }
+      .item.contact {
+        padding-right: 0.8rem;
       }
     }
     .page.bought-page {
