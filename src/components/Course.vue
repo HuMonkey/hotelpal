@@ -266,7 +266,7 @@ export default {
               // 支付成功后的回调函数
               this.course.purchased = true;
               util.pay(cid, tradeNo, function (json) {
-                console.log(json)
+                // console.log(json)
               });
             },
             error: () => {
@@ -306,7 +306,6 @@ export default {
         return false;
       }
       for (let i = 0; i < lessonList.length; i++) {
-        console.log(lessonList[i]);
         if (lessonList[i].freeListen === 1) {
           return true;
         }
@@ -527,6 +526,7 @@ export default {
           line-height: 1.8;
           color: #666666;
           margin-top: 0.26666rem;
+          text-align: justify;
           p {}
           p:last-child {
             margin-bottom: 0;

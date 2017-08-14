@@ -129,7 +129,7 @@
         </div>
         <div class="comment-box" v-if="!commenting" :class="{hongbao: !freeListen && !fromHongbao && lesson.redPacketRemained > 0}">
           <div class="pen"></div>
-          <input type="text" name="comment" placeholder="输入你的评论" @click="gotoComment">
+          <input type="text" name="comment" placeholder="一起来参与讨论吧！" @click="gotoComment">
           <div class="hongbao" v-if="!freeListen && !fromHongbao && lesson.redPacketRemained > 0" @click="showHongbaoTips(true)">
             <img src="/static/hongbao4.png">
           </div>
@@ -252,18 +252,18 @@ export default {
       paying: false,
     }
   },
-  created() {
+  mounted() {
     document.body.onscroll = () => {
-      const width = document.body.offsetWidth;
+      const containerHeight = document.querySelector('.player').offsetHeight;
       const scrollTop = document.body.scrollTop;
-      if (scrollTop >= width / 750 * 254) {
+      console.log(scrollTop)
+      if (scrollTop >= containerHeight) {
         this.scrollDown = true;
       } else {
         this.scrollDown = false;
       }
     }
-  },
-  mounted() {
+    
     const lid = util.getParam('lid');
     const cid = util.getParam('cid');
     this.isHongbao = +util.getParam('isHongbao') || 0;
@@ -335,6 +335,7 @@ export default {
         if (json.code === 0) {
           if (updateComment) {
             this.commentList.unshift(json.data.commentList.commentList[0]);
+            this.lesson.commentList.replyToCommentList = json.data.commentList.replyToCommentList;
             this.start++;
             return false;
           } else {
@@ -415,6 +416,9 @@ export default {
           desc: util.getHtmlContent(lesson.content),
         }
       }
+      dict.callback = () => {
+        this.showHongbaoTips(false);
+      }
       util.updateWechatShare(dict)
     },
     gotoComment () {
@@ -487,7 +491,7 @@ export default {
       })
     },
     nextLesson () {
-      console.log(this.course.lessonList);
+      // console.log(this.course.lessonList);
     },
     formatTime (time) {
       return util.formatTime(time);
@@ -643,6 +647,8 @@ export default {
       }
       .zshb_banner {
         width: 100%;
+        position: relative;
+        z-index: 1;
       }
       .hongbaoTips {
         position: fixed;

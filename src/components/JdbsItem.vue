@@ -115,7 +115,7 @@
       </div>
       <div class="comment-box" v-if="!commenting">
         <div class="pen"></div>
-        <input type="text" name="comment" placeholder="输入你的评论" @click="gotoComment">
+        <input type="text" name="comment" placeholder="一起来参与讨论吧！" @click="gotoComment">
         <!-- <div class="btn">发送</div> -->
       </div>
       <div class="reply-box" v-if="replyId !== null || commenting">
@@ -188,10 +188,20 @@ export default {
   created() {},
   mounted() {
     this.updateLesson();
+    // document.body.onscroll = () => {
+    //   const width = document.body.offsetWidth;
+    //   const scrollTop = document.body.scrollTop;
+    //   if (scrollTop >= width / 10 * (1.173333 + 5.46666)) {
+    //     this.scrollDown = true;
+    //   } else {
+    //     this.scrollDown = false;
+    //   }
+    // }
     document.body.onscroll = () => {
-      const width = document.body.offsetWidth;
+      const containerHeight = document.querySelector('.player').offsetHeight;
       const scrollTop = document.body.scrollTop;
-      if (scrollTop >= width / 10 * (1.173333 + 5.46666)) {
+      console.log(scrollTop)
+      if (scrollTop >= containerHeight) {
         this.scrollDown = true;
       } else {
         this.scrollDown = false;
@@ -240,6 +250,7 @@ export default {
         if (json.code === 0) {
           if (updateComment) {
             this.commentList.unshift(json.data.commentList.commentList[0]);
+            this.lesson.commentList.replyToCommentList = json.data.commentList.replyToCommentList;
             this.start++;
             return false;
           } else {
@@ -412,6 +423,8 @@ export default {
         .banner {
           width: 100%;
           height: 5.46666rem;
+          position: relative;
+          z-index: 1;
           img {
             width: 100%;
             height: 100%;

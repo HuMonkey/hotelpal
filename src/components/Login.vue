@@ -148,7 +148,7 @@ export default {
             if (util.getParam('invited') == 1) {
               util.newInvitedUser((json1) => {
                 if (json.code === 0) {
-                  console.log(json1)
+                  // console.log(json1)
                 } else {
                   console.warn('获取用户信息失败')
                 }
@@ -159,7 +159,7 @@ export default {
             location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
           }
         } else {
-          this.setError('验证码错误!');
+          this.setError(json.msg);
         }
       })
     },
@@ -337,7 +337,7 @@ export default {
         width: 7.86666rem;
         height: 1.173333rem;
         margin: auto;
-        margin-bottom: 0.26666rem;
+        margin-bottom: 0.4rem;
         font-size: 0.4rem;
         position: relative;
         .label {
@@ -360,7 +360,7 @@ export default {
         input {
           height: 1.173333rem;
           border-radius: 4px;
-          border: #cccccc solid thin;
+          border: #ededed solid thin;
           padding: 0 0.4rem 0 1.73333rem;
           display: block;
           width: 100%;

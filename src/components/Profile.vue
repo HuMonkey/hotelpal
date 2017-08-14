@@ -76,7 +76,7 @@
         <div class="box">
           <div class="title">
             <div class="text">为你服务</div>
-            <div class="time">[工作日 10:00 - 18:00]</div>
+            <div class="time">[ 工作日 10:00 - 18:00 ]</div>
           </div>
           <div class="main">
             <div class="erweima"></div>
@@ -120,14 +120,17 @@
       <div class="wechat-name">{{ userinfo.adminName }}</div>
       <div class="row name">
         <div class="label">姓名</div>
+        <div class="vr"></div>
         <input type="text" name="name" placeholder="请输入您的姓名" v-model="userinfo.nickname">
       </div>
       <div class="row company">
         <div class="label">公司</div>
+        <div class="vr"></div>
         <input type="text" name="company" placeholder="请输入您的公司（选填）" v-model="userinfo.company">
       </div>
       <div class="row position">
         <div class="label">职位</div>
+        <div class="vr"></div>
         <input type="text" name="position" placeholder="请输入您的职位（选填）" v-model="userinfo.title">
       </div>
       <div class="confirm" @click="submitChange">确认修改</div>
@@ -901,7 +904,7 @@ export default {
         width: 7.86666rem;
         height: 1.173333rem;
         margin: auto;
-        margin-bottom: 0.26666rem;
+        margin-bottom: 0.4rem;
         font-size: 0.4rem;
         position: relative;
         .label {
@@ -913,10 +916,18 @@ export default {
           left: 0.4rem;
           color: #666666;
         }
+        .vr {
+          height: 0.6666rem;
+          border-left: @border;
+          position: absolute;
+          top: 0.26666rem;
+          left: 1.46666rem;
+          color: #666666;
+        }
         input {
           height: 1.173333rem;
           border-radius: 4px;
-          border: #cccccc solid thin;
+          border: #ededed solid thin;
           padding: 0 0.4rem 0 1.73333rem;
           display: block;
           width: 100%;

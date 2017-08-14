@@ -79,6 +79,9 @@ export default {
       } else {
         console.warn('获取红包报错');
       }
+      // else if (json.code === 40100) {
+      //   location.href = '/?redirect=' + encodeURIComponent(location.href) + '#/login'
+      // } 
     })
   },
   methods: {

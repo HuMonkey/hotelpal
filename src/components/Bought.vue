@@ -61,7 +61,6 @@ export default {
             // msg: 'ddd',
           }
         });
-        this.courses = [];
       } else {
         console.warn('获取已购课程出错');
       }
@@ -187,17 +186,16 @@ export default {
             padding: 0.26666rem;
             .title {
               font-size: 0.346666rem;
-              height: 0.346666rem;
               color: #333333;
               white-space: nowrap; 
               overflow: hidden; 
               text-overflow: ellipsis;
               font-weight: 600;
+              line-height: 1.1;
             }
             .tips {
               margin-top: 0.48rem;
               font-size: 0.32rem;
-              height: 0.32rem;
               color: #666666;
               white-space: nowrap; 
               overflow: hidden;

@@ -65,7 +65,7 @@ util.ua = {
 util.config = {
   // host: 'http://116.62.247.1:8080', // 测试
   // host: 'http://192.168.0.14:8082', // 测试
-  host: 'http://hotelpal.cn', // 线上
+  host: '//hotelpal.cn', // 线上
   appId: 'wxfe666ebbf0e42897'
 }
 
@@ -517,7 +517,6 @@ util.configWechat = function(appId, timestamp, nonceStr, signature, callback) {
   if (!util.ua.wechat) {
     return;
   }
-  console.log(appId, timestamp, nonceStr, signature)
   wx.config({
     appId, timestamp, nonceStr, signature,
     jsApiList: [
@@ -645,9 +644,11 @@ util.updateWechatShare = function(wxShareDict) {
     imgUrl: wxShareDict.imgUrl, // 分享图标
     success: function () { 
       // 用户确认分享后执行的回调函数
+      wxShareDict.callback && wxShareDict.callback()
     },
     cancel: function () { 
       // 用户取消分享后执行的回调函数
+      wxShareDict.callback && wxShareDict.callback()
     }
   });
   wx.onMenuShareAppMessage({

@@ -253,7 +253,9 @@ export default {
             border-left-color: #666666;
             width: 0;
             height: 0;
-            margin-right: 0.13333rem;
+          }
+          span:nth-child(2) {
+            margin-left: 0.06rem;
           }
           .vr {
             margin: 0 0.13333rem;

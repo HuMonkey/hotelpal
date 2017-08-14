@@ -251,7 +251,7 @@
           const lid = util.getParam('lid') || util.getParam('id');
           util.recordListenPos(lid, current, (json) => {
             if (json.code === 0) {
-              console.log(json)
+              // console.log(json)
             } else {
               console.warn('记录听的位置出错！');
             }
@@ -274,7 +274,7 @@
     .wrapper {
       position: relative;
       padding-bottom: 0.53333rem;
-      box-shadow: 0px 1px 10px #cccccc;
+      box-shadow: 0 8px 6px -6px #dddddd;
       audio {
         display: none;
       }

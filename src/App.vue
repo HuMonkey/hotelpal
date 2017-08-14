@@ -33,6 +33,7 @@ export default {
 
 * {
   box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }
 
 html, body {
@@ -47,7 +48,7 @@ html, body {
   height: 100%;
   background: @bg;
   position: relative;
-  font: 12px/1.5 tahoma,arial,'Hiragino Sans GB','\5b8b\4f53',sans-serif;
+  font-family: sans-serif;
 }
 
 .infinite-loading-container {
