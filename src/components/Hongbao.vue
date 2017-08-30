@@ -66,16 +66,16 @@ export default {
     util.getRedPacketRemained(this.redPacketNonce, (json) => {
       if (json.code === 0) {
         this.data = json.data;
-        if (this.data.alreadyOpened) {
-          location.href = '/?redPacketNonce=' + this.redPacketNonce + '&cid=' + cid + '&lid=' + lid + '&fromHongbao=1#/lesson';
-        }
         const dict = {
           title: this.data.speakerName + '：' + this.data.lessonTitle + '「红包分享」',
           link: location.href,
           imgUrl: this.data.speakerHeadImg,
           desc: util.getHtmlContent(this.data.content),
         }
-        util.updateWechatShare(dict)
+        util.updateWechatShare(dict);
+        if (this.data.alreadyOpened) {
+          location.href = '/?redPacketNonce=' + this.redPacketNonce + '&cid=' + cid + '&lid=' + lid + '&fromHongbao=1#/lesson';
+        }
       } else {
         console.warn('获取红包报错');
       }
@@ -114,7 +114,7 @@ export default {
     .hr {
       width: 80%;
       margin: auto;
-      margin-top: 0.6666rem;
+      margin-top: 0.4666rem;
       margin-bottom: 1.0666rem;
       border-top: #cccccc solid thin;
     }
@@ -157,7 +157,7 @@ export default {
     }
     .name {
       font-size: 0.4rem;
-      height: 0.4rem;
+      height: 0.6rem;
       text-align: center;
       color: #666666;
       width: 4.3rem;
@@ -202,7 +202,6 @@ export default {
           font-size: 0.32rem;
           width: 2.6666rem;
           height: 1.73333rem;
-          padding: 0.1rem 0;
           color: #666666;
           text-align: left;
           margin-left: 0.26666rem;
@@ -210,7 +209,7 @@ export default {
             width: 100%;
             overflow: hidden;
             line-height: 1.2;
-            height: 0.7rem;
+            height: 0.76rem;
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 2;

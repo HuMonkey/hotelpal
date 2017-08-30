@@ -33,11 +33,11 @@
       </div>
       <div class="list">
         <div class="item" @click="gotoCourse(c.id)" v-for="c in courseList">
-          <div class="avater">
+          <div class="avater" :style="{ 'background-image': 'url(\'' + c.headImg + '\')' }">
             <div class="state" :class="{ coming: c.status == 0, isnew: c.status == 2 }" v-if="c.status == 0 || c.status == 2">
               {{ c.status == 0 ? '预告' : '上新' }}
             </div>
-            <img :src="c.headImg">
+            <!-- <img :src="c.headImg"> -->
           </div>
           <div class="desc">
             <div class="name">{{ c.title }}</div>
@@ -275,8 +275,8 @@ export default {
             position: relative;
             border-radius: 0.13333rem;
             overflow: hidden;
-            display: flex;
-            justify-content: center;
+            background-size: cover;
+            background-position: center;
             .state {
               width: 0.82rem;
               height: 0.426666rem;

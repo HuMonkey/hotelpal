@@ -490,6 +490,7 @@ util.textLength = function(para, fontSize) {
   if (!para || !fontSize) {
     return 0;
   }
+  para = util.getHtmlContent(para);
   var length = 0;
   for (var i = 0; i < para.length; i++) {
     var ch = para[i];
@@ -572,7 +573,7 @@ util.formatTime = function (time) {
 }
 
 util.getUrl = function (url) {
-  const token = util.getCookie('token1');
+  const token = util.getCookie('token');
   if (!token) {
     return url;
   }
@@ -610,7 +611,7 @@ util.getWechatSign = function (callback) {
 
 util.verifyWechat = function (app) {
   const code = util.getParam('code');
-  const token = util.getCookie('token1');
+  const token = util.getCookie('token');
   if (token) {
     app.beginRender = true;
     return false;
@@ -625,7 +626,7 @@ util.verifyWechat = function (app) {
     }
     util.receiveRedirect(code, (json1) => {
       if (json1.code === 0) {
-        util.setCookie('token1', json1.data.token, '12d');
+        util.setCookie('token', json1.data.token, '12d');
         app.beginRender = true;
       } else {
         console.warn('verify fail');
@@ -638,33 +639,40 @@ util.verifyWechat = function (app) {
  * 设置微信分享信息
  */
 util.updateWechatShare = function(wxShareDict) {
-  wx.onMenuShareTimeline({
-    title: wxShareDict.title, // 分享标题
-    link: wxShareDict.link, // 分享链接，该链接域名需在JS安全域名中进行登记
-    imgUrl: wxShareDict.imgUrl, // 分享图标
-    success: function () { 
-      // 用户确认分享后执行的回调函数
-      wxShareDict.callback && wxShareDict.callback()
-    },
-    cancel: function () { 
-      // 用户取消分享后执行的回调函数
-      wxShareDict.callback && wxShareDict.callback()
-    }
-  });
-  wx.onMenuShareAppMessage({
-    title: wxShareDict.title, // 分享标题
-    desc: wxShareDict.desc, // 分享描述
-    link: wxShareDict.link, // 分享链接，该链接域名需在JS安全域名中进行登记
-    imgUrl: wxShareDict.imgUrl, // 分享图标
-    type: 'link', // 分享类型,music、video或link，不填默认为link
-    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
-    success: function () {
-      // 用户确认分享后执行的回调函数
-    },
-    cancel: function () { 
-      // 用户取消分享后执行的回调函数
-    }
-  });
+  util.getWechatSign(() => {
+    wxShareDict.desc = wxShareDict.desc.length > 30 ? wxShareDict.desc.substr(0, 30) + '...' : wxShareDict.desc;
+    wx.onMenuShareTimeline({
+      title: wxShareDict.title, // 分享标题
+      link: wxShareDict.link, // 分享链接，该链接域名需在JS安全域名中进行登记
+      imgUrl: wxShareDict.imgUrl, // 分享图标
+      success: function () { 
+        // 用户确认分享后执行的回调函数
+        wxShareDict.callback && wxShareDict.callback()
+      },
+      cancel: function () { 
+        // 用户取消分享后执行的回调函数
+      }
+    });
+    wx.onMenuShareAppMessage({
+      title: wxShareDict.title, // 分享标题
+      desc: wxShareDict.desc, // 分享描述
+      link: wxShareDict.link, // 分享链接，该链接域名需在JS安全域名中进行登记
+      imgUrl: wxShareDict.imgUrl, // 分享图标
+      type: 'link', // 分享类型,music、video或link，不填默认为link
+      dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+      success: function () {
+        // 用户确认分享后执行的回调函数
+        wxShareDict.callback && wxShareDict.callback()
+      },
+      cancel: function () { 
+        // 用户取消分享后执行的回调函数
+      }
+    });
+    document.getElementById('share-img').setAttribute('src', wxShareDict.imgUrl);
+    document.title = wxShareDict.title;
+    document.querySelector('meta[name="keywords"]').setAttribute('content', wxShareDict.title);
+    document.querySelector('meta[name="description"]').setAttribute('content', wxShareDict.desc);
+  })
 }
 
 util.isLongImg = function (imgUrl, radio, callback) {
@@ -676,7 +684,7 @@ util.isLongImg = function (imgUrl, radio, callback) {
 }
 
 util.getHtmlContent = function (str) {
-  return str.replace(/<[^>]*>/g, "");
+  return str.replace(/<style(.|\n)*\/style>/g, "").replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ");
 }
 
 /**

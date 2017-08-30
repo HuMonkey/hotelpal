@@ -188,20 +188,10 @@ export default {
   created() {},
   mounted() {
     this.updateLesson();
-    // document.body.onscroll = () => {
-    //   const width = document.body.offsetWidth;
-    //   const scrollTop = document.body.scrollTop;
-    //   if (scrollTop >= width / 10 * (1.173333 + 5.46666)) {
-    //     this.scrollDown = true;
-    //   } else {
-    //     this.scrollDown = false;
-    //   }
-    // }
-    document.body.onscroll = () => {
-      const containerHeight = document.querySelector('.player').offsetHeight;
+    window.onscroll = () => {
+      const width = document.body.offsetWidth;
       const scrollTop = document.body.scrollTop;
-      console.log(scrollTop)
-      if (scrollTop >= containerHeight) {
+      if (scrollTop >= width / 10 * (1.173333 + 5.46666)) {
         this.scrollDown = true;
       } else {
         this.scrollDown = false;
@@ -288,7 +278,7 @@ export default {
     updateShare: function () {
       const lesson = this.lesson;
       util.updateWechatShare({
-        title: '酒店邦说：' + lesson.title,
+        title: '成长专栏：' + lesson.title,
         link: location.href,
         imgUrl: lesson.coverImg,
         desc: util.getHtmlContent(lesson.content),
@@ -330,12 +320,18 @@ export default {
           this.myComment = null;
           this.cancelReply();
           this.updateLesson(true);
+          setTimeout(() => {
+            const offsetTop = document.querySelector('.discuss').offsetTop;
+            const offsetHeight = document.querySelector('.top-wrap').offsetHeight;
+            document.body.scrollTop = offsetTop - offsetHeight;
+          }, 2000);
         } else {
           console.warn('评论错误！')
         }
       });
     },
     doLike (comment) {
+      this.checkPhone();
       if (comment.liked) {
         return false;
       }
@@ -434,7 +430,7 @@ export default {
     }
     .top-wrap.fixed {
       position: fixed;
-      box-shadow: 0px 1px 10px #cccccc;
+      // box-shadow: 0px 1px 10px #cccccc;
     }
     .main {
       background: white;
@@ -444,6 +440,7 @@ export default {
         font-size: 0.66666rem;
         color: #333333;
         padding-bottom: 0.53333rem;
+        line-height: 1.2;
       }
       .infos {
         font-size: 0.293333rem;
@@ -523,6 +520,10 @@ export default {
           display: -webkit-box;
           -webkit-line-clamp: 8;
           -webkit-box-orient: vertical;
+          -webkit-mask-image: linear-gradient(#000 10%,transparent 100%);
+          mask-image: linear-gradient(#000 30%,transparent 100%);
+          -webkit-mask-size: 100% 100%;
+          mask-size: 100% 100%;
         }
         .open {
           margin-top: 0.4rem;
@@ -592,7 +593,7 @@ export default {
         }
         .content {
           font-size: 0.4rem;
-          line-height: 1.8;
+          line-height: 1.2;
           color: #333333;
           word-break: break-all;
         }
@@ -602,7 +603,7 @@ export default {
           background: #f5f5f5;
           color: #999999;
           font-size: 0.4rem;
-          line-height: 1.8;
+          line-height: 1.2;
           margin: 0.23333rem 0;
           word-break: break-all;
         }
@@ -611,7 +612,7 @@ export default {
           justify-content: space-between;
           font-size: 0.32rem;
           color: #999999;
-          margin-top: 0.1.3333rem;
+          margin-top: 0.13333rem;
           .box {
             display: flex;
             align-items: center;

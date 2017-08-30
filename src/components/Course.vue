@@ -554,9 +554,10 @@ export default {
           display: -webkit-box;
           -webkit-line-clamp: 8;
           -webkit-box-orient: vertical;
-          img {
-            display: none;
-          }
+          -webkit-mask-image: linear-gradient(#000 10%,transparent 100%);
+          mask-image: linear-gradient(#000 30%,transparent 100%);
+          -webkit-mask-size: 100% 100%;
+          mask-size: 100% 100%;
         }
       }
       .lessons {

@@ -274,7 +274,7 @@
     .wrapper {
       position: relative;
       padding-bottom: 0.53333rem;
-      box-shadow: 0 8px 6px -6px #dddddd;
+      box-shadow: 0 0 5px #cccccc;
       audio {
         display: none;
       }
