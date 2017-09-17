@@ -40,21 +40,21 @@ export default {
   },
   methods: {
     gotoHome: function () {
-      location.href = '/#/';
+      location.href = '/';
     },
     gotoBought: function () {
       if (!this.userinfo.phone) {
-        location.href = '/?redirect=' + encodeURIComponent('/#/bought') + '#/login';
+        location.href = '/login?redirect=' + encodeURIComponent('/#/bought');
         return false;
       }
-      location.href = '/#/bought';
+      location.href = '/bought';
     },
     gotoProfile: function () {
       if (!this.userinfo.phone) {
-        location.href = '/?redirect=' + encodeURIComponent('/#/profile') + '#/login';
+        location.href = '/login?redirect=' + encodeURIComponent('/#/profile');
         return false;
       }
-      location.href = '/#/profile';
+      location.href = '/profile';
     }
   },
   destroyed() {},

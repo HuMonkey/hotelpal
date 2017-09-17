@@ -91,7 +91,7 @@
         </div>
         <div class="block back">
           <div class="box" @click="gotoHome">
-            <img src="/static/jiudianbang.png">
+            <img src="/static/jiudianbang-big.png">
             <div class="title">酒店邦成长营</div>
             <div class="desc">为你提供高效、省时的知识服务</div>
             <div class="arrow"></div>
@@ -99,14 +99,14 @@
         </div>
       </div>
       <div class="btns" v-if="!course.purchased">
-        <div class="item free" v-if="hasFree" @click="gotoFree">免费试读</div>
+        <div class="item free" v-if="hasFree" @click="gotoFree">免费试听</div>
         <div class="item buy" @click="gotoPay">订阅：¥ {{ course.charge / 100 }} / {{ course.lessonCount }}课时</div>
       </div>
       <div class="pay-finish" v-if="payFinish">
         <div class="cover"></div>
         <div class="box">
           <div class="icon"></div>
-          <div class="text">支付成功</div>
+          <div class="text">{{ payFinishTips || '支付成功' }}</div>
         </div>
       </div>
     </div>  
@@ -134,6 +134,7 @@ export default {
       payFinish: false,
       freeTips: true,
       paying: false,
+      payFinishTips: null,
     }
   },
   created() {
@@ -141,6 +142,12 @@ export default {
   },
   mounted() {
     const courseId = util.getParam('cid');
+    if (util.getParam('code')) {
+      const cid = util.getParam('cid')
+      util.changeURL({
+        cid
+      }, true)
+    }
     util.getCourse(courseId, (json) => {
       if (json.code === 0) {
         const course = json.data;
@@ -171,12 +178,6 @@ export default {
         const length = util.textLength(this.course.introduce, fontSize);
         if (length > 9.2 * rem * 8) {
           this.isIntroOverflow = true;
-        }
-        if (util.getParam('code')) {
-          const cid = util.getParam('cid')
-          util.changeURL({
-            cid
-          }, true)
         }
         this.updateShare();
       } else {
@@ -213,21 +214,23 @@ export default {
         return false;
       }
       const cid = util.getParam('cid');
-      location.href = '/?cid=' + cid + '&lid=' + lesson.id + '#/lesson';
+      location.href = '/lesson?cid=' + cid + '&lid=' + lesson.id;
     },
     gotoHome: function () {
-      location.href = '/#/';
+      location.href = '/';
     },
-    showPayFinish () {
-      this.payFinish = this.replyId ? 2 : 1;
+    showPayFinish (payFinishTips) {
+      this.payFinish = true;
+      // this.payFinishTips = payFinishTips;
       setTimeout(() => {
         this.payFinish = false;
+        // this.payFinishTips = payFinishTips;
       }, 2000);
     },
     gotoPay: function () {
       if (!this.userinfo.phone) {
         const redirect = encodeURIComponent('/' + location.search + location.hash);
-        location.href = '/?redirect=' + redirect + '#/login';
+        location.href = '/login?redirect=' + redirect;
         return false;
       }
       if (this.paying) {
@@ -241,7 +244,8 @@ export default {
           util.getFreeCourse(cid, (json) => {
             this.paying = false;
             if (json.code === 0) {
-              this.showPayFinish();
+              let tips = '获取成功';
+              this.showPayFinish(tips);
               this.userinfo.freeCourseRemained--;
               this.course.purchased = true;
             } else {
@@ -295,7 +299,7 @@ export default {
     },
     gotoDetail: function () {
       const cid = util.getParam('cid');
-      location.href = '/?cid=' + cid + '#/cousedetail'
+      location.href = '/cousedetail?cid=' + cid
     }
   },
   destroyed() {},

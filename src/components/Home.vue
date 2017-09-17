@@ -11,7 +11,7 @@
       <div class="title">
         <div class="name">成长专栏 | 免费</div>
         <div class="all" @click="gotoJdbs">
-          <div>查看全部</div>
+          <div class="label">查看全部</div>
           <div class="arrow-right"></div>
         </div>
       </div>
@@ -86,6 +86,13 @@ export default {
     document.title = '酒店邦成长营';
   },
   mounted() {
+    const dict = {
+      title: '酒店邦成长营',
+      link: location.href,
+      imgUrl: 'http://hotelpal.cn/static/jiudianbang-big.png',
+      desc: '为你提供高效、有价值的行业知识服务。',
+    }
+    util.updateWechatShare(dict);
     util.getCourseList((json) => {
       if (json.code === 0) {
         this.courseList = json.data.courseList.map((c) => {
@@ -120,13 +127,13 @@ export default {
   },
   methods: {
     gotoJdbsItem: function (id) {
-      location.href = '/?id=' + id + '#/jdbsitem'
+      location.href = '/jdbsitem?id=' + id
     },
     gotoCourse: function (courseId) {
-      location.href = '/?cid=' + courseId + '#/course';
+      location.href = '/course?cid=' + courseId;
     },
     gotoJdbs: function () {
-      location.href = '/#/jdbs';
+      location.href = '/jdbs';
     }
   },
   destroyed() {},
@@ -195,12 +202,19 @@ export default {
           color: #999999;
           display: flex;
           align-items: center;
+          height: 0.986666rem;
+          line-height: 0.986666rem;
         }
         .all {
           display: flex;
           align-items: center;
+          height: 100%;
           div {
             display: inline-block;
+          }
+          .label {
+            height: 0.986666rem;
+            line-height: 0.986666rem;
           }
           .arrow-right {
             margin-left: 0.13333rem;
@@ -324,7 +338,7 @@ export default {
               font-size: 0.32rem;
             }
             .row {
-              margin-top: 0.153333rem;
+              margin-top: 0.18rem;
               display: flex;
               justify-content: space-between;
               .tags {

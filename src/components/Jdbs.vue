@@ -65,9 +65,17 @@ export default {
     }
   },
   created() {
-    document.title = '酒店邦说';
+    document.title = '成长专栏';
   },
-  mounted() {},
+  mounted() {
+    const dict = {
+      title: '成长专栏',
+      link: location.href,
+      imgUrl: 'http://hotelpal.cn/static/jiudianbang-big.png',
+      desc: '给你新的启发与思考，周一到周五更新。',
+    }
+    util.updateWechatShare(dict);
+  },
   methods: {
     onInfinite: function () {
       util.getInternalLessonList(this.start, this.number, this.order, (json) => {
@@ -92,20 +100,20 @@ export default {
       })
     },
     gotoHome: function () {
-      location.href = '/#/';
+      location.href = '/';
     },
     gotoNew: function () {
       if (!this.notListenLesson) {
         return false;
       }
-      location.href = '/?id=' + this.notListenLesson.id + '#/jdbsitem';
+      location.href = '/jdbsitem?id=' + this.notListenLesson.id;
       // document.body.scrollTop = document.querySelector('#lesson-' + this.notListenLesson.id).getBoundingClientRect().top + document.body.scrollTop;
     },
     GotoJdbsItem: function (lesson) {
       if (!lesson.isPublish) {
         return false;
       }
-      location.href = '/?id=' + lesson.id + '#/jdbsitem'
+      location.href = '/jdbsitem?id=' + lesson.id
     },
     reOrder: function () {
       this.start = 0;

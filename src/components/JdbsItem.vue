@@ -3,7 +3,7 @@
     <Error :error="error" v-if="error"></Error>
     <div class="top-wrap" v-if="lesson" :class="{fixed: scrollDown}">
       <div class="goback" @click="goback" v-if="lesson && !scrollDown">
-        <img src="/static/jiudianbang.png">
+        <img src="/static/jiudianbang-big.png">
         <span>成长专栏</span>
         <div class="arrow-right"></div>
       </div>
@@ -191,6 +191,7 @@ export default {
     window.onscroll = () => {
       const width = document.body.offsetWidth;
       const scrollTop = document.body.scrollTop;
+      const dom = document.querySelector('.top-wrap');
       if (scrollTop >= width / 10 * (1.173333 + 5.46666)) {
         this.scrollDown = true;
       } else {
@@ -222,10 +223,12 @@ export default {
         }
       })
     },
-    checkPhone () {
+    checkPhone (callback) {
       if (!this.userInfo.phone) {
         const redirect = encodeURIComponent('/' + location.search + location.hash);
-        location.href = '/?redirect=' + redirect + '#/login';
+        location.href = '/login?redirect=' + redirect;
+      } else {
+        callback && callback()
       }
     },
     showCommentFinish () {
@@ -285,15 +288,17 @@ export default {
       })
     },
     gotoComment () {
-      this.checkPhone();
-      this.commenting = true;
-      this.focusStatus = true;
+      this.checkPhone(() => {
+        this.commenting = true;
+        this.focusStatus = true;
+      });
     },
     gotoReply (id, name) {
-      this.checkPhone();
-      this.replyId = id;
-      this.replyName = name;
-      this.focusStatus = true;
+      this.checkPhone(() => {
+        this.replyId = id;
+        this.replyName = name;
+        this.focusStatus = true;
+      });
     },
     cancelReply () {
       this.replyId = null;
@@ -331,25 +336,26 @@ export default {
       });
     },
     doLike (comment) {
-      this.checkPhone();
-      if (comment.liked) {
-        return false;
-      }
-      const lid = util.getParam('id');
-      util.addZan(lid, comment.id, (json) => {
-        if (json.code === 0) {
-          comment.liked = true;
-          comment.zanCount = comment.zanCount ? comment.zanCount + 1 : 1;
-        } else {
-          console.warn('点赞出错！');
+      this.checkPhone(() => {
+        if (comment.liked) {
+          return false;
         }
-      })
+        const lid = util.getParam('id');
+        util.addZan(lid, comment.id, (json) => {
+          if (json.code === 0) {
+            comment.liked = true;
+            comment.zanCount = comment.zanCount ? comment.zanCount + 1 : 1;
+          } else {
+            console.warn('点赞出错！');
+          }
+        })
+      });
     },
     formatTime (time) {
       return util.formatTime(time);
     },
     goback () {
-      location.href = '/#/jdbs'
+      location.href = '/jdbs'
     }
   },
   destroyed() {},

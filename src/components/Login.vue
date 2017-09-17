@@ -4,7 +4,7 @@
       <Error :error="error" v-if="error"></Error>
       <div class="step first" v-if="step === 1">
         <div class="logo">
-          <img src="/static/jiudianbang.png">
+          <img src="/static/jiudianbang-big.png">
         </div>
         <div class="phone">
           <input type="number" name="phone" placeholder="请输入11位手机号" v-model="phone">
@@ -86,7 +86,7 @@ export default {
         // 绑定过手机，就不用绑定了
         this.userinfo = json.data;
         if (json.data.phone) {
-          // location.href = decodeURIComponent(util.getParam('redirect') || '/#/')
+          location.href = decodeURIComponent(util.getParam('redirct') || '/#/')
         } else {
           this.render = true;
         }
@@ -94,6 +94,13 @@ export default {
         console.warn('获取用户信息失败')
       }
     })
+    const dict = {
+      title: '酒店邦成长营',
+      link: location.href,
+      imgUrl: 'http://hotelpal.cn/static/jiudianbang-big.png',
+      desc: '为你提供高效、有价值的行业知识服务。',
+    }
+    util.updateWechatShare(dict);
   },
   methods: {
     setError: function (error) {

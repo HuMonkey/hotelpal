@@ -56,7 +56,7 @@
     <div class="page about-page" v-if="mode === 2">
       <div class="logo">
         <div class="version">1.0</div>
-        <img src="/static/jiudianbang.png">
+        <img src="/static/jiudianbang-big.png">
       </div>
       <div class="slogon">酒店邦成长营 与你一起成长</div>
       <div class="desc">
@@ -79,7 +79,9 @@
             <div class="time">[ 工作日 10:00 - 18:00 ]</div>
           </div>
           <div class="main">
-            <div class="erweima"></div>
+            <div class="erweima">
+              <img src="/static/kefu.jpg">
+            </div>
             <div class="tips">长按二维码联系客服</div>
           </div>
         </div>
@@ -97,9 +99,7 @@
       </div>
       <div v-if="courseList && courseList.length > 0">
         <div class="bought-item" v-for="c in courseList" v-if="c !== null" @click="gotoCourse(c)">
-          <div class="avater">
-            <img :src="c.headImg">
-          </div>
+          <div class="avater" :style="{ 'background-image': 'url(\'' + c.headImg + '\')' }"></div>
           <div class="desc">
             <div class="title">{{ c.title }}</div>
             <div class="orderid">订单号：{{ c.tradeNo }}</div>
@@ -139,7 +139,7 @@
     <div class="page gongzhonghao-page" v-if="mode === 5">
       <img class="chahua1" src="/static/chahua1.png">
       <div class="thing">
-        <img src="/static/gongzhonghao.png" class="erweima">
+        <img src="/static/gongzhonghao.jpg" class="erweima">
         <div class="tips">长按二维码</div>
         <div class="tips">关注微信公众号</div>
       </div>
@@ -191,13 +191,20 @@ export default {
   mounted() {
     this.getUser();
     this.popstate();
+    const dict = {
+      title: '酒店邦成长营',
+      link: location.href,
+      imgUrl: 'http://hotelpal.cn/static/jiudianbang-big.png',
+      desc: '为你提供高效、有价值的行业知识服务。',
+    }
+    util.updateWechatShare(dict);
   },
   methods: {
     setErweimaShow: function (flag) {
       this.erweimaShow = flag;
     },
     gotoHome: function () {
-      location.href = '/#/';
+      location.href = '/';
     },
     setError: function (error) {
       this.error = error;
@@ -207,7 +214,7 @@ export default {
       }, 4000);
     },
     gotoCourse: function (course) {
-      location.href = '/?cid=' + course.id + '#/course';
+      location.href = '/course?cid=' + course.id;
     },
     popstate () {
       const mode = +util.getParam('mode') || 1;
@@ -526,7 +533,7 @@ export default {
         }
         .jiudianbang {
           background-size: 0.64rem 0.64rem;
-          background-image: url('/static/jiudianbang.png');
+          background-image: url('/static/jiudianbang-big.png');
         }
         .gongzhonghao {
           background-color: #49ab54;
@@ -626,11 +633,11 @@ export default {
             .erweima {
               width: 3.73333rem;
               height: 3.73333rem;
-              background-size: 3.73333rem 3.73333rem;
-              background-position: center;
-              background-repeat: no-repeat;
-              background-image: url("/static/erweima.svg");
               margin: auto;
+              img {
+                width: 100%;
+                height: 100%;
+              }
             }
             .tips {
               width: 100%;
@@ -657,6 +664,7 @@ export default {
           position: relative;
           top: -0.13333rem;
           left: 1rem;
+          font-size: 10px;
         }
         img {
           height: 1.52rem
@@ -785,9 +793,9 @@ export default {
           justify-content: center;
           overflow: hidden;
           border-radius: 4px;
-          img {
-            height: 100%;
-          }
+          overflow: hidden;
+          background-size: cover;
+          background-position: center;
         }
         .desc {
           width: 6.8rem;

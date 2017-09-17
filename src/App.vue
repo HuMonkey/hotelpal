@@ -22,7 +22,7 @@ export default {
     const goon = util.getParam('goon');
     if (this.isWechat) {
       util.verifyWechat(this);
-      goon != 1 && util.getWechatSign();
+      // goon != 1 && util.getWechatSign();
     }
   }
 }

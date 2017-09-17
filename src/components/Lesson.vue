@@ -163,7 +163,7 @@
           <div class="cover"></div>
           <div class="box">
             <div class="icon"></div>
-            <div class="text">支付成功</div>
+            <div class="text">{{ payFinishTips || '支付成功' }}</div>
           </div>
         </div>
         <div class="box">
@@ -197,6 +197,8 @@ import util from '../util/index'
 import AudioPlayer from './AudioPlayer.vue'
 import Error from './Error.vue'
 import Hongbao from './Hongbao'
+
+let androidUrl;
 
 export default {
   name: 'lesson',
@@ -243,6 +245,7 @@ export default {
       scrollDown: false,
 
       payFinish: false,
+      payFinishTips: null,
 
       distance: 50,
       start: 0, 
@@ -253,6 +256,8 @@ export default {
     }
   },
   mounted() {
+    androidUrl = location.href;
+
     window.onscroll = () => {
       const width = document.body.offsetWidth;
       const containerHeight = document.querySelector('.player').offsetHeight;
@@ -326,7 +331,7 @@ export default {
       }, 4000);
     },
     gotoLogin: function () {
-      location.href = '/?force=1&redirect=' + encodeURIComponent(location.href) + '#/login'
+      location.href = '/login?force=1&redirect=' + encodeURIComponent(location.href)
     },
     updateLesson: function (updateComment) {
       const lid = util.getParam('lid');
@@ -377,12 +382,12 @@ export default {
           this.fromHongbao = fromHongbao;
           if (fromHongbao == 1) {
             const redPacketNonce = this.redPacketNonce = util.getParam('redPacketNonce');
-            this.updateShare(true);
             util.changeURL({
               lid, cid,
               isHongbao: 1,
               redPacketNonce 
             }, true);
+            this.updateShare(true);
           } else {
             this.updateShare(false);
           }
@@ -416,21 +421,24 @@ export default {
           desc: util.getHtmlContent(lesson.content),
         }
       }
+      dict.originUrl = androidUrl
       dict.callback = () => {
         this.showHongbaoTips(false);
       }
       util.updateWechatShare(dict)
     },
     gotoComment () {
-      this.checkPhone();
-      this.commenting = true;
-      this.focusStatus = true;
+      this.checkPhone(() => {
+        this.commenting = true;
+        this.focusStatus = true;
+      });
     },
     gotoReply (id, name) {
-      this.checkPhone();
-      this.replyId = id;
-      this.replyName = name;
-      this.focusStatus = true;
+      this.checkPhone(() => {
+        this.replyId = id;
+        this.replyName = name;
+        this.focusStatus = true;
+      });
     },
     cancelReply () {
       this.replyId = null;
@@ -444,10 +452,12 @@ export default {
         this.commentFinish = false;
       }, 2000);
     },
-    showPayFinish () {
-      this.payFinish = this.replyId ? 2 : 1;
+    showPayFinish (payFinishTips) {
+      this.payFinish = true;
+      // this.payFinishTips = payFinishTips;
       setTimeout(() => {
         this.payFinish = false;
+        // this.payFinishTips = null;
       }, 2000);
     },
     submitReply () {
@@ -464,7 +474,7 @@ export default {
           this.updateLesson(true);
           setTimeout(() => {
             const offsetTop = document.querySelector('.discuss').offsetTop;
-            const offsetHeight = document.querySelector('.top-wrap').offsetHeight;
+            const offsetHeight = document.querySelector('.player').offsetHeight;
             document.body.scrollTop = offsetTop - offsetHeight;
           }, 2000);
         } else {
@@ -474,27 +484,27 @@ export default {
     },
     gotoLesson (lid) {
       const cid = util.getParam('cid');
-      location.href = '/?cid=' + cid + '&lid=' + lid + '#/lesson';
+      location.href = '/lesson?cid=' + cid + '&lid=' + lid;
     },
     gotoCourse () {
       const cid = util.getParam('cid');
-      location.href = '/?cid=' + cid + '#/course';
+      location.href = '/course?cid=' + cid;
     },
     doLike (comment) {
-      this.checkPhone();
-      if (comment.liked) {
-        return false;
-      }
-      this.checkPhone();
-      const lid = util.getParam('lid');
-      util.addZan(lid, comment.id, (json) => {
-        if (json.code === 0) {
-          comment.liked = true;
-          comment.zanCount = comment.zanCount ? comment.zanCount + 1 : 1;
-        } else {
-          console.warn('点赞出错！');
+      this.checkPhone(() => {
+        if (comment.liked) {
+          return false;
         }
-      })
+        const lid = util.getParam('lid');
+        util.addZan(lid, comment.id, (json) => {
+          if (json.code === 0) {
+            comment.liked = true;
+            comment.zanCount = comment.zanCount ? comment.zanCount + 1 : 1;
+          } else {
+            console.warn('点赞出错！');
+          }
+        })
+      });
     },
     nextLesson () {
       // console.log(this.course.lessonList);
@@ -502,63 +512,67 @@ export default {
     formatTime (time) {
       return util.formatTime(time);
     },
-    checkPhone () {
+    checkPhone (callback) {
       if (!this.userInfo.phone) {
         const redirect = encodeURIComponent('/' + location.search + location.hash);
-        location.href = '/?redirect=' + redirect + '#/login';
+        location.href = '/login?redirect=' + redirect;
+      } else {
+        callback && callback()
       }
     },
     gotoPay: function () {
-      this.checkPhone();
-      if (this.paying) {
-        return false;
-      }
-      this.paying = true;
-      const cid = util.getParam('cid');
-      if (this.userInfo.freeCourseRemained > 0) {
-        const useFree = confirm('将使用一次免费获取课程的机会，确认兑换？')
-        if (useFree) {
-          util.getFreeCourse(cid, (json) => {
-            this.paying = false;
-            if (json.code === 0) {
-              this.showPayFinish();
-              setTimeout(() => {
-                location.reload();
-              }, 2000);
-            } else {
-              console.warn('获取免费课程出现了点问题')
-            }
-          })
+      this.checkPhone(() => {
+        if (this.paying) {
           return false;
         }
-      }
-      util.createPayOrder(cid, (json) => {
-        this.paying = false;
-        if (json.code === 0) {
-          const { appId, nonceStr, paySign, timeStamp, tradeNo } = json.data;
-          wx.chooseWXPay({
-            timestamp: timeStamp,
-            appId: appId,
-            nonceStr: nonceStr, // 支付签名随机串，不长于 32 位
-            package: json.data.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
-            signType: 'MD5', // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
-            paySign: paySign, // 支付签名
-            success: (res) => {
-              this.showPayFinish();
-              setTimeout(() => {
-                location.reload();
-              }, 2000);
-              // 支付成功后的回调函数
-              util.pay(cid, tradeNo, function (json) {});
-            },
-            error: () => {
-              console.warn('支付失败')
-            }
-          });
-        } else {
-          console.warn('支付出现了点问题')
+        this.paying = true;
+        const cid = util.getParam('cid');
+        if (this.userInfo.freeCourseRemained > 0) {
+          const useFree = confirm('将使用一次免费获取课程的机会，确认兑换？')
+          if (useFree) {
+            util.getFreeCourse(cid, (json) => {
+              this.paying = false;
+              if (json.code === 0) {
+                let tips = '获取成功';
+                this.showPayFinish(tips);
+                setTimeout(() => {
+                  location.reload();
+                }, 2000);
+              } else {
+                console.warn('获取免费课程出现了点问题')
+              }
+            })
+            return false;
+          }
         }
-      })
+        util.createPayOrder(cid, (json) => {
+          this.paying = false;
+          if (json.code === 0) {
+            const { appId, nonceStr, paySign, timeStamp, tradeNo } = json.data;
+            wx.chooseWXPay({
+              timestamp: timeStamp,
+              appId: appId,
+              nonceStr: nonceStr, // 支付签名随机串，不长于 32 位
+              package: json.data.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
+              signType: 'MD5', // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
+              paySign: paySign, // 支付签名
+              success: (res) => {
+                this.showPayFinish();
+                setTimeout(() => {
+                  location.reload();
+                }, 2000);
+                // 支付成功后的回调函数
+                util.pay(cid, tradeNo, function (json) {});
+              },
+              error: () => {
+                console.warn('支付失败')
+              }
+            });
+          } else {
+            console.warn('支付出现了点问题')
+          }
+        })
+      });
     },
     showHongbaoTips (b) {
       this.hongbaoTips = b;

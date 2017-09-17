@@ -3,7 +3,7 @@
     <div v-if="data && !data.alreadyOpened">
       <div v-if="data.redPacketRemained > 0">
         <div class="aavater">
-          <div class="img"><img :src="data.userHeadImg"></div>
+          <div class="img" :style="{ 'background-image': 'url(\'' + data.userHeadImg + '\')' }"></div>
         </div>
         <div class="name">{{ data.userName + '请你学知识' }}</div>
       </div>
@@ -14,8 +14,7 @@
       <div class="hongbao" v-if="data.redPacketRemained !== null">
         <img class="hongbao-bg" src="/static/hongbao.png">
         <div class="box">
-          <div class="avater">
-            <img :src="data.speakerHeadImg">
+          <div class="avater" :style="{ 'background-image': 'url(\'' + data.speakerHeadImg + '\')' }">
           </div>
           <div class="desc">
             <div class="title">{{ data.lessonTitle }}</div>
@@ -59,6 +58,8 @@ export default {
     const lid = util.getParam('lid');
     const cid = util.getParam('cid');
 
+    const hash = util.getHash();
+    
     const redPacketNonce = util.getParam('redPacketNonce');
 
     this.redPacketNonce = decodeURIComponent(redPacketNonce);
@@ -74,13 +75,13 @@ export default {
         }
         util.updateWechatShare(dict);
         if (this.data.alreadyOpened) {
-          location.href = '/?redPacketNonce=' + this.redPacketNonce + '&cid=' + cid + '&lid=' + lid + '&fromHongbao=1#/lesson';
+          location.href = '/lesson?redPacketNonce=' + this.redPacketNonce + '&cid=' + cid + '&lid=' + lid + '&fromHongbao=1';
         }
       } else {
         console.warn('获取红包报错');
       }
       // else if (json.code === 40100) {
-      //   location.href = '/?redirect=' + encodeURIComponent(location.href) + '#/login'
+      //   location.href = '/login?redirect=' + encodeURIComponent(location.href)
       // } 
     })
   },
@@ -93,7 +94,7 @@ export default {
         if (json.code === 0 || json.code === 40001) {
           const lid = util.getParam('lid');
           const cid = util.getParam('cid');
-          location.href = '/?redPacketNonce=' + this.redPacketNonce + '&cid=' + cid + '&lid=' + lid + '&fromHongbao=1#/lesson'
+          location.href = '/lesson?redPacketNonce=' + this.redPacketNonce + '&cid=' + cid + '&lid=' + lid + '&fromHongbao=1'
         } else {
           console.warn('拆红包失败！')
         }
@@ -150,9 +151,8 @@ export default {
         display: block;
         overflow: hidden;
         text-align: center;
-        img {
-          width: 1.3rem;
-        }
+        background-size: cover;
+        background-position: center;
       }
     }
     .name {
@@ -163,9 +163,6 @@ export default {
       width: 4.3rem;
       margin: auto;
       margin-top: 0.263333rem;
-      white-space: nowrap; 
-      overflow: hidden; 
-      text-overflow: ellipsis;
     }
     .hongbao {
       // margin-top: 1.3333rem;
@@ -194,9 +191,8 @@ export default {
           display: flex;
           justify-content: center;
           border-radius: 4px;
-          img {
-            height: 100%;
-          }
+          background-size: cover;
+          background-position: center;
         }
         .desc {
           font-size: 0.32rem;
@@ -223,7 +219,7 @@ export default {
         }
       }
       .btn {
-        font-size: 0.56rem;
+        font-size: 1rem;
         width: 2.2rem;
         height: 2.2rem;
         line-height: 2.2rem;
@@ -236,6 +232,7 @@ export default {
       }
       .btn.over {
         background: #cccccc;
+        font-size: 0.56rem;
       }
       .tips {
         color: white;

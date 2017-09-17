@@ -11,11 +11,11 @@
     <div v-if="courses && courses.length > 0" class="wrap">
       <div class="list">
         <div class="item" v-for="c in courses" @click="gotoCourse(c.id)">
-          <div class="img"><img :src="c.bannerImg[0]"></div>
+          <div class="img" :style="{ 'background-image': 'url(\'' + c.bannerImg[0] + '\')' }"></div>
           <div class="main">
             <div class="title">{{ c.title }}</div>
             <div class="tips" :title="c.msg">{{ c.msg || '暂无' }}</div>
-            <div class="time">{{c.updateDate}}更新 | 已发布 {{c.publishedLessonCount}}/{{c.lessonCount}}</div>
+            <div class="time"><span v-if="c.updateDate">{{c.updateDate}}更新&nbsp;|&nbsp;</span>已发布 {{c.publishedLessonCount}}/{{c.lessonCount}}</div>
           </div>
         </div>
       </div>
@@ -55,23 +55,31 @@ export default {
       if (json.code === 0) {
         this.courses = json.data.courseList.map((d) => {
           const temp = d.updateDate.split('-');
+          const updateDate = d.updateDate ? formatDate(temp[0], temp[1], temp[2]) : ''
           return {
             ...d,
-            updateDate: formatDate(temp[0], temp[1], temp[2]),
+            updateDate,
             // msg: 'ddd',
           }
         });
       } else {
         console.warn('获取已购课程出错');
       }
-    })
+    });
+    const dict = {
+      title: '酒店邦成长营',
+      link: location.href,
+      imgUrl: 'http://hotelpal.cn/static/jiudianbang-big.png',
+      desc: '为你提供高效、有价值的行业知识服务。',
+    }
+    util.updateWechatShare(dict);
   },
   methods: {
     gotoHome: function () {
-      location.href = '/#/';
+      location.href = '/';
     },
     gotoCourse: function (courseId) {
-      location.href = '/?cid=' + courseId + '#/course';
+      location.href = '/course?cid=' + courseId;
     },
   },
   destroyed() {},
@@ -174,16 +182,12 @@ export default {
             width: 100%;
             height: 3.3333rem;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            img {
-              height: 100%;
-            }
+            background-size: cover;
+            background-position: center;
           }            
           .main {
             width: 100%;
-            padding: 0.26666rem;
+            padding: 0.13333rem;
             .title {
               font-size: 0.346666rem;
               color: #333333;

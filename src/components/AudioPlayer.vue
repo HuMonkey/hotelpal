@@ -139,11 +139,11 @@
               return false;
             }
             if (this.type == 1) {
-              location.href = '/?goon=1&id=' + this.nextId + '#/jdbsitem';
+              location.href = '/jdbsitem?goon=1&id=' + this.nextId;
               return false;
             }
             const cid = util.getParam('cid');
-            location.href = '/?goon=1&cid=' + cid + '&lid=' + this.nextId + '#/lesson'
+            location.href = '/lesson?goon=1&cid=' + cid + '&lid=' + this.nextId
           }
         }
       },
@@ -179,12 +179,14 @@
         this.playing = !this.playing;
       },
       startDrag (ev) {
+        ev.stopPropagation();
         this.dragging = true;
         this.audio.muted = true;
         !this.playing && this.playOrPause();
         this.interval && clearInterval(this.interval);
       },
       moveDrag (ev) {
+        ev.stopPropagation();
         const audio = this.audio;
         if (!this.dragging) {
           return false;
@@ -202,6 +204,7 @@
         this.updateTime();
       },
       endDrag (ev) {
+        ev.stopPropagation();
         this.dragging = false;
         this.audio.muted = false;
         this.interval = setInterval(this.updateTime, 1000);
@@ -227,22 +230,22 @@
           return false;
         }
         if (this.type == 1) {
-          location.href = '/?id=' + this.preId + '#/jdbsitem';
+          location.href = '/jdbsitem?id=' + this.preId;
           return false;
         }
         const cid = util.getParam('cid');
-        location.href = '/?cid=' + cid + '&lid=' + this.preId + '#/lesson';
+        location.href = '/lesson?cid=' + cid + '&lid=' + this.preId;
       },
       nextLesson () {
         if (!this.nextId) {
           return false;
         }
         if (this.type == 1) {
-          location.href = '/?id=' + this.nextId + '#/jdbsitem';
+          location.href = '/jdbsitem?id=' + this.nextId;
           return false;
         }
         const cid = util.getParam('cid');
-        location.href = '/?cid=' + cid + '&lid=' + this.nextId + '#/lesson';
+        location.href = '/lesson?cid=' + cid + '&lid=' + this.nextId;
       },
       setInterval () {
         this.saveInterval && clearInterval(this.saveInterval);
@@ -316,15 +319,16 @@
             }
             .dot {
               position: absolute;
-              top: 0;
+              top: -0.4rem;
               left: 0;
-              width: 0.4rem;
-              height: 0.4rem;
+              width: 1.2rem;
+              height: 1.2rem;
               border-radius: 0.4rem;
               overflow: hidden;
               display: flex;
               justify-content: center;
               align-items: center;
+              margin-left: -0.4rem;
               .dot-inner {
                 width: 0.4rem;
                 height: 0.4rem;

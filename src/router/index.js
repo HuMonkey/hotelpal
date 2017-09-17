@@ -10,11 +10,14 @@ import Jdbs from '@/components/Jdbs'
 import JdbsItem from '@/components/JdbsItem'
 import Hongbao from '@/components/Hongbao'
 import CourseDetail from '@/components/CourseDetail'
+import NotFoundComponent from '@/components/NotFoundComponent'
 
 Vue.use(Router)
 
 export default new Router({
+  mode: 'history',
   routes: [
+    { path: '*', component: NotFoundComponent },
     {
       path: '/',
       name: 'Home',
