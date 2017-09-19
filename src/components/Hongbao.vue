@@ -58,8 +58,6 @@ export default {
     const lid = util.getParam('lid');
     const cid = util.getParam('cid');
 
-    const hash = util.getHash();
-    
     const redPacketNonce = util.getParam('redPacketNonce');
 
     this.redPacketNonce = decodeURIComponent(redPacketNonce);
@@ -75,7 +73,8 @@ export default {
         }
         util.updateWechatShare(dict);
         if (this.data.alreadyOpened) {
-          location.href = '/lesson?redPacketNonce=' + this.redPacketNonce + '&cid=' + cid + '&lid=' + lid + '&fromHongbao=1';
+          // location.href = '/lesson?redPacketNonce=' + this.redPacketNonce + '&cid=' + cid + '&lid=' + lid + '&fromHongbao=1';
+          this.$parent.$emit('hideHongbao');
         }
       } else {
         console.warn('获取红包报错');
@@ -92,9 +91,10 @@ export default {
     openRedPacket: function () {
       util.openRedPacket(this.redPacketNonce, (json) => {
         if (json.code === 0 || json.code === 40001) {
-          const lid = util.getParam('lid');
-          const cid = util.getParam('cid');
-          location.href = '/lesson?redPacketNonce=' + this.redPacketNonce + '&cid=' + cid + '&lid=' + lid + '&fromHongbao=1'
+          // const lid = util.getParam('lid');
+          // const cid = util.getParam('cid');
+          // location.href = '/lesson?redPacketNonce=' + this.redPacketNonce + '&cid=' + cid + '&lid=' + lid + '&fromHongbao=1'
+          this.$parent.$emit('hideHongbao');
         } else {
           console.warn('拆红包失败！')
         }

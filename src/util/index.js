@@ -180,8 +180,8 @@ util.getUserStatistics = function (callback) {
 /**
  * 邀请注册
  */
-util.newInvitedUser = function (callback) {
-  fetch(util.getUrl(util.config.host + api.newInvitedUser))
+util.newInvitedUser = function (nonce, callback) {
+  fetch(util.getUrl(util.config.host + api.newInvitedUser + '?nonce=' + nonce))
     .then(function(response) {
       return response.json()
     }).then(callback).catch(function(ex) {
@@ -535,7 +535,7 @@ util.textLength = function(para, fontSize) {
  */
 util.configWechat = function(appId, timestamp, nonceStr, signature, callback) {
   wx.config({
-    debug: true,
+    // debug: true,
     appId, timestamp, nonceStr, signature,
     jsApiList: [
       'onMenuShareTimeline',
@@ -614,11 +614,9 @@ util.processDateStr = function (date) {
   return temp.join('-');
 }
 
-util.getWechatSign = function (callback, url) {
-  let realUrl = url ? url.split('#')[0] : location.href.split('#')[0];
-  // let realUrl = url;
+util.getWechatSign = function (callback) {
   // 如果是html的静态页面在前端通过ajax将url传到后台签名，前端需要用js获取当前页面除去'#'hash部分的链接（可用location.href.split('#')[0]获取,而且需要encodeURIComponent），因为页面一旦分享，微信客户端会在你的链接末尾加入其它参数，如果不是动态获取当前链接，将导致分享后的页面签名失败。
-  util.getSign(encodeURIComponent(realUrl), (json) => {
+  util.getSign(encodeURIComponent(location.href.split('#')[0]), (json) => {
     if (json.code === 0) {
       const { appid, noncestr, sign, timestamp } = json.data;
       util.configWechat(appid, timestamp, noncestr, sign, () => {
@@ -665,7 +663,7 @@ util.updateWechatShare = function(wxShareDict) {
     wxShareDict.desc = wxShareDict.desc.length > 30 ? wxShareDict.desc.substr(0, 30) + '...' : wxShareDict.desc;
     wx.onMenuShareTimeline({
       title: wxShareDict.title, // 分享标题
-      link: wxShareDict.originUrl || wxShareDict.link, // 分享链接，该链接域名需在JS安全域名中进行登记
+      link: wxShareDict.link, // 分享链接，该链接域名需在JS安全域名中进行登记
       imgUrl: wxShareDict.imgUrl, // 分享图标
       success: function () { 
         // 用户确认分享后执行的回调函数
@@ -678,7 +676,7 @@ util.updateWechatShare = function(wxShareDict) {
     wx.onMenuShareAppMessage({
       title: wxShareDict.title, // 分享标题
       desc: wxShareDict.desc, // 分享描述
-      link: wxShareDict.originUrl || wxShareDict.link, // 分享链接，该链接域名需在JS安全域名中进行登记
+      link: wxShareDict.link, // 分享链接，该链接域名需在JS安全域名中进行登记
       imgUrl: wxShareDict.imgUrl, // 分享图标
       type: 'link', // 分享类型,music、video或link，不填默认为link
       dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
@@ -694,7 +692,7 @@ util.updateWechatShare = function(wxShareDict) {
     document.title = wxShareDict.title;
     document.querySelector('meta[name="keywords"]').setAttribute('content', wxShareDict.title);
     document.querySelector('meta[name="description"]').setAttribute('content', wxShareDict.desc);
-  }, wxShareDict.originUrl)
+  })
 }
 
 util.isLongImg = function (imgUrl, radio, callback) {

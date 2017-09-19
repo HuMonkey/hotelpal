@@ -153,7 +153,8 @@ export default {
           if (json.data.newPhone) {
             // 邀请注册
             if (util.getParam('invited') == 1) {
-              util.newInvitedUser((json1) => {
+              const nonce = util.getParam('nonce')
+              util.newInvitedUser(nonce, (json1) => {
                 if (json.code === 0) {
                   // console.log(json1)
                 } else {

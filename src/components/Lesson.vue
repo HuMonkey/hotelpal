@@ -127,7 +127,7 @@
               </infinite-loading>
             </div>
         </div>
-        <div class="comment-box" v-if="!commenting" :class="{hongbao: !freeListen && !fromHongbao && lesson.redPacketRemained > 0}">
+        <div class="comment-box" v-if="!commenting" :class="{hongbao: !freeListen && !fromHongbao && lesson && lesson.redPacketRemained > 0}">
           <div class="pen"></div>
           <input type="text" name="comment" placeholder="一起来参与讨论吧！" @click="gotoComment">
           <div class="hongbao" v-if="!freeListen && !fromHongbao && lesson.redPacketRemained > 0" @click="showHongbaoTips(true)">
@@ -145,7 +145,7 @@
             <textarea v-model="myComment" v-focus="focusStatus" :placeholder="replyId ? `回复${replyName}` : '一起来参与讨论吧！'"></textarea>
           </div>
         </div>
-        <div class="hongbaoTips" v-if="hongbaoTips && lesson.redPacketRemained > 0" @click="showHongbaoTips(false)">
+        <div class="hongbaoTips" v-if="hongbaoTips && lesson && lesson.redPacketRemained > 0" @click="showHongbaoTips(false)">
           <div class="cover"></div>
           <img class="text" src="/static/hongbaotips.png">
           <img class="pointer" src="/static/pointer.png">
@@ -198,7 +198,7 @@ import AudioPlayer from './AudioPlayer.vue'
 import Error from './Error.vue'
 import Hongbao from './Hongbao'
 
-let androidUrl;
+// let androidUrl;
 
 export default {
   name: 'lesson',
@@ -256,8 +256,7 @@ export default {
     }
   },
   mounted() {
-    androidUrl = location.href;
-
+    // androidUrl = location.href;
     window.onscroll = () => {
       const width = document.body.offsetWidth;
       const containerHeight = document.querySelector('.player').offsetHeight;
@@ -268,35 +267,6 @@ export default {
         this.scrollDown = false;
       }
     }
-    
-    const lid = util.getParam('lid');
-    const cid = util.getParam('cid');
-    this.isHongbao = +util.getParam('isHongbao') || 0;
-    if (this.isHongbao == 1) {
-      return false;
-    }
-    util.getCourse(cid, (json) => {
-      if (json.code === 0) {
-        this.course = json.data;
-        this.purchased = json.data.purchased;
-        let lessonList = this.course.lessonList;
-        lessonList.forEach((d) => {
-          d.lessonOrder = util.formatNum(d.lessonOrder);
-        });
-        const lessonsNum = lessonList.length;
-        this.swiperWidth = (lessonsNum * 270 + (lessonsNum - 1) * 20) / 75;
-        const former = lessonList.indexOf(lessonList.find((d) => d.id == lid));
-        const offsetLeft = (former * 290) / 75 * (document.body.clientWidth / 10);
-        setTimeout(function () {
-          if (document.querySelector('.lessons')) {
-            document.querySelector('.lessons').scrollLeft = offsetLeft;
-          }
-        }, 500)
-        this.updateLesson();
-      } else {
-        console.warn('获取课程信息失败！')
-      }
-    })
 
     util.getUserInfo((json) => {
       if (json.code === 0) {
@@ -305,6 +275,26 @@ export default {
         console.warn('获取课程信息失败！')
       }
     })
+
+    this.hongbaoTips = util.getCookie('hongbaoTips')
+    util.setCookie('hongbaoTips', 0, '0s')
+    if (this.hongbaoTips) {
+      this.isHongbao = 0;
+      this.getCourse(true);
+      return false;
+    }
+
+    this.$on('hideHongbao', () => {
+      this.isHongbao = 0;
+      this.fromHongbao = 1;
+      this.getCourse(true);
+    });
+    
+    this.isHongbao = +util.getParam('isHongbao') || 0;
+    if (this.isHongbao == 1) {
+      return false;
+    }
+    this.getCourse(false);
   },
   methods: {
     onInfinite: function () {
@@ -323,6 +313,32 @@ export default {
         }
       })
     },
+    getCourse: function (b) {
+      const lid = util.getParam('lid');
+      const cid = util.getParam('cid');
+      util.getCourse(cid, (json) => {
+        if (json.code === 0) {
+          this.course = json.data;
+          this.purchased = json.data.purchased;
+          let lessonList = this.course.lessonList;
+          lessonList.forEach((d) => {
+            d.lessonOrder = util.formatNum(d.lessonOrder);
+          });
+          const lessonsNum = lessonList.length;
+          this.swiperWidth = (lessonsNum * 270 + (lessonsNum - 1) * 20) / 75;
+          const former = lessonList.indexOf(lessonList.find((d) => d.id == lid));
+          const offsetLeft = (former * 290) / 75 * (document.body.clientWidth / 10);
+          setTimeout(function () {
+            if (document.querySelector('.lessons')) {
+              document.querySelector('.lessons').scrollLeft = offsetLeft;
+            }
+          }, 500)
+          this.updateLesson(false, b);
+        } else {
+          console.warn('获取课程信息失败！')
+        }
+      })
+    },
     setError: function (error) {
       this.error = error;
       this.errorTimeout && clearTimeout(this.errorTimeout)
@@ -333,7 +349,7 @@ export default {
     gotoLogin: function () {
       location.href = '/login?force=1&redirect=' + encodeURIComponent(location.href)
     },
-    updateLesson: function (updateComment) {
+    updateLesson: function (updateComment, b) {
       const lid = util.getParam('lid');
       const cid = util.getParam('cid');
       util.getLesson(lid, (json) => {
@@ -378,19 +394,7 @@ export default {
             this.isIntroOverflow = true;
           }
 
-          const fromHongbao = util.getParam('fromHongbao');
-          this.fromHongbao = fromHongbao;
-          if (fromHongbao == 1) {
-            const redPacketNonce = this.redPacketNonce = util.getParam('redPacketNonce');
-            util.changeURL({
-              lid, cid,
-              isHongbao: 1,
-              redPacketNonce 
-            }, true);
-            this.updateShare(true);
-          } else {
-            this.updateShare(false);
-          }
+          this.updateShare(b);
         } else if (json.code === 40301) {
           this.purchased = false;
           this.freeListen = false;
@@ -421,9 +425,11 @@ export default {
           desc: util.getHtmlContent(lesson.content),
         }
       }
-      dict.originUrl = androidUrl
-      dict.callback = () => {
-        this.showHongbaoTips(false);
+      // dict.originUrl = androidUrl
+      if (this.hongbaoTips) {
+        dict.callback = () => {
+          this.showHongbaoTips(false);
+        }
       }
       util.updateWechatShare(dict)
     },
@@ -575,21 +581,25 @@ export default {
       });
     },
     showHongbaoTips (b) {
-      this.hongbaoTips = b;
       const cid = util.getParam('cid');
       const lid = util.getParam('lid');
       if (b) {
         const isHongbao = 1;
         const redPacketNonce = this.lesson.redPacketNonce;
-        util.changeURL({
-          cid, lid, isHongbao, redPacketNonce
-        }, true)
-        this.updateShare(true);
+        // util.changeURL({
+        //   cid, lid, isHongbao, redPacketNonce
+        // }, true)
+        // this.updateShare(true);
+        
+        util.setCookie('hongbaoTips', 1, '2m')
+        location.href = '/lesson?cid=' + cid + '&lid=' + lid + '&isHongbao=' + isHongbao + '&redPacketNonce=' + redPacketNonce;
       } else {
-        util.changeURL({
-          cid, lid
-        }, true)
-        this.updateShare(false);
+        // util.changeURL({
+        //   cid, lid
+        // }, true)
+        // this.updateShare(false);
+        
+        window.history.go(-1);
       }
     }
   },
