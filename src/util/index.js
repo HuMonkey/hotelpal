@@ -593,7 +593,7 @@ util.formatTime = function (time) {
 }
 
 util.getUrl = function (url) {
-  const token = util.getCookie('token2');
+  const token = util.getCookie('token');
   if (!token) {
     return url;
   }
@@ -631,7 +631,7 @@ util.getWechatSign = function (callback) {
 
 util.verifyWechat = function (app) {
   const code = util.getParam('code');
-  const token = util.getCookie('token2');
+  const token = util.getCookie('token');
   if (token) {
     app.beginRender = true;
     return false;
@@ -646,7 +646,7 @@ util.verifyWechat = function (app) {
     }
     util.receiveRedirect(code, (json1) => {
       if (json1.code === 0) {
-        util.setCookie('token2', json1.data.token, '12d');
+        util.setCookie('token', json1.data.token, '12d');
         app.beginRender = true;
       } else {
         console.warn('verify fail');

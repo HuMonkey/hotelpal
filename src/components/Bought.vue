@@ -54,7 +54,7 @@ export default {
     util.getPaidCourseList((json) => {
       if (json.code === 0) {
         this.courses = json.data.courseList.map((d) => {
-          const temp = d.updateDate.split('-');
+          const temp = d.updateDate && d.updateDate.split('-');
           const updateDate = d.updateDate ? formatDate(temp[0], temp[1], temp[2]) : ''
           return {
             ...d,

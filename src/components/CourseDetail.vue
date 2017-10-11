@@ -85,6 +85,8 @@ export default {
     line-height: 1;
     padding: 0 0.4rem;
     text-align: justify;
+    // word-break: break-all;
+    word-wrap: break-word;
     .teacher {
       padding: 0.8rem 0 0.53333rem 0;
       display: flex;

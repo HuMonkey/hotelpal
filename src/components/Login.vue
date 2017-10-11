@@ -86,7 +86,20 @@ export default {
         // 绑定过手机，就不用绑定了
         this.userinfo = json.data;
         if (json.data.phone) {
-          location.href = decodeURIComponent(util.getParam('redirct') || '/#/')
+          if (util.getParam('invited') == 1) {
+            const nonce = util.getParam('nonce')
+            util.newInvitedUser(nonce, (json1) => {
+              if (json.code === 0) {
+                location.href = decodeURIComponent(util.getParam('redirct') || '/')
+              } else {
+                alert(json.msg);
+                location.href = decodeURIComponent(util.getParam('redirct') || '/')
+                console.warn('获取免费机会失败')
+              }
+            })
+          } else {
+            location.href = decodeURIComponent(util.getParam('redirct') || '/')
+          }
         } else {
           this.render = true;
         }
@@ -149,19 +162,19 @@ export default {
       util.verifyPhone(this.phone, this.code, (json) => {
         if (json.code === 0) {
           // util.setCookie('isLogin', '1', '12d');
+          // 邀请注册
+          if (util.getParam('invited') == 1) {
+            const nonce = util.getParam('nonce')
+            util.newInvitedUser(nonce, (json1) => {
+              if (json.code === 0) {
+                // console.log(json1)
+              } else {
+                console.warn('获取用户信息失败')
+              }
+            })
+          }
           // 新用户
           if (json.data.newPhone) {
-            // 邀请注册
-            if (util.getParam('invited') == 1) {
-              const nonce = util.getParam('nonce')
-              util.newInvitedUser(nonce, (json1) => {
-                if (json.code === 0) {
-                  // console.log(json1)
-                } else {
-                  console.warn('获取用户信息失败')
-                }
-              })
-            }
             this.step = 2;
           } else {
             location.href = decodeURIComponent(util.getParam('redirect') || '/#/')

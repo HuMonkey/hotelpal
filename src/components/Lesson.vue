@@ -320,6 +320,14 @@ export default {
         if (json.code === 0) {
           this.course = json.data;
           this.purchased = json.data.purchased;
+          if (!this.purchased) {
+            util.updateWechatShare({
+              title: json.data.userName + '：' + json.data.title,
+              link: location.href,
+              imgUrl: json.data.headImg,
+              desc: util.getHtmlContent(json.data.introduce),
+            });
+          }
           let lessonList = this.course.lessonList;
           lessonList.forEach((d) => {
             d.lessonOrder = util.formatNum(d.lessonOrder);
@@ -389,7 +397,10 @@ export default {
           let rem = document.body.clientWidth / 10;
           rem = rem > 75 ? 75 : rem;
           let fontSize = 16;
-          const length = util.textLength(content, fontSize);
+          let length = util.textLength(content, fontSize);
+          if (content.indexOf('<img') > -1) {
+            length += 10000;
+          }
           if (length > 9.2 * rem * 8) {
             this.isIntroOverflow = true;
           }
@@ -793,6 +804,8 @@ export default {
           }
           .article {
             text-align: justify;
+            // word-break: break-all;
+            word-wrap: break-word;
             img {
               width: 100%;
               margin: 0.53333rem 0;

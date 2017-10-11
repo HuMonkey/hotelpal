@@ -1,8 +1,12 @@
 <template>
   <div class="course-container">
     <div class="free-course-tips" v-if="course && !course.purchased && userinfo && userinfo.freeCourseRemained > 0 && freeTips">
-      亲爱的内邀用户，你{{ userinfo.freeCourseRemained < 3 ? '还' : '' }}有{{ userinfo.freeCourseRemained }}次免费学习课程的机会
+      亲爱的内邀用户，你有{{ userinfo.freeCourseRemained }}个老师课程可以免费学习
       <img src="/static/cross.png" @click="closeTips">
+    </div>
+    <div class="free-course-bubble" v-if="course && !course.purchased && userinfo && userinfo.freeCourseRemained > 0">
+      <div class="arrow"></div>
+      <div class="inner">点击可免费兑换课程</div>
     </div>
     <div v-if="course">
       <div class="header">
@@ -175,7 +179,10 @@ export default {
         let rem = document.body.clientWidth / 10;
         rem = rem > 75 ? 75 : rem;
         let fontSize = rem * 0.4;
-        const length = util.textLength(this.course.introduce, fontSize);
+        let length = util.textLength(this.course.introduce, fontSize);
+        if (this.course.introduce.indexOf('<img') > -1) {
+          length += 10000;
+        }
         if (length > 9.2 * rem * 8) {
           this.isIntroOverflow = true;
         }
@@ -253,6 +260,8 @@ export default {
             }
           })
           return false;
+        } else {
+          
         }
       }
       util.createPayOrder(cid, (json) => {
@@ -330,6 +339,34 @@ export default {
     background: white;
     line-height: 1;
     -webkit-user-select: none;
+    .free-course-bubble {
+      position: fixed;
+      left: 35%;
+      bottom: 1.55rem;
+      z-index: 100;
+      .inner {
+        padding: 8px 10px;
+        color: #fff;
+        text-align: left;
+        text-decoration: none;
+        background-color: rgba(0, 0, 0, 0.75);
+        border-radius: 4px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+        font-size: 12px;
+      }
+      .arrow {
+        bottom: -5px;
+        border-color: transparent;
+        border-style: solid;
+        border-width: 5px 5px 0;
+        border-top-color: rgba(0, 0, 0, 0.75);
+        position: absolute;
+        width: 0;
+        height: 0;
+        left: 50%;
+        margin-left: -5px;
+      }
+    }
     .pay-finish {
       width: 100%;
       height: 100%;
@@ -531,6 +568,8 @@ export default {
           color: #666666;
           margin-top: 0.26666rem;
           text-align: justify;
+          // word-break: break-all;
+          word-wrap: break-word;
           p {}
           p:last-child {
             margin-bottom: 0;
