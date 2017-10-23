@@ -437,7 +437,7 @@ util.removeParam = function (key) {
   if (hash) {
     rtn = rtn + "#" + hash;
   }
-  history['replaceState']({}, '', rtn)
+  return rtn;
 }
 
 /**
@@ -593,7 +593,7 @@ util.formatTime = function (time) {
 }
 
 util.getUrl = function (url) {
-  const token = util.getCookie('token');
+  const token = util.getCookie('jdbtk');
   if (!token) {
     return url;
   }
@@ -631,22 +631,23 @@ util.getWechatSign = function (callback) {
 
 util.verifyWechat = function (app) {
   const code = util.getParam('code');
-  const token = util.getCookie('token');
+  util.removeParam()
+  const token = util.getCookie('jdbtk');
   if (token) {
     app.beginRender = true;
     return false;
   }
   if (!code) {
     sessionStorage.gotoVerify = true;
-    location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + util.config.appId + '&redirect_uri=' + encodeURIComponent(document.URL) +'&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect';
+    location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + util.config.appId + '&redirect_uri=' + encodeURIComponent(util.removeParam('code')) +'&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect';
   } else {
     if (!sessionStorage.gotoVerify) {
       sessionStorage.gotoVerify = true;
-      location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + util.config.appId + '&redirect_uri=' + encodeURIComponent(document.URL) +'&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect';
+      location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + util.config.appId + '&redirect_uri=' + encodeURIComponent(util.removeParam('code')) +'&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect';
     }
     util.receiveRedirect(code, (json1) => {
       if (json1.code === 0) {
-        util.setCookie('token', json1.data.token, '12d');
+        util.setCookie('jdbtk', json1.data.token, '12d');
         app.beginRender = true;
       } else {
         console.warn('verify fail');
