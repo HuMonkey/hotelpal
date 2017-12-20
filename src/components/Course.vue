@@ -82,7 +82,7 @@
                   <span v-if="l.resourceSize">{{ l.resourceSize }}</span>
                   <span v-if="l.lenStr">{{ l.lenStr }}</span>
                   <span class="over" v-if="l.listenLen && l.listenLen >= l.audioLen">已播完</span>
-                  <span class="ing" v-if="l.listenLen && l.listenLen < l.audioLen">已播{{ parseInt(l.listenLen / l.audioLen * 100) }}%</span>
+                  <span class="ing" v-if="l.listenLen && l.listenLen < l.audioLen">已播{{ parseInt(l.listenLen / l.audioLen * 100) + 1 }}%</span>
                 </p>
                 <p v-if="!l.isPublish">
                   尚未发布
@@ -113,7 +113,7 @@
           <div class="text">{{ payFinishTips || '支付成功' }}</div>
         </div>
       </div>
-    </div>  
+    </div> 
   </div>
 </template>
 
@@ -278,9 +278,9 @@ export default {
             success: (res) => {
               // 支付成功后的回调函数
               this.course.purchased = true;
-              util.pay(cid, tradeNo, function (json) {
-                // console.log(json)
-              });
+              // util.pay(cid, tradeNo, function (json) {
+              //   // console.log(json)
+              // });
             },
             error: () => {
               console.warn('支付失败')

@@ -26,7 +26,7 @@
           </div>
         </div>
         <div class="content">
-          <div class="article" :class="{overflow: isIntroOverflow && introOverflow}" v-html="lesson.content">
+          <div class="article" @click="showImgPreview" :class="{overflow: isIntroOverflow && introOverflow}" v-html="lesson.content">
           </div>
           <div class="open" v-if="isIntroOverflow" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
         </div>
@@ -135,6 +135,7 @@
           <div class="text">{{commentFinish === 2 ? '回复' : '评论'}}成功</div>
         </div>
       </div>
+      <img-preview v-if="previewing" :previewingUrl="previewingUrl"></img-preview>
     </div>
   </div>
 </template>
@@ -146,6 +147,7 @@ import InfiniteLoading from 'vue-infinite-loading';
 import util from '../util/index'
 import AudioPlayer from './AudioPlayer.vue'
 import Error from './Error.vue'
+import ImgPreview from './ImgPreview'
 
 export default {
   name: 'jdbsitem',
@@ -183,6 +185,9 @@ export default {
       start: 0, 
       number: 10,
       commentList: [],
+
+      previewing: false,
+      previewingUrl: null,
     }
   },
   created() {},
@@ -222,6 +227,12 @@ export default {
           console.warn('获取自主课程列表出错！');
         }
       })
+    },
+    showImgPreview: function (ev) {
+      if (ev.target.tagName === 'IMG' || ev.target.tagName === 'img') {
+        this.previewing = true;
+        this.previewingUrl = ev.target.src;
+      }
     },
     checkPhone (callback) {
       if (!this.userInfo.phone) {
@@ -374,7 +385,7 @@ export default {
     }
   },
   components: {
-    AudioPlayer, Error, InfiniteLoading
+    AudioPlayer, Error, InfiniteLoading, ImgPreview
   }
 }
 </script>
@@ -583,8 +594,8 @@ export default {
           }
         }
         .name {
-          height: 0.8rem;
-          line-height: 0.8rem;
+          line-height: .5rem;
+          margin-bottom: 0.16666rem;
           font-size: 0.4rem;
           color: #666666;
           span {

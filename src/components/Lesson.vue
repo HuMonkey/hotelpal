@@ -19,7 +19,7 @@
             </div>
           </div>
           <div class="content">
-            <div class="article" :class="{overflow: isIntroOverflow && introOverflow}" v-html="lesson.content">
+            <div class="article" @click="showImgPreview" :class="{overflow: isIntroOverflow && introOverflow}" v-html="lesson.content">
             </div>
             <div class="open" v-if="isIntroOverflow" @click="switchOverflow">{{ introOverflow ? '查看完整介绍' : '收起完整介绍' }}</div>
             <div class="hr"></div>
@@ -35,7 +35,7 @@
               <div class="hr"></div>
               <div class="lessons">
                 <div class="swiper" :style="{width: swiperWidth + 'rem'}">
-                  <div class="item" :class="{current: l.id === lesson.id}" v-for="l in course.lessonList" @click="gotoLesson(l.id)">
+                  <div class="item" :class="{current: l.id === lesson.id}" v-for="l in lessonList" @click="gotoLesson(l.id)">
                     <div class="inner">
                       {{ l.lessonOrder }} | {{ l.title }}
                     </div>
@@ -186,6 +186,7 @@
         <div class="log">你已经购买？<span @click="gotoLogin">绑定其他账号</span></div>
       </div>
     </div>
+    <img-preview v-if="previewing" :previewingUrl="previewingUrl"></img-preview>
   </div>
 </template>
 
@@ -197,6 +198,7 @@ import util from '../util/index'
 import AudioPlayer from './AudioPlayer.vue'
 import Error from './Error.vue'
 import Hongbao from './Hongbao'
+import ImgPreview from './ImgPreview'
 
 // let androidUrl;
 
@@ -220,6 +222,7 @@ export default {
 
       lesson: null,
       course: {},
+      lessonList: [],
 
       focusStatus: false,
       interval: null,
@@ -253,6 +256,9 @@ export default {
       commentList: [],
 
       paying: false,
+
+      previewing: false,
+      previewingUrl: null,
     }
   },
   mounted() {
@@ -313,6 +319,12 @@ export default {
         }
       })
     },
+    showImgPreview: function (ev) {
+      if (ev.target.tagName === 'IMG' || ev.target.tagName === 'img') {
+        this.previewing = true;
+        this.previewingUrl = ev.target.src;
+      }
+    },
     getCourse: function (b) {
       const lid = util.getParam('lid');
       const cid = util.getParam('cid');
@@ -328,7 +340,8 @@ export default {
               desc: util.getHtmlContent(json.data.introduce),
             });
           }
-          let lessonList = this.course.lessonList;
+          let lessonList = this.course.lessonList.filter(d => d.isPublish === 1);
+          this.lessonList = lessonList;
           lessonList.forEach((d) => {
             d.lessonOrder = util.formatNum(d.lessonOrder);
           });
@@ -579,7 +592,7 @@ export default {
                   location.reload();
                 }, 2000);
                 // 支付成功后的回调函数
-                util.pay(cid, tradeNo, function (json) {});
+                // util.pay(cid, tradeNo, function (json) {});
               },
               error: () => {
                 console.warn('支付失败')
@@ -629,7 +642,7 @@ export default {
     }
   },
   components: {
-    AudioPlayer, Error, Hongbao, InfiniteLoading
+    AudioPlayer, Error, Hongbao, InfiniteLoading, ImgPreview
   }
 }
 </script>
@@ -955,8 +968,8 @@ export default {
             }
           }
           .name {
-            height: 0.8rem;
-            line-height: 0.8rem;
+            line-height: .5rem;
+            margin-bottom: 0.16666rem;
             font-size: 0.4rem;
             color: #666666;
             span {
