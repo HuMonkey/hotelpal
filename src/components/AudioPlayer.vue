@@ -121,19 +121,38 @@
           }
           return false;
         } else {
-          this.left = formatTime(audio.duration - audio.currentTime, false);
-          if (audio.duration - audio.currentTime < 16) {
-            this.countingDown = parseInt(audio.duration - audio.currentTime);
+          let left = parseInt(audio.duration - audio.currentTime);
+          if (left < 0) {
+            left = 0;
+          }
+          this.left = formatTime(left, false);
+          if (left < 16) {
+            this.countingDown = left;
           }
         }
         this.current = formatTime(this.currentTime || 0, true);
         this.currentTime = Math.ceil(audio.currentTime);
-        if (audio.ended) {
+        // 音频结束
+        if (audio.duration == audio.currentTime) {
+          // 打个点
+          let current = this.audioLen;
+          const lid = util.getParam('lid') || util.getParam('id');
+          util.recordListenPos(lid, current, (json) => {
+            if (json.code === 0) {
+              // console.log(json)
+            } else {
+              console.warn('记录听的位置出错！');
+            }
+          })
+
+          // 重置下音频
           this.current = formatTime(0, true);
           this.currentTime = 0;
           this.left = this.songLong;
           this.audio.currentTime = 0;
           this.playOrPause();
+
+          // 连续播
           if (this.goOn) {
             if (!this.nextId) {
               return false;
@@ -154,6 +173,7 @@
         // TODO 
       },
       playOrPause () {
+        console.log(1111111);
         const audio = this.audio;
         const lid = util.getParam('lid') || util.getParam('id');
         if (this.playing) {
