@@ -21,10 +21,7 @@
           15
         </div>
         <div class="previous" @click="preLesson" :class="{empty: !preId}"></div>
-        <div class="loading" v-if="loading">
-          <div class="border"></div>
-        </div>
-        <div class="switch playOrPause" v-if="!loading" :class="{playing: playing}" @click="playOrPause">
+        <div class="switch playOrPause" :class="{loading: loading && playing, playing: playing}" @click="playOrPause">
           <div class="border-solid"></div>
         </div>
         <div class="next" @click="nextLesson" :class="{empty: !nextId}"></div>
@@ -65,7 +62,7 @@
         playing: false,
         record: false,
         saveInterval: null,
-        loading: false,
+        loading: true,
         countingDown: null,
         nextLessonTitle: null,
         dragging: false,
@@ -73,6 +70,9 @@
     },
     mounted() {
       this.audio = document.querySelector('.audio-player audio');
+      this.audio.oncanplay = () => {
+        this.loading = false;
+      };
       if (util.getParam('goon') == 1) {
         this.goOn = true;
         if (util.ua.iOS) {
@@ -259,7 +259,7 @@
               console.warn('记录听的位置出错！');
             }
           })
-        }, 1000)
+        }, 4000)
       }
     },
     destroyed() {
@@ -429,27 +429,15 @@
             background-repeat: no-repeat;
           }
         }
+        .switch.loading {
+          .border-solid {
+            background-image: url('/static/loading.png');
+            animation: transform 5s infinite linear;
+          }
+        }
         .switch.playing {
           background-image: url('/static/pause.svg');
           background-position: center;
-        }
-        .loading {
-          width: 1.28rem;
-          height: 1.28rem;
-          background-image: url('/static/loading-play.svg');
-          background-size: auto 0.53333rem;
-          background-position: center;
-          background-repeat: no-repeat;
-          .border {
-            width: 1.28rem;
-            height: 1.28rem;
-            background-image: url('/static/loading.png');
-            background-size: 1.2rem 1.2rem;
-            background-position: center;
-            background-repeat: no-repeat;
-            animation: transform 5s infinite linear;
-            margin-left: -0.075rem;
-          }
         }
       }
     }
