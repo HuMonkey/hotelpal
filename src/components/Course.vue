@@ -82,7 +82,7 @@
                   <span v-if="l.resourceSize">{{ l.resourceSize }}</span>
                   <span v-if="l.lenStr">{{ l.lenStr }}</span>
                   <span class="over" v-if="l.listenLen && l.listenLen >= l.audioLen">已播完</span>
-                  <span class="ing" v-if="l.listenLen && l.listenLen < l.audioLen">已播{{ parseInt(l.listenLen / l.audioLen * 100) + 1 }}%</span>
+                  <span class="ing" v-if="l.listenLen && l.listenLen < l.audioLen">已播{{ parseInt(l.listenLen / l.audioLen * 100) }}%</span>
                 </p>
                 <p v-if="!l.isPublish">
                   尚未发布
