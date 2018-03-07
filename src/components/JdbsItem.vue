@@ -375,12 +375,8 @@ export default {
   destroyed() {},
   watch: {
     focusStatus() {
-      if (this.focusStatus) {
-        this.interval = setInterval(function() {
-          document.body.scrollTop = document.body.scrollHeight
-        }, 100) 
-      } else {
-        clearInterval(this.interval);
+      if (!this.focusStatus) {
+        document.body.scrollTop = document.body.scrollHeight;
       }
     }
   },

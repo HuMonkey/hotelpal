@@ -40,7 +40,7 @@
     </ul>
     <div class="btns">
       <div class="item home" @click="gotoHome"><div class="icon"></div><span>首页</span></div>
-      <div class="item left" @click="gotoNew" v-if="notListenNum > 0"><div class="icon"></div>{{ notListenNum }}条未听</div>
+      <div class="item left" @click="gotoNew" v-if="unListenedCount > 0"><div class="icon"></div>{{ unListenedCount }}条未听</div>
       <div class="item left empty" v-if="notListenNum === 0">全部听完</div>
     </div>
   </div>
@@ -59,9 +59,10 @@ export default {
       lessonList: [],
       start: 0, 
       number: 10,
-      distance: 20,
+      distance: 5,
       order: 'desc',
       total: 0,
+      unListenedCount: 0,
     }
   },
   created() {
@@ -82,6 +83,7 @@ export default {
         if (json.code === 0) {
           this.total = json.data.total;
           this.start = this.start + this.number;
+          this.unListenedCount = json.data.unListenedCount;
           if (json.data.hasMore) {
             this.$refs.infiniteLoading.$emit('$InfiniteLoading:loaded');
           } else {
@@ -117,6 +119,7 @@ export default {
     },
     reOrder: function () {
       this.start = 0;
+      this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset');
       if (this.order === 'desc') {
         this.order = 'asc';
       } else {

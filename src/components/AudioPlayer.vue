@@ -173,7 +173,6 @@
         // TODO 
       },
       playOrPause () {
-        console.log(1111111);
         const audio = this.audio;
         const lid = util.getParam('lid') || util.getParam('id');
         if (this.playing) {
